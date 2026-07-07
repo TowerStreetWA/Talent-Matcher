@@ -66,6 +66,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - UI: "UK company check" section inside the Research URL dialog (`research-url-dialog.tsx`) — search input, result list, profile card with SIC badges; PostHog events research_company_search / research_company_profile_viewed
 - Env: `COMPANIES_HOUSE_API_KEY`. Unit tests for SIC mapping + company-number normalizer in `companiesHouse.test.ts`
 
+## AI provider fallback (Phase 8)
+
+- `artifacts/api-server/src/lib/aiClient.ts` — `chatCompletion()` wrapper: Replit AI integration proxy is primary by default; direct `OPENAI_API_KEY` client is an automatic fallback on retryable failures only (429/408/5xx/network/timeout via `isRetryableAiError`); non-retryable errors rethrow immediately. `AI_PROVIDER=direct` env flips routing order; `OPENAI_DIRECT_MODEL` (optional, blank = unset) overrides model on the direct path only. Failover + fallback-success logged via `logger` with provider names
+- `cvParser.ts` (only OpenAI call site) routes through the wrapper; behavior unchanged when the integration is healthy
+- api-server must NOT depend on `openai` directly — pnpm peer-splits it into two identities and breaks `instanceof OpenAI.APIError` across the integration lib. Instead `lib/integrations-openai-ai-server` exports `createDirectOpenAIClient()` + the `OpenAI` class; import those
+- Unit tests for provider order + retryable classifier in `aiClient.test.ts`
+
 ## Search quality (Phase 5)
 
 - `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)

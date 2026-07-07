@@ -1,5 +1,5 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { z } from "zod/v4";
+import { chatCompletion } from "./aiClient";
 
 const ParsedCvSchema = z.object({
   firstName: z.string().min(1),
@@ -27,7 +27,7 @@ firstName (string, required), lastName (string, required), email (string|null), 
 If the CV states salary expectations use them; otherwise leave salary fields null. Do not invent contact details.`;
 
 export async function parseCvText(cvText: string): Promise<ParsedCv> {
-  const response = await openai.chat.completions.create({
+  const { completion: response } = await chatCompletion({
     model: "gpt-5.4",
     max_completion_tokens: 8192,
     response_format: { type: "json_object" },
