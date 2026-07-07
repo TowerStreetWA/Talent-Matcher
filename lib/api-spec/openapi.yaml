@@ -1325,19 +1325,23 @@ components:
         emailSent: { type: boolean }
     BillingPlan:
       type: object
-      required: [key, label, description, trialDays, features]
+      required:
+        [key, label, summary, description, trialDays, features, contactOnly]
       properties:
         key: { type: string }
         label: { type: string }
+        summary: { type: string }
         description: { type: string }
         trialDays: { type: integer }
+        contactOnly: { type: boolean }
         features:
           type: array
           items: { type: string }
-        priceId: { type: ["string", "null"] }
-        unitAmount: { type: ["number", "null"] }
+        monthlyPriceId: { type: ["string", "null"] }
+        monthlyUnitAmount: { type: ["number", "null"] }
+        annualPriceId: { type: ["string", "null"] }
+        annualUnitAmount: { type: ["number", "null"] }
         currency: { type: ["string", "null"] }
-        interval: { type: ["string", "null"] }
     BillingState:
       type: object
       required: [status, canUseCoreProduct, cancelAtPeriodEnd]
@@ -1354,6 +1358,10 @@ components:
       required: [planKey]
       properties:
         planKey: { type: string, minLength: 1 }
+        billingInterval:
+          type: string
+          enum: [month, year]
+          default: month
     BillingUrl:
       type: object
       required: [url]

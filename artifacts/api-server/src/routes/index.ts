@@ -11,7 +11,7 @@ import alertRulesRouter from "./alertRules";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import internalIngestionRouter from "./internalIngestion";
-import billingRouter from "./billing";
+import billingRouter, { publicBillingRouter } from "./billing";
 import storageRouter from "./storage";
 import teamRouter from "./team";
 import { requireAuth, blockViewerWrites, requireRole } from "../middlewares/auth";
@@ -22,6 +22,8 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+// Public plan catalog for the pricing page (no tenant data).
+router.use(publicBillingRouter);
 
 router.use(requireAuth, sentryContextMiddleware, blockViewerWrites);
 

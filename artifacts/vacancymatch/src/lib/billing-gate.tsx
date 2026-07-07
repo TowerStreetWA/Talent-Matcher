@@ -91,8 +91,12 @@ export function BillingGateProvider({ children }: { children: React.ReactNode })
   const { data: plans } = useListBillingPlans({
     query: { enabled: open && !!user, queryKey: getListBillingPlansQueryKey() },
   });
+  // Prefer the entry tier (Solo) for the trial CTA; fall back to any
+  // self-serve plan with a monthly price.
   const trialPlan =
-    plans?.find((p) => p.trialDays > 0 && p.priceId) ?? plans?.find((p) => p.priceId);
+    plans?.find((p) => p.key === "solo" && p.trialDays > 0 && p.monthlyPriceId) ??
+    plans?.find((p) => p.trialDays > 0 && p.monthlyPriceId) ??
+    plans?.find((p) => p.monthlyPriceId);
 
   const checkout = useCreateBillingCheckout({
     mutation: {
@@ -125,7 +129,9 @@ export function BillingGateProvider({ children }: { children: React.ReactNode })
     if (!trialPlan) return;
     rememberReturnPath();
     track("trial_prompt_checkout_started", { plan: trialPlan.key });
-    checkout.mutate({ data: { planKey: trialPlan.key } });
+    checkout.mutate({
+      data: { planKey: trialPlan.key, billingInterval: "month" },
+    });
   };
 
   const viewPlans = () => {
@@ -157,7 +163,8 @@ export function BillingGateProvider({ children }: { children: React.ReactNode })
                 {trialPlan.trialDays > 0 && (
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    {trialPlan.trialDays}-day free trial — no card required
+                    {trialPlan.trialDays}-day free {trialPlan.label} trial — no card
+                    required
                   </li>
                 )}
                 <li className="flex items-center gap-2">

@@ -15,12 +15,19 @@ import {
   syncTenantBilling,
   toBillingState,
 } from "../lib/billing/service";
-import { getPlan } from "../lib/billing/plans";
+import { getPlan, type BillingInterval } from "../lib/billing/plans";
 import { requireRole, tenantOf, auditActor } from "../middlewares/auth";
 import { recordAudit } from "../lib/audit";
 import { sendEmail, checkoutStartedEmailHtml } from "../lib/email";
 
 const router: IRouter = Router();
+
+/**
+ * Public billing routes (no auth): the pricing page is public, so plan
+ * definitions + prices must be readable before login. Mounted BEFORE
+ * requireAuth in routes/index.ts. Contains no tenant data.
+ */
+export const publicBillingRouter: IRouter = Router();
 
 function appBaseUrl(): string {
   const domain = process.env["REPLIT_DOMAINS"]?.split(",")[0];
@@ -30,7 +37,7 @@ function appBaseUrl(): string {
   return `https://${domain}`;
 }
 
-router.get("/billing/plans", async (_req, res): Promise<void> => {
+publicBillingRouter.get("/billing/plans", async (_req, res): Promise<void> => {
   const plans = await listPlansWithPrices();
   res.json(ListBillingPlansResponse.parse(plans));
 });
@@ -54,7 +61,16 @@ router.post(
       res.status(400).json({ message: "Unknown plan" });
       return;
     }
-    const priceId = await getPriceIdForPlan(plan.key);
+    if (plan.contactOnly) {
+      res.status(400).json({
+        message:
+          "Enterprise pricing is quote-based. Contact us to set up your plan.",
+      });
+      return;
+    }
+    const billingInterval: BillingInterval =
+      parsed.data.billingInterval === "year" ? "year" : "month";
+    const priceId = await getPriceIdForPlan(plan.key, billingInterval);
     if (!priceId) {
       res.status(400).json({
         message:
@@ -76,20 +92,47 @@ router.post(
     );
 
     const stripe = await getUncachableStripeClient();
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appBaseUrl()}/billing?checkout=success`,
-      cancel_url: `${appBaseUrl()}/billing?checkout=canceled`,
-      subscription_data: {
-        metadata: { tenant_slug: tenantSlug, plan_key: plan.key },
-        ...(plan.trialDays > 0 ? { trial_period_days: plan.trialDays } : {}),
-      },
-      ...(plan.trialDays > 0
-        ? { payment_method_collection: "if_required" as const }
-        : {}),
-    });
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: "subscription",
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${appBaseUrl()}/billing?checkout=success`,
+        cancel_url: `${appBaseUrl()}/billing?checkout=canceled`,
+        subscription_data: {
+          metadata: {
+            tenant_slug: tenantSlug,
+            plan_key: plan.key,
+            billing_interval: billingInterval,
+          },
+          ...(plan.trialDays > 0 ? { trial_period_days: plan.trialDays } : {}),
+        },
+        ...(plan.trialDays > 0
+          ? { payment_method_collection: "if_required" as const }
+          : {}),
+      });
+    } catch (err) {
+      // Surface Stripe's own validation errors (e.g. a legacy customer
+      // with a subscription in another currency) as a 400 instead of a
+      // generic 500. Existing subscribers change plans via the portal.
+      const type =
+        err && typeof err === "object" && "type" in err
+          ? (err as { type?: string }).type
+          : undefined;
+      if (type === "StripeInvalidRequestError") {
+        req.log.warn(
+          { err, planKey: plan.key, billingInterval },
+          "Stripe rejected checkout session",
+        );
+        res.status(400).json({
+          message:
+            "Stripe could not start this checkout. If you already have a subscription, use “Manage billing in Stripe” to change your plan instead.",
+        });
+        return;
+      }
+      throw err;
+    }
 
     if (!session.url) {
       res.status(500).json({ message: "Stripe did not return a checkout URL" });
@@ -100,7 +143,7 @@ router.post(
       action: "billing.checkout_created",
       entityType: "billing",
       entityId: session.id,
-      metadata: `Checkout session created for plan ${plan.key}${plan.trialDays > 0 ? ` with ${plan.trialDays}-day trial` : ""}`,
+      metadata: `Checkout session created for plan ${plan.key} (${billingInterval === "year" ? "annual" : "monthly"})${plan.trialDays > 0 ? ` with ${plan.trialDays}-day trial` : ""}`,
       ...auditActor(req),
     });
 

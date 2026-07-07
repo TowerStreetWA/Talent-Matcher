@@ -5,8 +5,10 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CheckoutInputBillingInterval } from './checkoutInputBillingInterval';
 
 export interface CheckoutInput {
   /** @minLength 1 */
   planKey: string;
+  billingInterval?: CheckoutInputBillingInterval;
 }

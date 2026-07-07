@@ -8,20 +8,24 @@ async function main(): Promise<void> {
   const stripe = await getUncachableStripeClient();
 
   const products = await stripe.products.search({
-    query: `metadata['plan_key']:'starter' AND active:'true'`,
+    query: `metadata['plan_key']:'solo' AND active:'true'`,
   });
   const product = products.data[0];
   if (!product) {
-    throw new Error("Starter product not found. Run seedStripeProducts first.");
+    throw new Error("Solo product not found. Run seedStripeProducts first.");
   }
   const prices = await stripe.prices.list({
     product: product.id,
     active: true,
-    limit: 1,
+    limit: 100,
   });
-  const price = prices.data[0];
+  const price = prices.data.find(
+    (p) => p.currency === "gbp" && p.recurring?.interval === "month",
+  );
   if (!price) {
-    throw new Error("Starter price not found. Run seedStripeProducts first.");
+    throw new Error(
+      "Solo GBP monthly price not found. Run seedStripeProducts first.",
+    );
   }
 
   const existingCustomers = await stripe.customers.search({
@@ -59,7 +63,7 @@ async function main(): Promise<void> {
     trial_settings: {
       end_behavior: { missing_payment_method: "cancel" },
     },
-    metadata: { tenant_slug: TENANT_SLUG, plan_key: "starter" },
+    metadata: { tenant_slug: TENANT_SLUG, plan_key: "solo" },
   });
   console.log(
     `Created trial subscription ${subscription.id} (status: ${subscription.status}) for tenant ${TENANT_SLUG}`,

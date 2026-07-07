@@ -11,21 +11,18 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { CHECKOUT_RETURN_KEY } from "@/lib/billing-gate";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreditCard, CheckCircle2, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
+import { CreditCard, CheckCircle2, AlertTriangle, ExternalLink, Mail } from "lucide-react";
 import { format } from "date-fns";
-
-function formatPrice(unitAmount: number | null | undefined, currency: string | null | undefined): string {
-  if (unitAmount == null) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: (currency ?? "usd").toUpperCase(),
-    minimumFractionDigits: 0,
-  }).format(unitAmount / 100);
-}
+import {
+  IntervalToggle,
+  PlanCard,
+  enterpriseMailtoHref,
+  type BillingIntervalChoice,
+} from "@/components/plan-cards";
 
 function statusBadge(status: string): { label: string; variant: "default" | "secondary" | "destructive" | "outline" } {
   switch (status) {
@@ -51,6 +48,7 @@ export default function Billing() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const canManage = user?.role === "owner" || user?.role === "admin";
+  const [billingInterval, setBillingInterval] = React.useState<BillingIntervalChoice>("month");
 
   React.useEffect(() => {
     track("billing_page_viewed");
@@ -208,56 +206,46 @@ export default function Billing() {
       </Card>
 
       <div>
-        <h2 className="text-xl font-semibold mb-3">Plans</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-xl font-semibold">Plans</h2>
+          <IntervalToggle value={billingInterval} onChange={setBillingInterval} />
+        </div>
         {loadingPlans ? (
-          <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-64" />
-            <Skeleton className="h-64" />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-80" />
+            ))}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {(plans ?? []).map((plan) => {
               const isCurrent = subscription?.planKey === plan.key && !restricted;
+              const priceIdForInterval =
+                billingInterval === "year" ? plan.annualPriceId : plan.monthlyPriceId;
               return (
-                <Card key={plan.key} className={isCurrent ? "border-primary" : undefined}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between text-lg">
-                      <span className="flex items-center gap-2">
-                        {plan.key === "starter" && <Sparkles className="w-4 h-4 text-primary" />}
-                        {plan.label}
-                      </span>
-                      {isCurrent && <Badge>Current plan</Badge>}
-                    </CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <span className="text-3xl font-bold">
-                        {formatPrice(plan.unitAmount, plan.currency)}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {" "}
-                        / {plan.interval ?? "month"}
-                      </span>
-                      {plan.trialDays > 0 && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {plan.trialDays}-day free trial — no card required
-                        </p>
-                      )}
-                    </div>
-                    <ul className="text-sm space-y-1.5">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
-                        </li>
-                      ))}
-                    </ul>
-                    {canManage ? (
+                <PlanCard
+                  key={plan.key}
+                  plan={plan}
+                  interval={billingInterval}
+                  isCurrent={isCurrent}
+                  highlight={plan.key === "team"}
+                  cta={
+                    plan.contactOnly ? (
+                      <Button asChild variant="outline" className="w-full">
+                        <a href={enterpriseMailtoHref()}>
+                          <Mail className="w-4 h-4 mr-2" /> Talk to us
+                        </a>
+                      </Button>
+                    ) : canManage ? (
                       <Button
                         className="w-full"
                         variant={isCurrent ? "outline" : "default"}
-                        disabled={checkout.isPending || isCurrent || !plan.priceId}
-                        onClick={() => checkout.mutate({ data: { planKey: plan.key } })}
+                        disabled={checkout.isPending || isCurrent || !priceIdForInterval}
+                        onClick={() =>
+                          checkout.mutate({
+                            data: { planKey: plan.key, billingInterval: billingInterval },
+                          })
+                        }
                       >
                         {isCurrent
                           ? "Current plan"
@@ -271,9 +259,9 @@ export default function Billing() {
                       <p className="text-xs text-muted-foreground">
                         Ask a workspace admin or owner to manage the subscription.
                       </p>
-                    )}
-                  </CardContent>
-                </Card>
+                    )
+                  }
+                />
               );
             })}
           </div>

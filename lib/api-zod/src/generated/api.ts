@@ -230,13 +230,16 @@ export const RevokeInviteResponse = zod.object({
 export const ListBillingPlansResponseItem = zod.object({
   "key": zod.string(),
   "label": zod.string(),
+  "summary": zod.string(),
   "description": zod.string(),
   "trialDays": zod.number(),
+  "contactOnly": zod.boolean(),
   "features": zod.array(zod.string()),
-  "priceId": zod.string().nullish(),
-  "unitAmount": zod.number().nullish(),
-  "currency": zod.string().nullish(),
-  "interval": zod.string().nullish()
+  "monthlyPriceId": zod.string().nullish(),
+  "monthlyUnitAmount": zod.number().nullish(),
+  "annualPriceId": zod.string().nullish(),
+  "annualUnitAmount": zod.number().nullish(),
+  "currency": zod.string().nullish()
 })
 export const ListBillingPlansResponse = zod.array(ListBillingPlansResponseItem)
 
@@ -259,10 +262,11 @@ export const GetBillingSubscriptionResponse = zod.object({
  * @summary Create a Stripe Checkout session for a subscription
  */
 
-
+export const createBillingCheckoutBodyBillingIntervalDefault = `month`;
 
 export const CreateBillingCheckoutBody = zod.object({
-  "planKey": zod.string().min(1)
+  "planKey": zod.string().min(1),
+  "billingInterval": zod.enum(['month', 'year']).default(createBillingCheckoutBodyBillingIntervalDefault)
 })
 
 export const CreateBillingCheckoutResponse = zod.object({

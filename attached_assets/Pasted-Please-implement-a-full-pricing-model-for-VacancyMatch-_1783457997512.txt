@@ -1,0 +1,210 @@
+Please implement a full pricing model for VacancyMatch AI in the codebase and UI.
+
+GOAL
+
+Add a tiered SaaS pricing model for VacancyMatch AI, wired into:
+- the pricing configuration,
+- the billing gate / Stripe integration,
+- and the public pricing UI,
+
+without changing existing auth, signup, or core product features.
+
+We already have Stripe and a billing gate. Use those patterns; do not reinvent billing.
+
+PRICING TIERS
+
+Implement four subscription tiers:
+
+- Solo — £79/user/month
+- Team — £149/user/month
+- Pro Agency — £229/user/month
+- Enterprise — from £1,500/month (quote-based, not self-serve)
+
+Also support annual billing options that give 2 months free (i.e. 10 months paid per year).
+
+There should be no free-forever plan. Trials are short and full-featured.
+
+COMMERCIAL RULES
+
+Use these rules:
+
+- Solo, Team, Pro Agency → Stripe subscription tiers (monthly + annual).
+- Enterprise → not self-serve; “Talk to us” CTA and lead capture only.
+- Optional onboarding/setup fees are not handled via Stripe; these are invoiced directly by Tower Street and stay outside the subscription flow. Do not add any setup fees into Checkout.
+
+Trials:
+- 7-day free trial for Solo, Team, Pro Agency (reuse the existing trial-prompt logic if possible).
+- Enterprise contracts can start with a paid pilot or custom arrangement; no automatic trial flow needed in this phase.
+
+FEATURE MAPPING
+
+Wire the following tier features into config (not necessarily into enforcement logic yet, but make them clearly defined):
+
+SOLO — £79/user/month
+- 1 user seat
+- CV upload & parsing
+- Candidate-to-job matching
+- Search across indexed vacancies (including direct employer + Google Jobs where available)
+- Basic saved searches and alerts
+- Basic source badges and match explanations
+- Fair-use search/match volume (define a soft cap in config, even if not enforced yet)
+- Email support
+
+TEAM — £149/user/month
+- 3+ users (set a sensible minimum, e.g. 3 seats)
+- Everything in Solo
+- Shared team workspace
+- Notes, tags, collaboration features
+- Increased search/match volume cap
+- More saved searches and alerts
+- CRM sync / export workflows (where implemented)
+- Financial-services relevance pack fully available
+- Priority email support
+
+PRO AGENCY — £229/user/month
+- 5+ users (set a sensible minimum seat count)
+- Everything in Team
+- Higher or effectively uncapped search/match volume (configurable)
+- Advanced employer-first discovery (better source prioritisation + duplicate suppression)
+- Candidate re-match automation against new live vacancies (where implemented)
+- Team analytics and usage reporting (where available)
+- Stronger admin controls and audit trails (tie into existing role/guard logic)
+- Priority support, possibly with a named contact
+
+ENTERPRISE — from £1,500/month
+- Custom pricing (no public Stripe prices)
+- Seat bundles or named-user plans
+- Bespoke source ingestion and employer target lists
+- CRM/API integrations
+- Compliance/onboarding support
+- Tailored financial-services tuning
+- Account management
+- Lead capture form and “Talk to us” CTA; not a Stripe checkout button
+
+Feature gating in this phase should be config-level only where enforcement would be complex; wire the config and any easy checks, but do not break existing behaviour. If a feature is not yet implemented, define the config but document that it is future-facing.
+
+IMPLEMENTATION STEPS
+
+1. PRICING CONFIGURATION
+
+Create or update a centralized pricing config, for example:
+- artifacts/api-server/src/config/pricing.ts
+or whatever config pattern the app already uses.
+
+Define:
+- Tier IDs (e.g. solo, team, pro_agency, enterprise)
+- Display names
+- Monthly prices
+- Annual prices (10× monthly)
+- Short summary lines (e.g. “For solo recruiters”, “For small teams”, “For specialist agencies”)
+- Feature flags / soft caps per tier (seats, search volume, etc.)
+
+Make this the single source of truth for pricing.
+
+2. STRIPE INTEGRATION
+
+Extend the existing Stripe/Billing Gate logic so that:
+- Solo, Team, Pro Agency have corresponding Stripe products/prices for:
+  - Monthly subscriptions
+  - Annual subscriptions
+- Tier selection on the pricing page passes the correct Stripe price ID into the existing Checkout flow
+
+Do not change how Stripe is initialised or how the billing gate works; just connect pricing config → Stripe products → checkout.
+
+Enterprise:
+- No Stripe Checkout button
+- Instead, show a “Talk to us” CTA and link to a contact form/email
+
+3. BILLING GATE LOGIC
+
+Update the billing gate / trial prompt so that:
+- It understands which tier the tenant is on
+- It can display:
+  - current plan name
+  - next billing date (if available)
+  - trial status (if applicable)
+- It uses the new pricing config for copy and CTAs
+  Example: “Upgrade to Pro Agency for deeper employer search and higher usage.”
+
+Keep behaviour consistent with the current code; extend it rather than rewriting.
+
+4. PUBLIC PRICING PAGE UI
+
+Create or update a /pricing page in the web app.
+
+Design:
+- Four cards in a simple grid: Solo, Team, Pro Agency, Enterprise
+- Each card shows:
+  - Name
+  - Monthly price (with “per user per month”)
+  - Annual price marker (e.g. “or £XX/mo billed annually (2 months free)”)
+  - 3–5 key bullets tailored to the tier
+  - CTA:
+    - Solo/Team/Pro → “Start 7-day free trial” or “Get started” button
+    - Enterprise → “Talk to us” button
+
+Suggested bullets for each card:
+
+SOLO CARD
+- For solo recruiters and 1-person desks
+- Upload CVs and find live employer roles faster
+- Smart matching and search across indexed jobs
+- Basic saved searches and alerts
+
+TEAM CARD
+- For small to mid-sized agency teams
+- Shared workspace, notes and collaboration
+- Employer-first search across insurance, banking, pensions, asset management
+- More saved searches and alerts, CRM sync
+
+PRO AGENCY CARD
+- For specialist and multi-user desks
+- Advanced employer-first vacancy discovery
+- Higher usage, re-match automation, team analytics
+- Priority support and stronger admin controls
+
+ENTERPRISE CARD
+- For larger firms and in-house teams
+- Custom sources, integrations and rollout
+- Tailored financial-services tuning and compliance support
+- Talk to us for a quote
+
+Style the cards calmly and clearly; keep design consistent with the existing product aesthetic.
+
+5. INTERNAL PLAN MAPPING
+
+Hook the pricing tiers into the existing plan/role mapping so the app can recognise:
+- which plan a tenant is on
+- which features are standard vs advanced
+
+In this phase you only need:
+- a way to read the plan from the tenant record
+- simple helper functions like isSolo(), isTeam(), isProAgency(), isEnterprise()
+
+Where it’s easy and makes sense, apply these helpers around advanced features (e.g. analytics, automation) so Pro/Enterprise tenants get more.
+
+CONSTRAINTS
+
+- Do not change existing auth or signup flows beyond adding plan selection where appropriate.
+- Do not force tenants into a plan change during this phase.
+- Default tenant plan logic can map existing demo/test tenants to pro_agency or another safe internal plan.
+- Do not introduce free-forever tier logic.
+
+ACCEPTANCE CRITERIA
+
+1. A centralized pricing config exists with Solo, Team, Pro Agency, and Enterprise tiers, prices, and feature flags defined.
+2. Stripe is wired to the three self-serve tiers with monthly and annual prices and Checkout works for each.
+3. The billing gate and trial prompt use the new tier names and prices correctly.
+4. The /pricing page shows four clear tiers with names, prices, bullets, and correct CTAs.
+5. Enterprise is contact-only and does not surface a Stripe Checkout button.
+6. Optional onboarding/setup fees are not added to Stripe — they remain handled outside the app.
+7. Full typecheck passes and existing tests still pass.
+
+REPORT BACK
+
+When done, please report:
+- Files changed for pricing config, Stripe integration, billing gate, and /pricing UI
+- The final pricing config values (prices, names, tier IDs)
+- Any new helper functions for plan checks
+- How plan selection works at signup or upgrade
+- Typecheck and test outcomes

@@ -253,17 +253,21 @@ export interface InviteCreated {
 export interface BillingPlan {
   key: string;
   label: string;
+  summary: string;
   description: string;
   trialDays: number;
+  contactOnly: boolean;
   features: string[];
   /** @nullable */
-  priceId?: string | null;
+  monthlyPriceId?: string | null;
   /** @nullable */
-  unitAmount?: number | null;
+  monthlyUnitAmount?: number | null;
+  /** @nullable */
+  annualPriceId?: string | null;
+  /** @nullable */
+  annualUnitAmount?: number | null;
   /** @nullable */
   currency?: string | null;
-  /** @nullable */
-  interval?: string | null;
 }
 
 export interface BillingState {
@@ -280,9 +284,18 @@ export interface BillingState {
   canUseCoreProduct: boolean;
 }
 
+export type CheckoutInputBillingInterval = typeof CheckoutInputBillingInterval[keyof typeof CheckoutInputBillingInterval];
+
+
+export const CheckoutInputBillingInterval = {
+  month: 'month',
+  year: 'year',
+} as const;
+
 export interface CheckoutInput {
   /** @minLength 1 */
   planKey: string;
+  billingInterval?: CheckoutInputBillingInterval;
 }
 
 export interface BillingUrl {

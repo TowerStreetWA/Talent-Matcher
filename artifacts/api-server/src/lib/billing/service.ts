@@ -2,13 +2,22 @@ import { sql, eq } from "drizzle-orm";
 import { db, tenantBillingTable, type TenantBilling } from "@workspace/db";
 import { getUncachableStripeClient } from "../stripeClient";
 import { recordAudit } from "../audit";
-import { getPlan, PLANS, canUseCoreProduct, type PlanDef } from "./plans";
+import {
+  getPlan,
+  PLANS,
+  PLAN_ORDER,
+  PLAN_CURRENCY,
+  canUseCoreProduct,
+  type PlanDef,
+  type BillingInterval,
+} from "./plans";
 
 export interface PlanWithPrice extends PlanDef {
-  priceId: string | null;
-  unitAmount: number | null;
+  monthlyPriceId: string | null;
+  monthlyUnitAmount: number | null;
+  annualPriceId: string | null;
+  annualUnitAmount: number | null;
   currency: string | null;
-  interval: string | null;
 }
 
 interface StripePriceRow {
@@ -33,29 +42,54 @@ export async function listPlansWithPrices(): Promise<PlanWithPrice[]> {
     ORDER BY pr.unit_amount
   `);
   const rows = result.rows as unknown as StripePriceRow[];
-  const byPlan = new Map<string, StripePriceRow>();
+  // Only current-currency prices are offered for new checkouts; legacy
+  // (USD) prices stay attached to existing subscriptions only.
+  const monthlyByPlan = new Map<string, StripePriceRow>();
+  const annualByPlan = new Map<string, StripePriceRow>();
   for (const row of rows) {
-    if (row.plan_key && !byPlan.has(row.plan_key)) {
-      byPlan.set(row.plan_key, row);
+    if (!row.plan_key || row.currency !== PLAN_CURRENCY) continue;
+    const interval = row.recurring?.interval;
+    if (interval === "month" && !monthlyByPlan.has(row.plan_key)) {
+      monthlyByPlan.set(row.plan_key, row);
+    } else if (interval === "year" && !annualByPlan.has(row.plan_key)) {
+      annualByPlan.set(row.plan_key, row);
     }
   }
-  return Object.values(PLANS).map((plan) => {
-    const row = byPlan.get(plan.key);
+  return PLAN_ORDER.map((key) => {
+    const plan = PLANS[key];
+    if (plan.contactOnly) {
+      // Contact-only tiers have no Stripe checkout; indicative "from"
+      // prices come straight from the pricing config.
+      return {
+        ...plan,
+        monthlyPriceId: null,
+        monthlyUnitAmount: plan.monthlyPencePerUser,
+        annualPriceId: null,
+        annualUnitAmount: plan.annualPencePerUser,
+        currency: PLAN_CURRENCY,
+      };
+    }
+    const monthly = monthlyByPlan.get(plan.key);
+    const annual = annualByPlan.get(plan.key);
     return {
       ...plan,
-      priceId: row?.price_id ?? null,
-      unitAmount: row?.unit_amount ?? null,
-      currency: row?.currency ?? null,
-      interval: row?.recurring?.interval ?? null,
+      monthlyPriceId: monthly?.price_id ?? null,
+      monthlyUnitAmount: monthly?.unit_amount ?? null,
+      annualPriceId: annual?.price_id ?? null,
+      annualUnitAmount: annual?.unit_amount ?? null,
+      currency: monthly?.currency ?? annual?.currency ?? null,
     };
   });
 }
 
 export async function getPriceIdForPlan(
   planKey: string,
+  interval: BillingInterval = "month",
 ): Promise<string | null> {
   const plans = await listPlansWithPrices();
-  return plans.find((p) => p.key === planKey)?.priceId ?? null;
+  const plan = plans.find((p) => p.key === planKey);
+  if (!plan) return null;
+  return interval === "year" ? plan.annualPriceId : plan.monthlyPriceId;
 }
 
 export async function getBillingRow(
