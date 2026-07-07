@@ -262,7 +262,7 @@ export default function CandidateDetail() {
                           <p className="text-muted-foreground text-sm">{match.job?.companyName} • {match.job?.locationText}</p>
                         </div>
                         <div className="flex flex-col items-end">
-                          <div className="text-3xl font-bold tracking-tighter text-primary">{match.overallScore}</div>
+                          <div className={`text-3xl font-bold tracking-tighter tabular-nums text-primary ${match.overallScore >= 90 ? "glow-score" : ""}`}>{match.overallScore}</div>
                           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">Match Score</span>
                         </div>
                       </div>

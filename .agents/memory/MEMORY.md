@@ -7,3 +7,4 @@
 - [Connector credential quirks](connector-credential-quirks.md) — user-filled connector settings may not match their schema (Sentry field holds a DSN); Resend is sandbox-limited.
 - [PostHog region routing](posthog-region-routing.md) — phc_ keys don't encode region; wrong ingestion host fails silently as 404s. Verify with /array/<key>/config.js per host.
 - [Secrets hygiene](secrets-hygiene.md) — user-pasted secrets can contain stray whitespace; trim keys in code, and restart workflows after a secret's value changes.
+- [Design subagent scope](design-subagent-scope.md) — restyle briefs may be only partially executed; diff against the brief's scope list and finish gaps directly.

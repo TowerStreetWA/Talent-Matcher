@@ -148,7 +148,15 @@ export default function GettingStarted() {
                 )}
               </div>
               {isPrimary && (
-                <Button size="sm" onClick={step.action} className="shrink-0">
+                <Button
+                  size="sm"
+                  onClick={step.action}
+                  className={`shrink-0 ${
+                    step.key === "trial"
+                      ? "bg-[#FF6B35] text-[#050505] hover:bg-[#FF6B35]/90 glow-conversion"
+                      : ""
+                  }`}
+                >
                   {step.actionLabel}
                 </Button>
               )}

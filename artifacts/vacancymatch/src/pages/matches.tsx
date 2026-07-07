@@ -168,7 +168,7 @@ export default function Matches() {
                   <Badge variant={
                     match.overallScore >= 90 ? "default" : 
                     match.overallScore >= 80 ? "secondary" : "outline"
-                  } className="text-sm px-2 py-0.5 shrink-0">
+                  } className={`text-sm px-2 py-0.5 shrink-0 tabular-nums ${match.overallScore >= 90 ? "glow-primary" : ""}`}>
                     {match.overallScore}
                   </Badge>
                 </div>

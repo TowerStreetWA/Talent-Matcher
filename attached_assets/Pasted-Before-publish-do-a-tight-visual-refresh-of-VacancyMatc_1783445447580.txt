@@ -1,0 +1,51 @@
+Before publish, do a tight visual refresh of VacancyMatch using this theme direction:
+Theme: Obsidian Glow
+•	Base background:  #050505 
+•	Secondary surface:  #18181B 
+•	Primary accent:  #00FFC8 
+•	Secondary accent:  #FF6B35 
+•	Tertiary accent:  #C77DFF 
+•	Primary text:  #FAFAFA 
+•	Muted text:  #A1A1AA 
+Goal:
+Refresh the app so it feels premium, modern, and cleaner for long recruiter sessions, without becoming visually noisy or “over-designed”.
+Important design constraints:
+•	Keep the UI calm and product-focused.
+•	Do not make it feel like a flashy landing page.
+•	Use teal as the main accent.
+•	Use orange sparingly for alerts, conversion prompts, and important highlights.
+•	Use violet very sparingly for tertiary emphasis only.
+•	Glow/blur effects must be subtle and limited to key actions or match highlights.
+•	Maintain strong readability and contrast.
+•	Preserve the existing layout structure unless a small visual adjustment clearly improves polish.
+Scope:
+•	Update shared theme tokens / CSS variables / Tailwind theme as appropriate.
+•	Refresh core surfaces: app shell, cards, panels, dialogs, inputs, buttons, badges, tables, sidebar, top nav.
+•	Refresh the dashboard, billing gate dialog, signup/login, upload CV, sources, candidate detail, and research dialog so they all feel visually consistent.
+•	Improve match-score presentation using subtle glow or accented chips.
+•	Keep empty states and onboarding polished but restrained.
+Explicitly out of scope:
+•	No feature changes
+•	No schema/API changes
+•	No new illustrations unless already easy to support
+•	No big layout redesign
+•	No excessive gradients, blobs, or neon effects
+Visual style guidance:
+•	Think “premium dark SaaS product”, not marketing page.
+•	Minimal glass or blur only where it improves depth.
+•	Subtle background depth is fine, but no busy decorative patterns across the main app.
+•	If adding a radar/scan motif, confine it to one tasteful empty state or hero-style onboarding panel only.
+Acceptance criteria:
+1.	The app feels cohesive in the new theme across key screens.
+2.	Contrast/readability remains strong.
+3.	The UI remains calm and uncluttered.
+4.	Key conversion surfaces still stand out clearly.
+5.	Existing behavior remains unchanged.
+6.	Full typecheck passes.
+Report back with:
+•	files changed
+•	theme/token changes made
+•	which pages/components were visually refreshed
+•	any subtle motion/glow effects added
+•	any accessibility/contrast considerations
+•	typecheck result
