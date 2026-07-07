@@ -65,6 +65,32 @@ export interface ExtractedJob {
   confidenceNotes?: string | null;
 }
 
+export interface CompanySearchResult {
+  companyNumber: string;
+  name: string;
+  status?: string | null;
+  companyType?: string | null;
+  incorporationDate?: string | null;
+  addressSnippet?: string | null;
+}
+
+export interface CompanySicCode {
+  code: string;
+  description: string;
+}
+
+export interface CompanyProfile {
+  companyNumber: string;
+  name: string;
+  status?: string | null;
+  companyType?: string | null;
+  jurisdiction?: string | null;
+  incorporationDate?: string | null;
+  sicCodes: CompanySicCode[];
+  registeredOfficeLocality?: string | null;
+  lastAccountsDate?: string | null;
+}
+
 export interface LoginInput {
   /** @minLength 1 */
   email: string;
@@ -617,4 +643,12 @@ export const ListSearchSuggestionsScope = {
   candidates: 'candidates',
   jobs: 'jobs',
 } as const;
+
+export type SearchResearchCompaniesParams = {
+/**
+ * @minLength 2
+ * @maxLength 160
+ */
+query: string;
+};
 

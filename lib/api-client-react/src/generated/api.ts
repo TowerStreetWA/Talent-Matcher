@@ -35,6 +35,8 @@ import type {
   CandidateInput,
   CandidateUpdate,
   CheckoutInput,
+  CompanyProfile,
+  CompanySearchResult,
   CreateInviteInput,
   CrmPushInput,
   CrmSyncEvent,
@@ -61,6 +63,7 @@ import type {
   RequestUploadUrlResult,
   ResearchUrlInput,
   ScrapedPage,
+  SearchResearchCompaniesParams,
   SearchSuggestion,
   SignupInput,
   TeamInvite,
@@ -3587,4 +3590,165 @@ export const useExtractResearchJob = <TError = ErrorType<ApiMessage>,
       > => {
       return useMutation(getExtractResearchJobMutationOptions(options));
     }
+
+export const getSearchResearchCompaniesUrl = (params: SearchResearchCompaniesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/research/company?${stringifiedParams}` : `/api/research/company`
+}
+
+/**
+ * @summary Search UK companies by name (Companies House)
+ */
+export const searchResearchCompanies = async (params: SearchResearchCompaniesParams, options?: RequestInit): Promise<CompanySearchResult[]> => {
+
+  return customFetch<CompanySearchResult[]>(getSearchResearchCompaniesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchResearchCompaniesQueryKey = (params?: SearchResearchCompaniesParams,) => {
+    return [
+    `/api/research/company`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchResearchCompaniesQueryOptions = <TData = Awaited<ReturnType<typeof searchResearchCompanies>>, TError = ErrorType<ApiMessage>>(params: SearchResearchCompaniesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchResearchCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchResearchCompaniesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchResearchCompanies>>> = ({ signal }) => searchResearchCompanies(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchResearchCompanies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchResearchCompaniesQueryResult = NonNullable<Awaited<ReturnType<typeof searchResearchCompanies>>>
+export type SearchResearchCompaniesQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Search UK companies by name (Companies House)
+ */
+
+export function useSearchResearchCompanies<TData = Awaited<ReturnType<typeof searchResearchCompanies>>, TError = ErrorType<ApiMessage>>(
+ params: SearchResearchCompaniesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchResearchCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchResearchCompaniesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetResearchCompanyProfileUrl = (companyNumber: string,) => {
+
+
+
+
+  return `/api/research/company/${companyNumber}`
+}
+
+/**
+ * @summary UK company profile by company number (Companies House)
+ */
+export const getResearchCompanyProfile = async (companyNumber: string, options?: RequestInit): Promise<CompanyProfile> => {
+
+  return customFetch<CompanyProfile>(getGetResearchCompanyProfileUrl(companyNumber),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetResearchCompanyProfileQueryKey = (companyNumber: string,) => {
+    return [
+    `/api/research/company/${companyNumber}`
+    ] as const;
+    }
+
+
+export const getGetResearchCompanyProfileQueryOptions = <TData = Awaited<ReturnType<typeof getResearchCompanyProfile>>, TError = ErrorType<ApiMessage>>(companyNumber: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getResearchCompanyProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetResearchCompanyProfileQueryKey(companyNumber);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getResearchCompanyProfile>>> = ({ signal }) => getResearchCompanyProfile(companyNumber, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyNumber !== null && companyNumber !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getResearchCompanyProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetResearchCompanyProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getResearchCompanyProfile>>>
+export type GetResearchCompanyProfileQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary UK company profile by company number (Companies House)
+ */
+
+export function useGetResearchCompanyProfile<TData = Awaited<ReturnType<typeof getResearchCompanyProfile>>, TError = ErrorType<ApiMessage>>(
+ companyNumber: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getResearchCompanyProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetResearchCompanyProfileQueryOptions(companyNumber,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

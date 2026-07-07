@@ -1034,6 +1034,96 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
+  /research/company:
+    get:
+      operationId: searchResearchCompanies
+      tags: [research]
+      summary: Search UK companies by name (Companies House)
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 160 }
+      responses:
+        "200":
+          description: Matching companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompanySearchResult"
+        "400":
+          description: Invalid query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "429":
+          description: Companies House rate limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "502":
+          description: Upstream failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "503":
+          description: Companies House not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /research/company/{companyNumber}:
+    get:
+      operationId: getResearchCompanyProfile
+      tags: [research]
+      summary: UK company profile by company number (Companies House)
+      parameters:
+        - name: companyNumber
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Company profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyProfile"
+        "400":
+          description: Invalid company number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "429":
+          description: Companies House rate limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "502":
+          description: Upstream failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "503":
+          description: Companies House not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
 components:
   schemas:
     HealthStatus:
@@ -1098,6 +1188,38 @@ components:
         remoteType: { type: string, nullable: true }
         sourceUrl: { type: string }
         confidenceNotes: { type: string, nullable: true }
+    CompanySearchResult:
+      type: object
+      required: [companyNumber, name]
+      properties:
+        companyNumber: { type: string }
+        name: { type: string }
+        status: { type: string, nullable: true }
+        companyType: { type: string, nullable: true }
+        incorporationDate: { type: string, nullable: true }
+        addressSnippet: { type: string, nullable: true }
+    CompanySicCode:
+      type: object
+      required: [code, description]
+      properties:
+        code: { type: string }
+        description: { type: string }
+    CompanyProfile:
+      type: object
+      required: [companyNumber, name, sicCodes]
+      properties:
+        companyNumber: { type: string }
+        name: { type: string }
+        status: { type: string, nullable: true }
+        companyType: { type: string, nullable: true }
+        jurisdiction: { type: string, nullable: true }
+        incorporationDate: { type: string, nullable: true }
+        sicCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompanySicCode"
+        registeredOfficeLocality: { type: string, nullable: true }
+        lastAccountsDate: { type: string, nullable: true }
     LoginInput:
       type: object
       required: [email, password]

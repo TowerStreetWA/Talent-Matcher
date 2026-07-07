@@ -1192,3 +1192,49 @@ export const ExtractResearchJobResponse = zod.object({
 })
 
 
+/**
+ * @summary Search UK companies by name (Companies House)
+ */
+export const searchResearchCompaniesQueryQueryMin = 2;
+export const searchResearchCompaniesQueryQueryMax = 160;
+
+
+
+export const SearchResearchCompaniesQueryParams = zod.object({
+  "query": zod.coerce.string().min(searchResearchCompaniesQueryQueryMin).max(searchResearchCompaniesQueryQueryMax)
+})
+
+export const SearchResearchCompaniesResponseItem = zod.object({
+  "companyNumber": zod.string(),
+  "name": zod.string(),
+  "status": zod.string().nullish(),
+  "companyType": zod.string().nullish(),
+  "incorporationDate": zod.string().nullish(),
+  "addressSnippet": zod.string().nullish()
+})
+export const SearchResearchCompaniesResponse = zod.array(SearchResearchCompaniesResponseItem)
+
+
+/**
+ * @summary UK company profile by company number (Companies House)
+ */
+export const GetResearchCompanyProfileParams = zod.object({
+  "companyNumber": zod.coerce.string()
+})
+
+export const GetResearchCompanyProfileResponse = zod.object({
+  "companyNumber": zod.string(),
+  "name": zod.string(),
+  "status": zod.string().nullish(),
+  "companyType": zod.string().nullish(),
+  "jurisdiction": zod.string().nullish(),
+  "incorporationDate": zod.string().nullish(),
+  "sicCodes": zod.array(zod.object({
+  "code": zod.string(),
+  "description": zod.string()
+})),
+  "registeredOfficeLocality": zod.string().nullish(),
+  "lastAccountsDate": zod.string().nullish()
+})
+
+

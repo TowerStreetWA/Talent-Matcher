@@ -4,6 +4,8 @@ import {
   ScrapeResearchUrlResponse,
   ExtractResearchJobBody,
   ExtractResearchJobResponse,
+  SearchResearchCompaniesResponse,
+  GetResearchCompanyProfileResponse,
 } from "@workspace/api-zod";
 import { auditActor } from "../middlewares/auth";
 import { recordAudit } from "../lib/audit";
@@ -13,6 +15,12 @@ import {
   scrapeResearchPage,
   extractResearchJob,
 } from "../lib/firecrawl";
+import {
+  CompaniesHouseError,
+  normalizeCompanyNumber,
+  searchCompanies,
+  getCompanyProfile,
+} from "../lib/companiesHouse";
 
 const router: IRouter = Router();
 
@@ -122,6 +130,92 @@ router.post("/research/extract-job", async (req, res): Promise<void> => {
         "research job extraction failed",
       );
       res.status(statusFor(err)).json({ message: err.message });
+      return;
+    }
+    throw err;
+  }
+});
+
+function companiesHouseStatus(err: CompaniesHouseError): number {
+  switch (err.kind) {
+    case "invalid_input":
+      return 400;
+    case "not_found":
+      return 404;
+    case "rate_limited":
+      return 429;
+    case "config":
+      return 503;
+    case "timeout":
+    case "upstream":
+      return 502;
+  }
+}
+
+router.get("/research/company", async (req, res): Promise<void> => {
+  const query = typeof req.query["query"] === "string" ? req.query["query"].trim() : "";
+  if (query.length < 2 || query.length > 160) {
+    res.status(400).json({ message: "query must be between 2 and 160 characters" });
+    return;
+  }
+  const actor = auditActor(req);
+  try {
+    const results = await searchCompanies(query);
+    await recordAudit({
+      ...actor,
+      action: "research.company_search",
+      entityType: "research",
+      metadata: JSON.stringify({
+        query: query.slice(0, 200),
+        resultCount: results.length,
+      }),
+    });
+    req.log.info(
+      { event: "research_company_search", queryLength: query.length, resultCount: results.length },
+      "company search completed",
+    );
+    res.json(SearchResearchCompaniesResponse.parse(results));
+  } catch (err) {
+    if (err instanceof CompaniesHouseError) {
+      req.log.warn(
+        { event: "research_company_search_failed", kind: err.kind, message: err.message },
+        "company search failed",
+      );
+      res.status(companiesHouseStatus(err)).json({ message: err.message });
+      return;
+    }
+    throw err;
+  }
+});
+
+router.get("/research/company/:companyNumber", async (req, res): Promise<void> => {
+  const actor = auditActor(req);
+  try {
+    const companyNumber = normalizeCompanyNumber(req.params["companyNumber"] ?? "");
+    const profile = await getCompanyProfile(companyNumber);
+    await recordAudit({
+      ...actor,
+      action: "research.company_profile",
+      entityType: "research",
+      entityId: companyNumber,
+      metadata: JSON.stringify({
+        companyNumber,
+        status: profile.status,
+        sicCount: profile.sicCodes.length,
+      }),
+    });
+    req.log.info(
+      { event: "research_company_profile", companyNumber, status: profile.status },
+      "company profile fetched",
+    );
+    res.json(GetResearchCompanyProfileResponse.parse(profile));
+  } catch (err) {
+    if (err instanceof CompaniesHouseError) {
+      req.log.warn(
+        { event: "research_company_profile_failed", kind: err.kind, message: err.message },
+        "company profile failed",
+      );
+      res.status(companiesHouseStatus(err)).json({ message: err.message });
       return;
     }
     throw err;
