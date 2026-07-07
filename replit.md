@@ -59,6 +59,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - UI: "Research URL" dialog on Jobs page (`components/research-url-dialog.tsx`) — extract job card + page preview; PostHog research_* events
 - Unit tests for URL validation in `src/lib/firecrawl.test.ts`
 
+## Companies House enrichment (Phase 7)
+
+- `artifacts/api-server/src/lib/companiesHouse.ts` — raw-fetch wrapper (Basic auth base64(key+":"), base api.company-information.service.gov.uk, 15s timeout, key trimmed); `CompaniesHouseError` kinds config/invalid_input/not_found/rate_limited/upstream/timeout → 503/400/404/429/502/502; `describeSicCode()` maps SIC codes to recruiter-readable labels (curated 5-digit map + 2-digit division fallback + dormant/non-trading specials)
+- Routes in `routes/research.ts`: GET `/research/company?query=` (top 5 name matches) and GET `/research/company/{companyNumber}` (profile: status, type, jurisdiction, incorporation date, SIC codes with descriptions, registered locality, last accounts). Display-only — never writes to jobs/tenants. Behind auth + viewer-write block + billing gate; audit actions `research.company_search` / `research.company_profile` (query truncated + counts only)
+- UI: "UK company check" section inside the Research URL dialog (`research-url-dialog.tsx`) — search input, result list, profile card with SIC badges; PostHog events research_company_search / research_company_profile_viewed
+- Env: `COMPANIES_HOUSE_API_KEY`. Unit tests for SIC mapping + company-number normalizer in `companiesHouse.test.ts`
+
 ## Search quality (Phase 5)
 
 - `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)
