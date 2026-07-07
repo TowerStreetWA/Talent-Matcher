@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { desc, eq, and, ilike, or, sql } from "drizzle-orm";
-import { db, jobsTable, jobSourcesTable } from "@workspace/db";
+import { db, jobsTable, jobSourcesTable, searchEventsTable } from "@workspace/db";
 import {
   ListJobsResponse,
   GetJobResponse,
@@ -135,6 +135,13 @@ const intParam = (raw: unknown, fallback: number, min: number, max: number): num
   return Math.min(Math.max(n, min), max);
 };
 
+const SOURCE_TYPES = new Set([
+  "direct_employer",
+  "google_jobs",
+  "job_board",
+  "agency",
+]);
+
 // NOTE: must stay registered before /jobs/:id so "search" isn't captured as an id.
 router.get("/jobs/search", async (req, res): Promise<void> => {
   const q = typeof req.query["q"] === "string" ? req.query["q"] : "";
@@ -142,6 +149,8 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     typeof req.query["location"] === "string" ? req.query["location"] : "";
   const sectorRaw =
     typeof req.query["sector"] === "string" ? req.query["sector"] : "";
+  const sourceRaw =
+    typeof req.query["source"] === "string" ? req.query["source"] : "";
   const page = intParam(req.query["page"], 1, 1, 1000);
   const pageSize = intParam(
     req.query["pageSize"],
@@ -158,6 +167,14 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     });
     return;
   }
+  if (sourceRaw && !SOURCE_TYPES.has(sourceRaw)) {
+    res.status(400).json({
+      message:
+        "Unknown source. Supported: direct_employer, google_jobs, job_board, agency.",
+    });
+    return;
+  }
+  const sourceFilter = sourceRaw || null;
   const locationVariants = locationRaw ? expandLocationInput(locationRaw) : [];
   const nq = q.trim() ? normalizeQuery(q) : null;
 
@@ -188,6 +205,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     const locCond = or(...locConds);
     if (locCond) conditions.push(locCond);
   }
+  if (sourceFilter) conditions.push(eq(jobsTable.sourceType, sourceFilter));
 
   const rows = await db
     .select({ job: jobsTable, sourceName: jobSourcesTable.name })
@@ -223,6 +241,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
       filters: {
         location: locationRaw ? locationRaw.slice(0, 100) : undefined,
         sector: sectorFilter ?? undefined,
+        source: sourceFilter ?? undefined,
       },
       page,
       pageSize,
@@ -236,6 +255,26 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     },
     "job search executed",
   );
+
+  // Search analytics: persist one row per executed search (only on page 1 so
+  // paging through results doesn't inflate counts). Failures never break search.
+  if (page === 1) {
+    try {
+      await db.insert(searchEventsTable).values({
+        tenantId: tenantOf(req),
+        userId: req.auth?.userId ?? null,
+        type: "job_search",
+        query: q.slice(0, 200),
+        location: locationRaw.slice(0, 100),
+        sector: sectorFilter,
+        sourceType: sourceFilter,
+        resultsCount: total,
+        zeroResults: total === 0,
+      });
+    } catch (err) {
+      req.log.warn({ err }, "Failed to record search event");
+    }
+  }
 
   res.json(
     SearchJobsResponse.parse({

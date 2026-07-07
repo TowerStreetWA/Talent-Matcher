@@ -1,10 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { useSearchJobs, type SearchJobsSector } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useSearchJobs,
+  useListSavedJobSearches,
+  useCreateSavedJobSearch,
+  useUpdateSavedJobSearch,
+  useDeleteSavedJobSearch,
+  getListSavedJobSearchesQueryKey,
+  type SearchJobsSector,
+  type SearchJobsSource,
+  type SavedJobSearch as SavedJobSearchDto,
+} from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -22,10 +43,16 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Bookmark,
+  Bell,
+  BellOff,
+  Trash2,
+  Play,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
+import { useToast } from "@/hooks/use-toast";
 
 const SECTORS: { value: SearchJobsSector; label: string }[] = [
   { value: "insurance", label: "Insurance" },
@@ -34,22 +61,55 @@ const SECTORS: { value: SearchJobsSector; label: string }[] = [
   { value: "asset_management", label: "Asset Management" },
 ];
 
+const SOURCES: { value: SearchJobsSource; label: string }[] = [
+  { value: "direct_employer", label: "Direct employer" },
+  { value: "google_jobs", label: "Google Jobs" },
+  { value: "job_board", label: "Job board" },
+  { value: "agency", label: "Agency" },
+];
+
 const sectorLabel = (value: string | null | undefined): string | null =>
   SECTORS.find((s) => s.value === value)?.label ?? null;
+
+const sourceLabel = (value: string | null | undefined): string | null =>
+  SOURCES.find((s) => s.value === value)?.label ?? null;
 
 const PAGE_SIZE = 25;
 
 const isSector = (value: string): value is SearchJobsSector =>
   SECTORS.some((s) => s.value === value);
 
-const initialParams = (): { q: string; location: string; sector: SearchJobsSector | "all" } => {
+const isSource = (value: string): value is SearchJobsSource =>
+  SOURCES.some((s) => s.value === value);
+
+interface FilterState {
+  q: string;
+  location: string;
+  sector: SearchJobsSector | "all";
+  source: SearchJobsSource | "all";
+}
+
+const initialParams = (): FilterState => {
   const params = new URLSearchParams(window.location.search);
   const sectorParam = params.get("sector") ?? "";
+  const sourceParam = params.get("source") ?? "";
   return {
     q: params.get("q") ?? "",
     location: params.get("location") ?? "",
     sector: isSector(sectorParam) ? sectorParam : "all",
+    source: isSource(sourceParam) ? sourceParam : "all",
   };
+};
+
+const savedSearchSummary = (s: SavedJobSearchDto): string => {
+  const parts: string[] = [];
+  if (s.query) parts.push(`“${s.query}”`);
+  if (s.location) parts.push(s.location);
+  const sec = sectorLabel(s.sector);
+  if (sec) parts.push(sec);
+  const src = sourceLabel(s.sourceType);
+  if (src) parts.push(src);
+  return parts.length > 0 ? parts.join(" · ") : "All jobs";
 };
 
 export default function JobSearch() {
@@ -57,18 +117,20 @@ export default function JobSearch() {
   const [q, setQ] = useState(initial.q);
   const [location, setLocation] = useState(initial.location);
   const [sector, setSector] = useState<SearchJobsSector | "all">(initial.sector);
+  const [source, setSource] = useState<SearchJobsSource | "all">(initial.source);
   const [page, setPage] = useState(1);
   const debouncedQ = useDebounce(q, 300);
   const debouncedLocation = useDebounce(location, 300);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedQ, debouncedLocation, sector]);
+  }, [debouncedQ, debouncedLocation, sector, source]);
 
   const { data, isLoading } = useSearchJobs({
     ...(debouncedQ.trim() ? { q: debouncedQ.trim() } : {}),
     ...(debouncedLocation.trim() ? { location: debouncedLocation.trim() } : {}),
     ...(sector !== "all" ? { sector } : {}),
+    ...(source !== "all" ? { source } : {}),
     page,
     pageSize: PAGE_SIZE,
   });
@@ -77,17 +139,118 @@ export default function JobSearch() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: savedSearches } = useListSavedJobSearches();
+  const createSaved = useCreateSavedJobSearch();
+  const updateSaved = useUpdateSavedJobSearch();
+  const deleteSaved = useDeleteSavedJobSearch();
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveAlerts, setSaveAlerts] = useState(false);
+
+  const invalidateSaved = (): void => {
+    void queryClient.invalidateQueries({
+      queryKey: getListSavedJobSearchesQueryKey(),
+    });
+  };
+
+  const defaultSaveName = (): string => {
+    const parts: string[] = [];
+    if (debouncedQ.trim()) parts.push(debouncedQ.trim());
+    if (debouncedLocation.trim()) parts.push(debouncedLocation.trim());
+    if (sector !== "all") parts.push(sectorLabel(sector) ?? sector);
+    return parts.join(" · ") || "All jobs";
+  };
+
+  const openSaveDialog = (): void => {
+    setSaveName(defaultSaveName());
+    setSaveAlerts(false);
+    setSaveOpen(true);
+  };
+
+  const handleSave = (): void => {
+    const name = saveName.trim() || defaultSaveName();
+    createSaved.mutate(
+      {
+        data: {
+          name,
+          query: debouncedQ.trim(),
+          location: debouncedLocation.trim(),
+          sector: sector !== "all" ? sector : null,
+          sourceType: source !== "all" ? source : null,
+          alertEnabled: saveAlerts,
+        },
+      },
+      {
+        onSuccess: () => {
+          setSaveOpen(false);
+          invalidateSaved();
+          toast({ title: "Search saved", description: `“${name}” added to your saved searches.` });
+          track("job_search_saved", {
+            query: debouncedQ.trim(),
+            ...(sector !== "all" ? { sector } : {}),
+            alertsEnabled: saveAlerts,
+          });
+        },
+        onError: () => {
+          toast({ title: "Could not save search", variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const runSavedSearch = (s: SavedJobSearchDto): void => {
+    setQ(s.query);
+    setLocation(s.location);
+    setSector(s.sector && isSector(s.sector) ? s.sector : "all");
+    setSource(s.sourceType && isSource(s.sourceType) ? s.sourceType : "all");
+    setPage(1);
+    track("job_search_saved_run", { savedSearchId: s.id });
+  };
+
+  const toggleAlerts = (s: SavedJobSearchDto): void => {
+    updateSaved.mutate(
+      { id: s.id, data: { alertEnabled: !s.alertEnabled } },
+      {
+        onSuccess: () => {
+          invalidateSaved();
+          toast({
+            title: s.alertEnabled ? "Alerts off" : "Alerts on",
+            description: `“${s.name}”`,
+          });
+        },
+        onError: () => toast({ title: "Could not update alerts", variant: "destructive" }),
+      },
+    );
+  };
+
+  const removeSaved = (s: SavedJobSearchDto): void => {
+    deleteSaved.mutate(
+      { id: s.id },
+      {
+        onSuccess: () => {
+          invalidateSaved();
+          toast({ title: "Saved search deleted", description: `“${s.name}”` });
+        },
+        onError: () => toast({ title: "Could not delete saved search", variant: "destructive" }),
+      },
+    );
+  };
+
   useEffect(() => {
     if (isLoading || !data) return;
     const hasQuery =
       Boolean(debouncedQ.trim()) ||
       Boolean(debouncedLocation.trim()) ||
-      sector !== "all";
+      sector !== "all" ||
+      source !== "all";
     if (!hasQuery) return;
     track("job_search_performed", {
       query: debouncedQ.trim(),
       location: debouncedLocation.trim(),
       ...(sector !== "all" ? { sector } : {}),
+      ...(source !== "all" ? { source } : {}),
       page,
       resultCount: data.total,
     });
@@ -96,18 +259,21 @@ export default function JobSearch() {
         query: debouncedQ.trim(),
         location: debouncedLocation.trim(),
         ...(sector !== "all" ? { sector } : {}),
+        ...(source !== "all" ? { source } : {}),
       });
     }
-  }, [data, isLoading, debouncedQ, debouncedLocation, sector, page]);
+  }, [data, isLoading, debouncedQ, debouncedLocation, sector, source, page]);
 
   const hasActiveFilters =
     Boolean(debouncedQ.trim()) ||
     Boolean(debouncedLocation.trim()) ||
-    sector !== "all";
+    sector !== "all" ||
+    source !== "all";
   const clearAll = (): void => {
     setQ("");
     setLocation("");
     setSector("all");
+    setSource("all");
   };
 
   return (
@@ -157,8 +323,99 @@ export default function JobSearch() {
               ))}
             </SelectContent>
           </Select>
+          <Select
+            value={source}
+            onValueChange={(v) => setSource(v as SearchJobsSource | "all")}
+          >
+            <SelectTrigger className="h-11 w-full sm:w-44 bg-card" data-testid="select-job-search-source">
+              <SelectValue placeholder="Source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sources</SelectItem>
+              {SOURCES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            className="h-11"
+            onClick={openSaveDialog}
+            data-testid="button-save-search"
+          >
+            <Bookmark className="w-4 h-4 mr-2" /> Save search
+          </Button>
         </div>
       </div>
+
+      {savedSearches && savedSearches.length > 0 && (
+        <div className="bg-card border rounded-xl p-4 space-y-2" data-testid="panel-saved-searches">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Bookmark className="w-4 h-4 text-muted-foreground" /> Saved searches
+          </div>
+          <div className="grid gap-1.5">
+            {savedSearches.map((s) => (
+              <div
+                key={s.id}
+                className="flex flex-wrap items-center gap-2 text-sm rounded-lg px-2 py-1.5 hover:bg-muted/50"
+                data-testid={`row-saved-search-${s.id}`}
+              >
+                <span className="font-medium">{s.name}</span>
+                <span className="text-xs text-muted-foreground truncate max-w-md">
+                  {savedSearchSummary(s)}
+                </span>
+                {s.alertEnabled && (
+                  <Badge variant="secondary" className="text-xs font-normal gap-1">
+                    <Bell className="w-3 h-3" /> Alerts on
+                  </Badge>
+                )}
+                <div className="flex items-center gap-1 ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => runSavedSearch(s)}
+                    data-testid={`button-run-saved-${s.id}`}
+                  >
+                    <Play className="w-3 h-3 mr-1" /> Run
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => toggleAlerts(s)}
+                    disabled={updateSaved.isPending}
+                    data-testid={`button-toggle-alerts-${s.id}`}
+                  >
+                    {s.alertEnabled ? (
+                      <>
+                        <BellOff className="w-3 h-3 mr-1" /> Mute
+                      </>
+                    ) : (
+                      <>
+                        <Bell className="w-3 h-3 mr-1" /> Alerts
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={() => removeSaved(s)}
+                    disabled={deleteSaved.isPending}
+                    aria-label={`Delete saved search ${s.name}`}
+                    data-testid={`button-delete-saved-${s.id}`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {SECTORS.map((s) => (
@@ -196,6 +453,14 @@ export default function JobSearch() {
           <Badge variant="secondary" className="gap-1 font-normal">
             Sector: {sectorLabel(sector)}
             <button aria-label="Clear sector filter" onClick={() => setSector("all")} className="ml-0.5 hover:text-foreground">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
+        {source !== "all" && (
+          <Badge variant="secondary" className="gap-1 font-normal">
+            Source: {sourceLabel(source)}
+            <button aria-label="Clear source filter" onClick={() => setSource("all")} className="ml-0.5 hover:text-foreground">
               <X className="h-3 w-3" />
             </button>
           </Badge>
@@ -281,6 +546,11 @@ export default function JobSearch() {
                       {job.sourceType === "google_jobs" && (
                         <Badge variant="outline" className="text-xs font-normal">
                           Google Jobs
+                        </Badge>
+                      )}
+                      {job.sourceType === "job_board" && (
+                        <Badge variant="outline" className="text-xs font-normal">
+                          Job board
                         </Badge>
                       )}
                       {job.sourceType === "agency" && (
@@ -389,6 +659,66 @@ export default function JobSearch() {
           </Button>
         </div>
       )}
+
+      <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save this search</DialogTitle>
+            <DialogDescription>
+              Save the current filters so you can rerun them later. Turn on
+              alerts to get notified when new matching jobs are discovered.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="save-search-name">Name</Label>
+              <Input
+                id="save-search-name"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder="e.g. London underwriters"
+                data-testid="input-save-search-name"
+              />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Filters: {savedSearchSummary({
+                id: "",
+                name: "",
+                query: debouncedQ.trim(),
+                location: debouncedLocation.trim(),
+                sector: sector !== "all" ? sector : null,
+                sourceType: source !== "all" ? source : null,
+                alertEnabled: false,
+                lastRunAt: null,
+                createdAt: "",
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="save-search-alerts"
+                checked={saveAlerts}
+                onCheckedChange={(v) => setSaveAlerts(v === true)}
+                data-testid="checkbox-save-search-alerts"
+              />
+              <Label htmlFor="save-search-alerts" className="font-normal">
+                Alert me when new matching jobs appear
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={createSaved.isPending}
+              data-testid="button-confirm-save-search"
+            >
+              {createSaved.isPending ? "Saving..." : "Save search"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

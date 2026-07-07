@@ -11,3 +11,5 @@ export * from "./tenantUsers";
 export * from "./userSessions";
 export * from "./tenantBilling";
 export * from "./invites";
+export * from "./savedJobSearches";
+export * from "./searchEvents";

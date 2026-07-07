@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SearchJobsSector } from './searchJobsSector';
+import type { SearchJobsSource } from './searchJobsSource';
 
 export type SearchJobsParams = {
 /**
@@ -20,6 +21,10 @@ location?: string;
  * Industry/sector filter mapped to internal FS sector tags
  */
 sector?: SearchJobsSector;
+/**
+ * Filter by job source type
+ */
+source?: SearchJobsSource;
 /**
  * 1-based page number (default 1)
  * @minimum 1

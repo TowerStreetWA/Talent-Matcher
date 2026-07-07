@@ -1,0 +1,192 @@
+Please refine the new Job Search feature in VacancyMatch AI with four focused additions.
+
+GOAL
+
+The core recruiter-facing Job Search at /job-search and GET /api/jobs/search is implemented, reviewed, and verified. Treat that as approved.
+
+This phase is refinement, not rework. Implement these four additions:
+
+1) Saved job searches + alerts
+2) Stronger source visibility (direct employer vs Google Jobs vs other)
+3) Search analytics and zero-result tracking
+4) An integration test for pagination and invalid sector on /jobs/search
+
+Do not change candidate matching, billing, or auth.
+
+---
+
+1. SAVED JOB SEARCHES + ALERTS
+
+Objective:
+Let recruiters save job search configurations (q, location, sector, filters) and optionally receive alerts when new jobs matching those searches appear.
+
+Implementation:
+
+- Data model:
+  - Add a SavedJobSearch entity/table, tenant-scoped, with fields like:
+    - id
+    - tenant_id
+    - user_id
+    - name (short label)
+    - query (q)
+    - location
+    - sector
+    - created_at
+    - alert_enabled (boolean)
+    - last_run_at (timestamp, optional)
+  - Keep the schema minimal and additive.
+
+- API:
+  - Add endpoints such as:
+    - POST /api/job-searches  (create a saved search)
+    - GET /api/job-searches   (list saved searches for current user/tenant)
+    - DELETE /api/job-searches/:id
+    - PATCH /api/job-searches/:id (toggle alert_enabled, rename)
+  - Reuse existing auth/tenant guards.
+
+- Frontend:
+  - On /job-search:
+    - Add a “Save search” button that opens a simple dialog:
+      - Name (optional or default from q + sector)
+      - Checkbox: “Enable alerts when new jobs match this search”
+    - Show a list of saved searches (could be a small panel or a separate tab) with:
+      - Name
+      - Query summary (q + location + sector)
+      - “Run search” action that rehydrates the filters and executes GET /api/jobs/search
+      - Option to toggle alerts and delete.
+
+- Alerts (first version):
+  - Implement a background job/process that:
+    - Periodically runs saved searches with alert_enabled = true.
+    - Detects “new” jobs since last_run_at (simple heuristic: posted_at or created_at > last_run_at).
+    - For now, you can:
+      - Log the alertable events internally, or
+      - Prepare a placeholder notification mechanism (e.g. store a notification row).
+    - Update last_run_at accordingly.
+  - Do NOT integrate email in this phase if it complicates things; keep alerts ready for later wiring to Resend or in-app notifications.
+
+---
+
+2. SOURCE VISIBILITY (DIRECT EMPLOYER VS GOOGLE JOBS VS OTHER)
+
+Objective:
+Make the source of each job more prominent so recruiters can immediately see whether a role is direct employer, Google Jobs-derived, or other.
+
+Implementation:
+
+- Backend:
+  - Ensure GET /api/jobs/search results include:
+    - source_type (e.g. direct_employer, google_jobs, job_board, agency)
+    - source_provider (e.g. company_site, google_jobs_serpapi, reed, etc.)
+  - If already present, confirm and document in OpenAPI.
+
+- Frontend:
+  - On each job card in /job-search, add a clear source badge:
+    - “Direct employer”
+    - “Google Jobs”
+    - “Agency”
+    - “Job board”
+  - Use a simple color/icon scheme and keep it calm and readable.
+  - Optionally add a filter chip or small dropdown:
+    - “Source: All / Direct employer only / Google Jobs only”
+    - Wire this to an additional backend filter in GET /api/jobs/search if feasible, or filter client-side for now if backend changes are heavier.
+
+The key is that recruiters can visually distinguish job origins without reading detailed descriptions.
+
+---
+
+3. SEARCH ANALYTICS AND ZERO-RESULT TRACKING
+
+Objective:
+Instrument job search usage so we can see:
+
+- what recruiters search for,
+- where they get zero results,
+- which filters correlate with success.
+
+Implementation:
+
+- Tracking model:
+  - Add a simple SearchEvent entity/log, tenant-scoped, with fields like:
+    - id
+    - tenant_id
+    - user_id
+    - type: "job_search"
+    - q
+    - location
+    - sector
+    - results_count
+    - timestamp
+  - Alternatively, wire search events directly into your existing analytics (e.g. PostHog) if already integrated.
+
+- Backend:
+  - Inside /jobs/search handler:
+    - After computing results_count, write a SearchEvent row or send an analytics event with:
+      - q, location, sector, results_count, tenant_id/user_id.
+    - Pay particular attention to:
+      - results_count = 0 (zero-result searches)
+      - high-volume filters (popular sectors and locations).
+
+- Optional frontend:
+  - Add minimal internal-only or dev-only view that shows:
+    - recent job searches,
+    - common queries,
+    - zero-result rates by sector/location.
+  - This can be a basic table or dashboard; it does not need to be polished for end-users at this stage.
+
+The goal is to have the data so we can later improve dictionaries, sector mappings, and employer coverage.
+
+---
+
+4. INTEGRATION TEST FOR PAGINATION + INVALID SECTOR
+
+Objective:
+Cover the one optional architect suggestion: a route-level integration test for pagination and invalid sector.
+
+Implementation:
+
+- Add an integration test file (or extend an existing one) for /jobs/search, covering:
+  - Valid search with default pagination:
+    - GET /api/jobs/search?q=underwriter&sector=insurance
+    - Assert HTTP 200, correct page/pageSize defaults, results array shape.
+  - Pagination:
+    - GET /api/jobs/search?q=broker&sector=insurance&page=2&pageSize=25
+    - Assert HTTP 200 and the correct pagination metadata (page, pageSize), and that results differ from page 1 when dataset allows.
+  - Invalid sector:
+    - GET /api/jobs/search?q=test&sector=unknown
+    - Assert HTTP 400, with error schema matching the documented OpenAPI spec.
+
+- Keep this test lightweight but end-to-end enough to validate real endpoint semantics over the wiring you now have.
+
+---
+
+CONSTRAINTS
+
+- Do not alter the core GET /jobs/search behaviour beyond adding filter options and instrumentation.
+- Do not change auth, billing, or candidate matching flows.
+- Keep all additions additive and explicit, consistent with the existing search architecture.
+- Avoid complex notification/email implementation in this phase; alerts can be data-level only.
+
+---
+
+ACCEPTANCE CRITERIA
+
+1. Recruiters can save job searches on /job-search and re-run them easily.
+2. Saved searches can be marked for alerts, and a background job records potential alert events based on new jobs since last_run_at.
+3. Job cards show clear source badges (direct employer vs Google Jobs vs other).
+4. Optional source filtering is available (even if limited) without breaking existing search behaviour.
+5. Job search usage is instrumented via SearchEvent logs or analytics, including zero-result events.
+6. A new integration test exists for /jobs/search covering pagination and invalid sector and passes.
+7. Full typecheck passes and existing tests still pass.
+
+---
+
+REPORT BACK
+
+When done, please report:
+- Files changed for saved searches, source visibility, analytics, and tests.
+- The SavedJobSearch schema and the alert logic.
+- The updated job card UI and source badge mapping.
+- The search analytics fields being captured.
+- Integration test details and results.
+- Typecheck/test outcomes.

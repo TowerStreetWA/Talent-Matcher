@@ -12,3 +12,4 @@
 - [Careers-page URL staleness](careers-url-staleness.md) — curated employer career-site URLs 404 over time; curl-probe the URL before debugging extraction logic.
 - [Stripe pricing/currency lessons](stripe-pricing-lessons.md) — Stripe blocks cross-currency checkout for existing customers; catch → 400 + portal; never name a state setter `setInterval`.
 - [Screenshots behind login](screenshot-auth.md) — temp dev-only session-redirect route (removed after use) is how to capture authenticated app-preview screenshots.
+- [Background sweep jobs](background-sweeps.md) — "new since last run" sweeps need a bounded (since, windowEnd] window + pg advisory xact lock; process-local flags don't survive autoscale.

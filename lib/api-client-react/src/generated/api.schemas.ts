@@ -565,6 +565,82 @@ export interface JobSearchResponse {
   total: number;
 }
 
+export interface SavedJobSearch {
+  id: string;
+  name: string;
+  query: string;
+  location: string;
+  /**
+     * insurance/banking/pensions/asset_management or null
+     * @nullable
+     */
+  sector?: string | null;
+  /**
+     * direct_employer/google_jobs/job_board/agency or null
+     * @nullable
+     */
+  sourceType?: string | null;
+  alertEnabled: boolean;
+  /**
+     * Last alert-sweep run for this search
+     * @nullable
+     */
+  lastRunAt?: string | null;
+  createdAt: string;
+}
+
+/**
+ * @nullable
+ */
+export type SavedJobSearchInputSector = typeof SavedJobSearchInputSector[keyof typeof SavedJobSearchInputSector] | null;
+
+
+export const SavedJobSearchInputSector = {
+  insurance: 'insurance',
+  banking: 'banking',
+  pensions: 'pensions',
+  asset_management: 'asset_management',
+} as const;
+
+/**
+ * @nullable
+ */
+export type SavedJobSearchInputSourceType = typeof SavedJobSearchInputSourceType[keyof typeof SavedJobSearchInputSourceType] | null;
+
+
+export const SavedJobSearchInputSourceType = {
+  direct_employer: 'direct_employer',
+  google_jobs: 'google_jobs',
+  job_board: 'job_board',
+  agency: 'agency',
+} as const;
+
+export interface SavedJobSearchInput {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 200 */
+  query?: string;
+  /** @maxLength 100 */
+  location?: string;
+  /** @nullable */
+  sector?: SavedJobSearchInputSector;
+  /** @nullable */
+  sourceType?: SavedJobSearchInputSourceType;
+  alertEnabled?: boolean;
+}
+
+export interface SavedJobSearchUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  alertEnabled?: boolean;
+}
+
 export interface JobSource {
   id: string;
   name: string;
@@ -789,6 +865,10 @@ location?: string;
  */
 sector?: SearchJobsSector;
 /**
+ * Filter by job source type
+ */
+source?: SearchJobsSource;
+/**
  * 1-based page number (default 1)
  * @minimum 1
  */
@@ -809,6 +889,16 @@ export const SearchJobsSector = {
   banking: 'banking',
   pensions: 'pensions',
   asset_management: 'asset_management',
+} as const;
+
+export type SearchJobsSource = typeof SearchJobsSource[keyof typeof SearchJobsSource];
+
+
+export const SearchJobsSource = {
+  direct_employer: 'direct_employer',
+  google_jobs: 'google_jobs',
+  job_board: 'job_board',
+  agency: 'agency',
 } as const;
 
 export type SearchResearchCompaniesParams = {

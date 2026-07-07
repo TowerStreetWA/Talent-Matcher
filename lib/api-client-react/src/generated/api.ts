@@ -63,6 +63,9 @@ import type {
   RequestUploadUrlInput,
   RequestUploadUrlResult,
   ResearchUrlInput,
+  SavedJobSearch,
+  SavedJobSearchInput,
+  SavedJobSearchUpdate,
   ScrapedPage,
   SearchJobsParams,
   SearchResearchCompaniesParams,
@@ -2568,6 +2571,294 @@ export function useSearchJobs<TData = Awaited<ReturnType<typeof searchJobs>>, TE
 
 
 
+
+export const getListSavedJobSearchesUrl = () => {
+
+
+
+
+  return `/api/job-searches`
+}
+
+/**
+ * @summary List the current user's saved job searches
+ */
+export const listSavedJobSearches = async ( options?: RequestInit): Promise<SavedJobSearch[]> => {
+
+  return customFetch<SavedJobSearch[]>(getListSavedJobSearchesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSavedJobSearchesQueryKey = () => {
+    return [
+    `/api/job-searches`
+    ] as const;
+    }
+
+
+export const getListSavedJobSearchesQueryOptions = <TData = Awaited<ReturnType<typeof listSavedJobSearches>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSavedJobSearches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSavedJobSearchesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSavedJobSearches>>> = ({ signal }) => listSavedJobSearches({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSavedJobSearches>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSavedJobSearchesQueryResult = NonNullable<Awaited<ReturnType<typeof listSavedJobSearches>>>
+export type ListSavedJobSearchesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the current user's saved job searches
+ */
+
+export function useListSavedJobSearches<TData = Awaited<ReturnType<typeof listSavedJobSearches>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSavedJobSearches>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSavedJobSearchesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSavedJobSearchUrl = () => {
+
+
+
+
+  return `/api/job-searches`
+}
+
+/**
+ * @summary Save a job search configuration
+ */
+export const createSavedJobSearch = async (savedJobSearchInput: SavedJobSearchInput, options?: RequestInit): Promise<SavedJobSearch> => {
+
+  return customFetch<SavedJobSearch>(getCreateSavedJobSearchUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(savedJobSearchInput)
+  }
+);}
+
+
+
+
+export const getCreateSavedJobSearchMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSavedJobSearch>>, TError,{data: BodyType<SavedJobSearchInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSavedJobSearch>>, TError,{data: BodyType<SavedJobSearchInput>}, TContext> => {
+
+const mutationKey = ['createSavedJobSearch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSavedJobSearch>>, {data: BodyType<SavedJobSearchInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSavedJobSearch(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSavedJobSearchMutationResult = NonNullable<Awaited<ReturnType<typeof createSavedJobSearch>>>
+    export type CreateSavedJobSearchMutationBody = BodyType<SavedJobSearchInput>
+    export type CreateSavedJobSearchMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Save a job search configuration
+ */
+export const useCreateSavedJobSearch = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSavedJobSearch>>, TError,{data: BodyType<SavedJobSearchInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSavedJobSearch>>,
+        TError,
+        {data: BodyType<SavedJobSearchInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSavedJobSearchMutationOptions(options));
+    }
+
+export const getUpdateSavedJobSearchUrl = (id: string,) => {
+
+
+
+
+  return `/api/job-searches/${id}`
+}
+
+/**
+ * @summary Rename a saved search or toggle its alerts
+ */
+export const updateSavedJobSearch = async (id: string,
+    savedJobSearchUpdate: SavedJobSearchUpdate, options?: RequestInit): Promise<SavedJobSearch> => {
+
+  return customFetch<SavedJobSearch>(getUpdateSavedJobSearchUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(savedJobSearchUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateSavedJobSearchMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSavedJobSearch>>, TError,{id: string;data: BodyType<SavedJobSearchUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSavedJobSearch>>, TError,{id: string;data: BodyType<SavedJobSearchUpdate>}, TContext> => {
+
+const mutationKey = ['updateSavedJobSearch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSavedJobSearch>>, {id: string;data: BodyType<SavedJobSearchUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSavedJobSearch(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSavedJobSearchMutationResult = NonNullable<Awaited<ReturnType<typeof updateSavedJobSearch>>>
+    export type UpdateSavedJobSearchMutationBody = BodyType<SavedJobSearchUpdate>
+    export type UpdateSavedJobSearchMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Rename a saved search or toggle its alerts
+ */
+export const useUpdateSavedJobSearch = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSavedJobSearch>>, TError,{id: string;data: BodyType<SavedJobSearchUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSavedJobSearch>>,
+        TError,
+        {id: string;data: BodyType<SavedJobSearchUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateSavedJobSearchMutationOptions(options));
+    }
+
+export const getDeleteSavedJobSearchUrl = (id: string,) => {
+
+
+
+
+  return `/api/job-searches/${id}`
+}
+
+/**
+ * @summary Delete a saved search
+ */
+export const deleteSavedJobSearch = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSavedJobSearchUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSavedJobSearchMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSavedJobSearch>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSavedJobSearch>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteSavedJobSearch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSavedJobSearch>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSavedJobSearch(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSavedJobSearchMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSavedJobSearch>>>
+
+    export type DeleteSavedJobSearchMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a saved search
+ */
+export const useDeleteSavedJobSearch = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSavedJobSearch>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSavedJobSearch>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSavedJobSearchMutationOptions(options));
+    }
 
 export const getGetJobUrl = (id: string,) => {
 

@@ -2,6 +2,7 @@ import { runMigrations } from "stripe-replit-sync";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { seedIfEmpty, ensureAuthSeed } from "./lib/seed";
+import { startSavedSearchAlertSweep } from "./lib/savedSearchAlerts";
 import { getStripeSync } from "./lib/stripeClient";
 
 const rawPort = process.env["PORT"];
@@ -65,4 +66,5 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  startSavedSearchAlertSweep();
 });
