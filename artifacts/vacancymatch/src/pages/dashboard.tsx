@@ -1,8 +1,18 @@
 import React from "react";
+import { Link } from "wouter";
 import { useGetDashboardSummary, useGetRecentActivity } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Target, Briefcase, Database } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import GettingStarted from "@/components/getting-started";
+
+function ZeroCta({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} className="text-xs text-primary hover:underline font-medium">
+      {label} →
+    </Link>
+  );
+}
 
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
@@ -14,6 +24,8 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground mt-1">Market and pipeline overview.</p>
       </div>
+
+      <GettingStarted />
 
       {loadingSummary ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -37,6 +49,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.candidateCount}</div>
+              {summary.candidateCount === 0 && (
+                <ZeroCta href="/upload" label="Upload your first CV" />
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -46,6 +61,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.activeJobCount}</div>
+              {summary.activeJobCount === 0 && (
+                <ZeroCta href="/sources" label="Connect a job source" />
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -55,6 +73,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.shortlistedCount}</div>
+              {summary.shortlistedCount === 0 && (
+                <ZeroCta href="/matches" label="Review matches" />
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -64,6 +85,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary.activeSourceCount}</div>
+              {summary.activeSourceCount === 0 && (
+                <ZeroCta href="/sources" label="Add a source" />
+              )}
             </CardContent>
           </Card>
         </div>

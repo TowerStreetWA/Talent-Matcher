@@ -7,8 +7,10 @@ import {
   getGetBillingSubscriptionQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
+import { CHECKOUT_RETURN_KEY } from "@/lib/billing-gate";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +49,7 @@ function statusBadge(status: string): { label: string; variant: "default" | "sec
 export default function Billing() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const canManage = user?.role === "owner" || user?.role === "admin";
 
   React.useEffect(() => {
@@ -90,6 +93,23 @@ export default function Billing() {
     }
     return undefined;
   }, [checkoutResult, queryClient]);
+
+  // If the user was interrupted mid-action by the billing gate, send them
+  // back to what they were doing once the trial/subscription is confirmed.
+  const canUseCore = subscription?.canUseCoreProduct === true;
+  React.useEffect(() => {
+    if (checkoutResult === "canceled") {
+      sessionStorage.removeItem(CHECKOUT_RETURN_KEY);
+      return;
+    }
+    if (checkoutResult === "success" && canUseCore) {
+      const returnTo = sessionStorage.getItem(CHECKOUT_RETURN_KEY);
+      if (returnTo && returnTo.startsWith("/") && returnTo !== "/billing") {
+        sessionStorage.removeItem(CHECKOUT_RETURN_KEY);
+        setLocation(returnTo);
+      }
+    }
+  }, [checkoutResult, canUseCore, setLocation]);
 
   const status = subscription?.status ?? "none";
   const badge = statusBadge(status);

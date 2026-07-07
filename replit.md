@@ -73,6 +73,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - api-server must NOT depend on `openai` directly — pnpm peer-splits it into two identities and breaks `instanceof OpenAI.APIError` across the integration lib. Instead `lib/integrations-openai-ai-server` exports `createDirectOpenAIClient()` + the `OpenAI` class; import those
 - Unit tests for provider order + retryable classifier in `aiClient.test.ts`
 
+## Activation & trial conversion (Phase 9)
+
+- `artifacts/vacancymatch/src/lib/billing-gate.tsx` — BillingGateProvider: global trial-prompt dialog. 402s from ANY mutation are intercepted via a react-query `MutationCache.onError` (App.tsx) → `notifyApiError()`; dialog shows the server message + Starter trial CTA (admin/owner) or ask-an-admin note. `ApiError` is exported from `lib/api-client-react` for status checks (`isBillingGateError`)
+- Return-path: before checkout/View-plans the current wouter location is stored in sessionStorage `vm_checkout_return`; billing.tsx consumes it on `?checkout=success` once `canUseCoreProduct` is true (validated `startsWith("/")`, cleared on cancel) and navigates back
+- `components/getting-started.tsx` — dashboard "Get set up" panel: 4 steps (trial → source → CV → shortlist) derived from existing subscription + dashboard-summary queries; only the first incomplete step gets an action button (single primary action); dismissible per tenant via localStorage; auto-hides when complete. Zero-value dashboard metric cards render CTA links
+- upload-cv.tsx suppresses its own 402 toasts (dialog handles them); other pages had no onError handlers. PostHog events: trial_prompt_shown, trial_prompt_checkout_started
+
 ## Search quality (Phase 5)
 
 - `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)

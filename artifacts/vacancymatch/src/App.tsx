@@ -1,10 +1,11 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { BillingGateProvider, notifyApiError } from "@/lib/billing-gate";
 import AppLayout from "@/components/layout/app-layout";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -21,7 +22,13 @@ import Signup from "@/pages/signup";
 import AcceptInvite from "@/pages/accept-invite";
 import Team from "@/pages/team";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      notifyApiError(error);
+    },
+  }),
+});
 
 function Router() {
   return (
@@ -75,7 +82,9 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AuthGate />
+            <BillingGateProvider>
+              <AuthGate />
+            </BillingGateProvider>
           </WouterRouter>
           <Toaster />
         </AuthProvider>

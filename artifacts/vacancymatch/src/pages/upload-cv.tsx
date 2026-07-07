@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { track } from "@/lib/analytics";
+import { isBillingGateError } from "@/lib/billing-gate";
 import { UploadCloud, FileText, X } from "lucide-react";
 
 const ACCEPTED = ".pdf,.docx,.doc,.txt";
@@ -87,6 +88,7 @@ export default function UploadCv() {
             setLocation(`/candidates/${data.id}`);
           },
           onError: (err: unknown) => {
+            if (isBillingGateError(err)) return; // trial prompt dialog handles it
             track("cv_parse_failed", { method: file ? "file" : "paste" });
             const message =
               err && typeof err === "object" && "message" in err
@@ -96,9 +98,10 @@ export default function UploadCv() {
           },
         },
       );
-    } catch {
-      track("cv_upload_failed", { stage: "file_transfer" });
+    } catch (err) {
       setIsUploading(false);
+      if (isBillingGateError(err)) return; // trial prompt dialog handles it
+      track("cv_upload_failed", { stage: "file_transfer" });
       toast({
         title: "Error",
         description: "Failed to upload the file. Please try again.",
