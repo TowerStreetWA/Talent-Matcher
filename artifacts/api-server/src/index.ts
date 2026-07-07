@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { seedIfEmpty } from "./lib/seed";
+import { seedIfEmpty, ensureAuthSeed } from "./lib/seed";
 
 const rawPort = process.env["PORT"];
 
@@ -16,9 +16,11 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-seedIfEmpty().catch((err) => {
-  logger.error({ err }, "Seeding failed");
-});
+seedIfEmpty()
+  .then(() => ensureAuthSeed())
+  .catch((err) => {
+    logger.error({ err }, "Seeding failed");
+  });
 
 app.listen(port, (err) => {
   if (err) {

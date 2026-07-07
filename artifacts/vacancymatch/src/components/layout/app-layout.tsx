@@ -9,9 +9,12 @@ import {
   Database, 
   Bell, 
   ShieldCheck,
-  Search
+  Search,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -21,11 +24,24 @@ const navItems = [
   { href: "/jobs", label: "Live Jobs", icon: Briefcase },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
-  { href: "/admin", label: "Compliance", icon: ShieldCheck },
+  { href: "/admin", label: "Compliance", icon: ShieldCheck, adminOnly: true },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { user, logout, isLoggingOut } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const visibleNavItems = navItems.filter(
+    (item) => !item.adminOnly || isAdmin,
+  );
+  const initials = user
+    ? user.fullName
+        .split(" ")
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "?";
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -42,7 +58,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         
         <div className="px-4 py-4 flex-1 overflow-y-auto">
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
                 <Link key={item.href} href={item.href}>
@@ -73,10 +89,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               className="bg-transparent border-none outline-none focus:ring-0 text-sm flex-1 placeholder:text-muted-foreground"
             />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {user && (
+              <div className="hidden sm:flex flex-col items-end leading-tight">
+                <span
+                  className="text-sm font-medium"
+                  data-testid="text-user-name"
+                >
+                  {user.fullName}
+                </span>
+                <span className="text-xs text-muted-foreground capitalize">
+                  {user.role} · {user.tenantName}
+                </span>
+              </div>
+            )}
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground">
-              R
+              {initials}
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={logout}
+              disabled={isLoggingOut}
+              title="Log out"
+              data-testid="button-logout"
+            >
+              <LogOut size={16} />
+            </Button>
           </div>
         </header>
         

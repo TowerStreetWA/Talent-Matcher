@@ -25,6 +25,7 @@ import { toCandidateDto, toMatchDto, toMatchRunDto } from "../lib/dto";
 import { runMatchForCandidate } from "../lib/matchRunner";
 import { parseCvText } from "../lib/cvParser";
 import { recordAudit } from "../lib/audit";
+import { tenantOf, auditActor } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -34,23 +35,22 @@ const paramId = (raw: string | string[]): string =>
 router.get("/candidates", async (req, res): Promise<void> => {
   const search = typeof req.query["search"] === "string" ? req.query["search"] : "";
   const status = typeof req.query["status"] === "string" ? req.query["status"] : "";
-  const conditions = [];
+  const conditions = [eq(candidatesTable.tenantId, tenantOf(req))];
   if (search) {
     const like = `%${search}%`;
-    conditions.push(
-      or(
-        ilike(candidatesTable.firstName, like),
-        ilike(candidatesTable.lastName, like),
-        ilike(candidatesTable.currentTitle, like),
-        ilike(candidatesTable.currentCompany, like),
-      ),
+    const searchCond = or(
+      ilike(candidatesTable.firstName, like),
+      ilike(candidatesTable.lastName, like),
+      ilike(candidatesTable.currentTitle, like),
+      ilike(candidatesTable.currentCompany, like),
     );
+    if (searchCond) conditions.push(searchCond);
   }
   if (status) conditions.push(eq(candidatesTable.status, status));
   const rows = await db
     .select()
     .from(candidatesTable)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(and(...conditions))
     .orderBy(desc(candidatesTable.createdAt));
   res.json(ListCandidatesResponse.parse(rows.map(toCandidateDto)));
 });
@@ -61,7 +61,10 @@ router.post("/candidates", async (req, res): Promise<void> => {
     res.status(400).json({ message: parsed.error.message });
     return;
   }
-  const [row] = await db.insert(candidatesTable).values(parsed.data).returning();
+  const [row] = await db
+    .insert(candidatesTable)
+    .values({ ...parsed.data, tenantId: tenantOf(req) })
+    .returning();
   if (!row) {
     res.status(500).json({ message: "Failed to create candidate" });
     return;
@@ -71,6 +74,7 @@ router.post("/candidates", async (req, res): Promise<void> => {
     entityType: "candidate",
     entityId: row.id,
     metadata: `${row.firstName} ${row.lastName} created manually`,
+    ...auditActor(req),
   });
   res.status(201).json(CreateCandidateResponse.parse(toCandidateDto(row)));
 });
@@ -95,6 +99,7 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
   const [row] = await db
     .insert(candidatesTable)
     .values({
+      tenantId: tenantOf(req),
       firstName: profile.firstName,
       lastName: profile.lastName,
       email: profile.email ?? null,
@@ -124,6 +129,7 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
     entityType: "candidate",
     entityId: row.id,
     metadata: `CV "${parsed.data.fileName}" parsed into profile for ${row.firstName} ${row.lastName}`,
+    ...auditActor(req),
   });
   await runMatchForCandidate(row, "cv_upload");
   const [refreshed] = await db
@@ -138,7 +144,9 @@ router.get("/candidates/:id", async (req, res): Promise<void> => {
   const [row] = await db
     .select()
     .from(candidatesTable)
-    .where(eq(candidatesTable.id, id));
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    );
   if (!row) {
     res.status(404).json({ message: "Candidate not found" });
     return;
@@ -156,7 +164,9 @@ router.patch("/candidates/:id", async (req, res): Promise<void> => {
   const [row] = await db
     .update(candidatesTable)
     .set(parsed.data)
-    .where(eq(candidatesTable.id, id))
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    )
     .returning();
   if (!row) {
     res.status(404).json({ message: "Candidate not found" });
@@ -167,6 +177,7 @@ router.patch("/candidates/:id", async (req, res): Promise<void> => {
     entityType: "candidate",
     entityId: row.id,
     metadata: `Profile updated for ${row.firstName} ${row.lastName}`,
+    ...auditActor(req),
   });
   res.json(UpdateCandidateResponse.parse(toCandidateDto(row)));
 });
@@ -175,7 +186,9 @@ router.delete("/candidates/:id", async (req, res): Promise<void> => {
   const id = paramId(req.params["id"] ?? "");
   const [row] = await db
     .delete(candidatesTable)
-    .where(eq(candidatesTable.id, id))
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    )
     .returning();
   if (!row) {
     res.status(404).json({ message: "Candidate not found" });
@@ -186,6 +199,7 @@ router.delete("/candidates/:id", async (req, res): Promise<void> => {
     entityType: "candidate",
     entityId: id,
     metadata: `${row.firstName} ${row.lastName} and all associated data removed`,
+    ...auditActor(req),
   });
   res.json({ message: "Candidate deleted" });
 });
@@ -195,7 +209,9 @@ router.post("/candidates/:id/run-match", async (req, res): Promise<void> => {
   const [candidate] = await db
     .select()
     .from(candidatesTable)
-    .where(eq(candidatesTable.id, id));
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    );
   if (!candidate) {
     res.status(404).json({ message: "Candidate not found" });
     return;
@@ -209,7 +225,12 @@ router.get("/candidates/:id/matches", async (req, res): Promise<void> => {
   const [latestRun] = await db
     .select()
     .from(matchRunsTable)
-    .where(eq(matchRunsTable.candidateId, id))
+    .where(
+      and(
+        eq(matchRunsTable.candidateId, id),
+        eq(matchRunsTable.tenantId, tenantOf(req)),
+      ),
+    )
     .orderBy(desc(matchRunsTable.startedAt))
     .limit(1);
   if (!latestRun) {
@@ -244,7 +265,12 @@ router.get("/candidates/:id/match-runs", async (req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(matchRunsTable)
-    .where(eq(matchRunsTable.candidateId, id))
+    .where(
+      and(
+        eq(matchRunsTable.candidateId, id),
+        eq(matchRunsTable.tenantId, tenantOf(req)),
+      ),
+    )
     .orderBy(desc(matchRunsTable.startedAt));
   res.json(ListMatchRunsResponse.parse(rows.map(toMatchRunDto)));
 });

@@ -13,6 +13,32 @@ export interface ApiMessage {
   message: string;
 }
 
+export interface LoginInput {
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export type AuthUserRole = typeof AuthUserRole[keyof typeof AuthUserRole];
+
+
+export const AuthUserRole = {
+  owner: 'owner',
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export interface AuthUser {
+  id: string;
+  tenantId: string;
+  tenantName: string;
+  email: string;
+  fullName: string;
+  role: AuthUserRole;
+}
+
 export interface Candidate {
   id: string;
   firstName: string;

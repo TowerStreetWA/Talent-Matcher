@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and } from "drizzle-orm";
 import { db, alertRulesTable, candidatesTable } from "@workspace/db";
 import {
   ListAlertRulesResponse,
@@ -10,13 +10,14 @@ import {
 } from "@workspace/api-zod";
 import { toAlertRuleDto } from "../lib/dto";
 import { recordAudit } from "../lib/audit";
+import { tenantOf, auditActor } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
 const paramId = (raw: string | string[]): string =>
   Array.isArray(raw) ? (raw[0] ?? "") : raw;
 
-router.get("/alert-rules", async (_req, res): Promise<void> => {
+router.get("/alert-rules", async (req, res): Promise<void> => {
   const rows = await db
     .select({
       rule: alertRulesTable,
@@ -28,6 +29,7 @@ router.get("/alert-rules", async (_req, res): Promise<void> => {
       candidatesTable,
       eq(alertRulesTable.candidateId, candidatesTable.id),
     )
+    .where(eq(alertRulesTable.tenantId, tenantOf(req)))
     .orderBy(desc(alertRulesTable.createdAt));
   res.json(
     ListAlertRulesResponse.parse(
@@ -47,14 +49,19 @@ router.post("/alert-rules", async (req, res): Promise<void> => {
   const [candidate] = await db
     .select()
     .from(candidatesTable)
-    .where(eq(candidatesTable.id, parsed.data.candidateId));
+    .where(
+      and(
+        eq(candidatesTable.id, parsed.data.candidateId),
+        eq(candidatesTable.tenantId, tenantOf(req)),
+      ),
+    );
   if (!candidate) {
     res.status(400).json({ message: "Candidate not found" });
     return;
   }
   const [row] = await db
     .insert(alertRulesTable)
-    .values({ ...parsed.data, lastCheckedAt: new Date() })
+    .values({ ...parsed.data, tenantId: tenantOf(req), lastCheckedAt: new Date() })
     .returning();
   if (!row) {
     res.status(500).json({ message: "Failed to create alert rule" });
@@ -65,6 +72,7 @@ router.post("/alert-rules", async (req, res): Promise<void> => {
     entityType: "alert_rule",
     entityId: row.id,
     metadata: `Watching ${candidate.firstName} ${candidate.lastName} for matches ≥ ${row.minScore} (${row.frequency})`,
+    ...auditActor(req),
   });
   res.status(201).json(
     CreateAlertRuleResponse.parse(
@@ -83,7 +91,12 @@ router.patch("/alert-rules/:id", async (req, res): Promise<void> => {
   const [row] = await db
     .update(alertRulesTable)
     .set(parsed.data)
-    .where(eq(alertRulesTable.id, id))
+    .where(
+      and(
+        eq(alertRulesTable.id, id),
+        eq(alertRulesTable.tenantId, tenantOf(req)),
+      ),
+    )
     .returning();
   if (!row) {
     res.status(404).json({ message: "Alert rule not found" });
@@ -107,7 +120,12 @@ router.delete("/alert-rules/:id", async (req, res): Promise<void> => {
   const id = paramId(req.params["id"] ?? "");
   const [row] = await db
     .delete(alertRulesTable)
-    .where(eq(alertRulesTable.id, id))
+    .where(
+      and(
+        eq(alertRulesTable.id, id),
+        eq(alertRulesTable.tenantId, tenantOf(req)),
+      ),
+    )
     .returning();
   if (!row) {
     res.status(404).json({ message: "Alert rule not found" });
@@ -117,6 +135,7 @@ router.delete("/alert-rules/:id", async (req, res): Promise<void> => {
     action: "alert_rule.deleted",
     entityType: "alert_rule",
     entityId: id,
+    ...auditActor(req),
   });
   res.json({ message: "Alert rule deleted" });
 });

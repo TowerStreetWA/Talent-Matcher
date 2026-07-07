@@ -8,14 +8,86 @@ import {
   matchesTable,
   alertRulesTable,
   auditLogsTable,
+  tenantsTable,
+  tenantUsersTable,
   type Candidate,
 } from "@workspace/db";
 import { computeMatch } from "./matching";
+import { hashPassword } from "./auth";
 import { logger } from "./logger";
 
 const daysAgo = (n: number): Date =>
   new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 const hoursAgo = (n: number): Date => new Date(Date.now() - n * 60 * 60 * 1000);
+
+export async function ensureAuthSeed(): Promise<void> {
+  const [existingTenant] = await db
+    .select()
+    .from(tenantsTable)
+    .where(eq(tenantsTable.slug, "demo"))
+    .limit(1);
+
+  const tenant =
+    existingTenant ??
+    (
+      await db
+        .insert(tenantsTable)
+        .values({ slug: "demo", name: "Demo Recruitment Agency" })
+        .returning()
+    )[0];
+  if (!tenant) {
+    throw new Error("Failed to ensure demo tenant");
+  }
+
+  const existingUsers = await db
+    .select({ id: tenantUsersTable.id })
+    .from(tenantUsersTable)
+    .where(eq(tenantUsersTable.tenantId, tenant.id))
+    .limit(1);
+  if (existingUsers.length > 0) return;
+
+  if (process.env["NODE_ENV"] === "production" && !process.env["SEED_DEMO_PASSWORD"]) {
+    logger.warn(
+      "No users exist and SEED_DEMO_PASSWORD is not set; skipping demo user seed in production",
+    );
+    return;
+  }
+
+  const password = process.env["SEED_DEMO_PASSWORD"] ?? "demo1234";
+  const passwordHash = await hashPassword(password);
+
+  await db.insert(tenantUsersTable).values([
+    {
+      tenantId: tenant.id,
+      email: "owner@demo.test",
+      fullName: "Olivia Owner",
+      role: "owner",
+      passwordHash,
+    },
+    {
+      tenantId: tenant.id,
+      email: "admin@demo.test",
+      fullName: "Aaron Admin",
+      role: "admin",
+      passwordHash,
+    },
+    {
+      tenantId: tenant.id,
+      email: "recruiter@demo.test",
+      fullName: "Rita Recruiter",
+      role: "recruiter",
+      passwordHash,
+    },
+    {
+      tenantId: tenant.id,
+      email: "viewer@demo.test",
+      fullName: "Victor Viewer",
+      role: "viewer",
+      passwordHash,
+    },
+  ]);
+  logger.info("Seeded demo tenant users (owner/admin/recruiter/viewer)");
+}
 
 export async function seedIfEmpty(): Promise<void> {
   const existing = await db.select().from(jobSourcesTable).limit(1);

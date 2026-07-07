@@ -15,10 +15,12 @@ import {
   GetTopMatchesResponse,
 } from "@workspace/api-zod";
 import { toMatchDto } from "../lib/dto";
+import { tenantOf } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/dashboard/summary", async (_req, res): Promise<void> => {
+router.get("/dashboard/summary", async (req, res): Promise<void> => {
+  const tenant = tenantOf(req);
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [
     [candidates],
@@ -30,34 +32,59 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     [avgTop],
     [newWeek],
   ] = await Promise.all([
-    db.select({ c: sql<number>`count(*)::int` }).from(candidatesTable),
+    db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(candidatesTable)
+      .where(eq(candidatesTable.tenantId, tenant)),
     db
       .select({ c: sql<number>`count(*)::int` })
       .from(jobsTable)
-      .where(eq(jobsTable.status, "active")),
+      .where(and(eq(jobsTable.status, "active"), eq(jobsTable.tenantId, tenant))),
     db
       .select({ c: sql<number>`count(*)::int` })
       .from(jobSourcesTable)
-      .where(eq(jobSourcesTable.isActive, true)),
-    db.select({ c: sql<number>`count(*)::int` }).from(matchRunsTable),
+      .where(
+        and(
+          eq(jobSourcesTable.isActive, true),
+          eq(jobSourcesTable.tenantId, tenant),
+        ),
+      ),
+    db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(matchRunsTable)
+      .where(eq(matchRunsTable.tenantId, tenant)),
     db
       .select({ c: sql<number>`count(*)::int` })
       .from(matchesTable)
-      .where(eq(matchesTable.recruiterStatus, "shortlisted")),
+      .where(
+        and(
+          eq(matchesTable.recruiterStatus, "shortlisted"),
+          eq(matchesTable.tenantId, tenant),
+        ),
+      ),
     db
       .select({ c: sql<number>`count(*)::int` })
       .from(matchesTable)
-      .where(eq(matchesTable.pushedToCrm, true)),
+      .where(
+        and(eq(matchesTable.pushedToCrm, true), eq(matchesTable.tenantId, tenant)),
+      ),
     db
       .select({
         avg: sql<number>`coalesce(avg(${candidatesTable.bestMatchScore}), 0)::float`,
       })
       .from(candidatesTable)
-      .where(sql`${candidatesTable.bestMatchScore} is not null`),
+      .where(
+        and(
+          sql`${candidatesTable.bestMatchScore} is not null`,
+          eq(candidatesTable.tenantId, tenant),
+        ),
+      ),
     db
       .select({ c: sql<number>`count(*)::int` })
       .from(matchesTable)
-      .where(gte(matchesTable.createdAt, weekAgo)),
+      .where(
+        and(gte(matchesTable.createdAt, weekAgo), eq(matchesTable.tenantId, tenant)),
+      ),
   ]);
   res.json(
     GetDashboardSummaryResponse.parse({
@@ -73,10 +100,11 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/dashboard/activity", async (_req, res): Promise<void> => {
+router.get("/dashboard/activity", async (req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(auditLogsTable)
+    .where(eq(auditLogsTable.tenantId, tenantOf(req)))
     .orderBy(desc(auditLogsTable.createdAt))
     .limit(15);
   res.json(
@@ -93,7 +121,7 @@ router.get("/dashboard/activity", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/dashboard/top-matches", async (_req, res): Promise<void> => {
+router.get("/dashboard/top-matches", async (req, res): Promise<void> => {
   const rows = await db
     .select({
       match: matchesTable,
@@ -109,7 +137,12 @@ router.get("/dashboard/top-matches", async (_req, res): Promise<void> => {
       candidatesTable,
       eq(matchesTable.candidateId, candidatesTable.id),
     )
-    .where(and(eq(matchesTable.recruiterStatus, "new")))
+    .where(
+      and(
+        eq(matchesTable.recruiterStatus, "new"),
+        eq(matchesTable.tenantId, tenantOf(req)),
+      ),
+    )
     .orderBy(desc(matchesTable.overallScore))
     .limit(8);
   res.json(

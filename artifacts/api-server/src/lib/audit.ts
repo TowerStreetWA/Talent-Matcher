@@ -8,11 +8,14 @@ export async function recordAudit(
     entityType: string;
     entityId?: string | null;
     metadata?: string | null;
+    actorName?: string;
+    tenantId?: string;
   },
   executor: DbExecutor = db,
 ): Promise<void> {
   await executor.insert(auditLogsTable).values({
-    actorName: "Demo Recruiter",
+    tenantId: entry.tenantId ?? "demo",
+    actorName: entry.actorName ?? "System",
     action: entry.action,
     entityType: entry.entityType,
     entityId: entry.entityId ?? null,

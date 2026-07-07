@@ -12,10 +12,11 @@ import {
   ListAuditLogsResponse,
 } from "@workspace/api-zod";
 import { toCrmSyncEventDto, toAuditLogDto } from "../lib/dto";
+import { tenantOf } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/crm-sync-events", async (_req, res): Promise<void> => {
+router.get("/crm-sync-events", async (req, res): Promise<void> => {
   const rows = await db
     .select({
       event: crmSyncEventsTable,
@@ -29,6 +30,7 @@ router.get("/crm-sync-events", async (_req, res): Promise<void> => {
       eq(crmSyncEventsTable.candidateId, candidatesTable.id),
     )
     .leftJoin(jobsTable, eq(crmSyncEventsTable.jobId, jobsTable.id))
+    .where(eq(crmSyncEventsTable.tenantId, tenantOf(req)))
     .orderBy(desc(crmSyncEventsTable.createdAt))
     .limit(100);
   res.json(
@@ -44,10 +46,11 @@ router.get("/crm-sync-events", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/audit-logs", async (_req, res): Promise<void> => {
+router.get("/audit-logs", async (req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(auditLogsTable)
+    .where(eq(auditLogsTable.tenantId, tenantOf(req)))
     .orderBy(desc(auditLogsTable.createdAt))
     .limit(200);
   res.json(ListAuditLogsResponse.parse(rows.map(toAuditLogDto)));

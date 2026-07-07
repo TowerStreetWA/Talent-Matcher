@@ -18,6 +18,49 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Log in with email and password
+ */
+
+
+
+
+export const LoginBody = zod.object({
+  "email": zod.string().min(1),
+  "password": zod.string().min(1)
+})
+
+export const LoginResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "tenantName": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer'])
+})
+
+
+/**
+ * @summary Log out and revoke the current session
+ */
+export const LogoutResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Get the current authenticated user
+ */
+export const GetMeResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "tenantName": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer'])
+})
+
+
+/**
  * @summary List candidates
  */
 export const ListCandidatesQueryParams = zod.object({

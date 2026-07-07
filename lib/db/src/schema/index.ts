@@ -6,3 +6,6 @@ export * from "./matches";
 export * from "./alertRules";
 export * from "./crmSyncEvents";
 export * from "./auditLogs";
+export * from "./tenants";
+export * from "./tenantUsers";
+export * from "./userSessions";

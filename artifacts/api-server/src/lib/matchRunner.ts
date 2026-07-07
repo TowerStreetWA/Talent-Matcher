@@ -20,7 +20,12 @@ export async function runMatchForCandidate(
   const activeSources = await db
     .select({ id: jobSourcesTable.id })
     .from(jobSourcesTable)
-    .where(eq(jobSourcesTable.isActive, true));
+    .where(
+      and(
+        eq(jobSourcesTable.isActive, true),
+        eq(jobSourcesTable.tenantId, candidate.tenantId),
+      ),
+    );
   const activeSourceIds = activeSources.map((s) => s.id);
 
   const jobs = activeSourceIds.length
@@ -30,6 +35,7 @@ export async function runMatchForCandidate(
         .where(
           and(
             eq(jobsTable.status, "active"),
+            eq(jobsTable.tenantId, candidate.tenantId),
             inArray(jobsTable.sourceId, activeSourceIds),
           ),
         )
@@ -47,6 +53,7 @@ export async function runMatchForCandidate(
     const [run] = await tx
       .insert(matchRunsTable)
       .values({
+        tenantId: candidate.tenantId,
         candidateId: candidate.id,
         triggerType,
         status: "completed",
@@ -62,6 +69,7 @@ export async function runMatchForCandidate(
     if (computed.length > 0) {
       await tx.insert(matchesTable).values(
         computed.map(({ job, result }) => ({
+          tenantId: candidate.tenantId,
           matchRunId: run.id,
           candidateId: candidate.id,
           jobId: job.id,
@@ -88,6 +96,7 @@ export async function runMatchForCandidate(
         entityType: "match_run",
         entityId: run.id,
         metadata: `Scanned ${jobs.length} live jobs for ${candidate.firstName} ${candidate.lastName}; ${computed.length} matches above threshold`,
+        tenantId: candidate.tenantId,
       },
       tx,
     );

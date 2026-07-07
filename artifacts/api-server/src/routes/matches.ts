@@ -17,6 +17,7 @@ import {
 } from "@workspace/api-zod";
 import { toMatchDto, toCrmSyncEventDto } from "../lib/dto";
 import { recordAudit } from "../lib/audit";
+import { tenantOf, auditActor } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -48,13 +49,13 @@ router.get("/matches", async (req, res): Promise<void> => {
   const minScoreRaw =
     typeof req.query["minScore"] === "string" ? req.query["minScore"] : "";
   const minScore = minScoreRaw ? Number(minScoreRaw) : null;
-  const conditions = [];
+  const conditions = [eq(matchesTable.tenantId, tenantOf(req))];
   if (recruiterStatus)
     conditions.push(eq(matchesTable.recruiterStatus, recruiterStatus));
   if (minScore != null && !Number.isNaN(minScore))
     conditions.push(gte(matchesTable.overallScore, minScore));
   const rows = await matchJoinQuery()
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(and(...conditions))
     .orderBy(desc(matchesTable.overallScore))
     .limit(200);
   res.json(
@@ -80,7 +81,9 @@ router.patch("/matches/:id", async (req, res): Promise<void> => {
   const [updated] = await db
     .update(matchesTable)
     .set(parsed.data)
-    .where(eq(matchesTable.id, id))
+    .where(
+      and(eq(matchesTable.id, id), eq(matchesTable.tenantId, tenantOf(req))),
+    )
     .returning();
   if (!updated) {
     res.status(404).json({ message: "Match not found" });
@@ -97,6 +100,7 @@ router.patch("/matches/:id", async (req, res): Promise<void> => {
       entityType: "match",
       entityId: id,
       metadata: `${row.candFirst} ${row.candLast} → ${row.job.title} marked ${parsed.data.recruiterStatus}`,
+      ...auditActor(req),
     });
   }
   res.json(
@@ -113,7 +117,9 @@ router.post("/matches/:id/push-to-crm", async (req, res): Promise<void> => {
     res.status(400).json({ message: parsed.error.message });
     return;
   }
-  const [row] = await matchJoinQuery().where(eq(matchesTable.id, id));
+  const [row] = await matchJoinQuery().where(
+    and(eq(matchesTable.id, id), eq(matchesTable.tenantId, tenantOf(req))),
+  );
   if (!row) {
     res.status(404).json({ message: "Match not found" });
     return;
@@ -126,6 +132,7 @@ router.post("/matches/:id/push-to-crm", async (req, res): Promise<void> => {
     const [inserted] = await tx
       .insert(crmSyncEventsTable)
       .values({
+        tenantId: tenantOf(req),
         candidateId: row.match.candidateId,
         jobId: row.match.jobId,
         direction: "outbound",
@@ -148,6 +155,7 @@ router.post("/matches/:id/push-to-crm", async (req, res): Promise<void> => {
         entityType: "match",
         entityId: id,
         metadata: `${candidateName} → ${row.job.title} pushed to ${crmName}`,
+        ...auditActor(req),
       },
       tx,
     );

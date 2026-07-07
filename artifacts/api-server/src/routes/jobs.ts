@@ -3,6 +3,7 @@ import { desc, eq, and, ilike, or } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable } from "@workspace/db";
 import { ListJobsResponse, GetJobResponse } from "@workspace/api-zod";
 import { toJobDto } from "../lib/dto";
+import { tenantOf } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -14,16 +15,15 @@ router.get("/jobs", async (req, res): Promise<void> => {
   const sourceId =
     typeof req.query["sourceId"] === "string" ? req.query["sourceId"] : "";
   const status = typeof req.query["status"] === "string" ? req.query["status"] : "";
-  const conditions = [];
+  const conditions = [eq(jobsTable.tenantId, tenantOf(req))];
   if (search) {
     const like = `%${search}%`;
-    conditions.push(
-      or(
-        ilike(jobsTable.title, like),
-        ilike(jobsTable.companyName, like),
-        ilike(jobsTable.locationText, like),
-      ),
+    const searchCond = or(
+      ilike(jobsTable.title, like),
+      ilike(jobsTable.companyName, like),
+      ilike(jobsTable.locationText, like),
     );
+    if (searchCond) conditions.push(searchCond);
   }
   if (sourceId) conditions.push(eq(jobsTable.sourceId, sourceId));
   if (status) conditions.push(eq(jobsTable.status, status));
@@ -31,7 +31,7 @@ router.get("/jobs", async (req, res): Promise<void> => {
     .select({ job: jobsTable, sourceName: jobSourcesTable.name })
     .from(jobsTable)
     .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(and(...conditions))
     .orderBy(desc(jobsTable.postedAt))
     .limit(200);
   res.json(
@@ -45,7 +45,7 @@ router.get("/jobs/:id", async (req, res): Promise<void> => {
     .select({ job: jobsTable, sourceName: jobSourcesTable.name })
     .from(jobsTable)
     .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
-    .where(eq(jobsTable.id, id));
+    .where(and(eq(jobsTable.id, id), eq(jobsTable.tenantId, tenantOf(req))));
   if (!row) {
     res.status(404).json({ message: "Job not found" });
     return;
