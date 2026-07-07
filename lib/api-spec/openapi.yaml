@@ -3,13 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: VacancyMatch AI API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: candidates
+    description: Candidate management
+  - name: matches
+    description: Vacancy matching
+  - name: jobs
+    description: Job market data
+  - name: jobSources
+    description: Job source registry
+  - name: alerts
+    description: Alert rules
+  - name: dashboard
+    description: Dashboard summaries
+  - name: admin
+    description: Audit and compliance
 paths:
   /healthz:
     get:
@@ -24,6 +38,533 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /candidates:
+    get:
+      operationId: listCandidates
+      tags: [candidates]
+      summary: List candidates
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema: { type: string }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Candidate list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Candidate"
+    post:
+      operationId: createCandidate
+      tags: [candidates]
+      summary: Create a candidate manually
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CandidateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+  /candidates/upload-cv:
+    post:
+      operationId: uploadCv
+      tags: [candidates]
+      summary: Upload a CV and create a parsed candidate profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CvUploadInput"
+      responses:
+        "201":
+          description: Parsed candidate created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "400":
+          description: Parse failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /candidates/{id}:
+    get:
+      operationId: getCandidate
+      tags: [candidates]
+      summary: Get a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    patch:
+      operationId: updateCandidate
+      tags: [candidates]
+      summary: Update a candidate profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CandidateUpdate"
+      responses:
+        "200":
+          description: Updated candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteCandidate
+      tags: [candidates]
+      summary: Delete a candidate and their data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /candidates/{id}/run-match:
+    post:
+      operationId: runMatch
+      tags: [matches]
+      summary: Run a live market match for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "201":
+          description: Match run completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchRun"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /candidates/{id}/matches:
+    get:
+      operationId: listCandidateMatches
+      tags: [matches]
+      summary: List matches for a candidate (latest run)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Matches ranked by score
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+  /candidates/{id}/match-runs:
+    get:
+      operationId: listMatchRuns
+      tags: [matches]
+      summary: List match run history for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Match runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchRun"
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List all matches across candidates
+      parameters:
+        - name: recruiterStatus
+          in: query
+          required: false
+          schema: { type: string }
+        - name: minScore
+          in: query
+          required: false
+          schema: { type: number }
+      responses:
+        "200":
+          description: Matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+  /matches/{id}:
+    patch:
+      operationId: updateMatch
+      tags: [matches]
+      summary: Update recruiter decision on a match (shortlist, dismiss, note)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchUpdate"
+      responses:
+        "200":
+          description: Updated match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /matches/{id}/push-to-crm:
+    post:
+      operationId: pushMatchToCrm
+      tags: [matches]
+      summary: Push a match to the connected CRM
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrmPushInput"
+      responses:
+        "201":
+          description: CRM sync event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrmSyncEvent"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: Search normalized live jobs
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema: { type: string }
+        - name: sourceId
+          in: query
+          required: false
+          schema: { type: string }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /job-sources:
+    get:
+      operationId: listJobSources
+      tags: [jobSources]
+      summary: List job sources with health info
+      responses:
+        "200":
+          description: Job sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSource"
+    post:
+      operationId: createJobSource
+      tags: [jobSources]
+      summary: Register a job source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSourceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSource"
+  /job-sources/{id}:
+    patch:
+      operationId: updateJobSource
+      tags: [jobSources]
+      summary: Update a job source (enable/disable)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSourceUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSource"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /alert-rules:
+    get:
+      operationId: listAlertRules
+      tags: [alerts]
+      summary: List alert rules (watchlist)
+      responses:
+        "200":
+          description: Alert rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AlertRule"
+    post:
+      operationId: createAlertRule
+      tags: [alerts]
+      summary: Create an alert rule for a candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertRuleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertRule"
+  /alert-rules/{id}:
+    patch:
+      operationId: updateAlertRule
+      tags: [alerts]
+      summary: Update an alert rule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertRuleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertRule"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteAlertRule
+      tags: [alerts]
+      summary: Delete an alert rule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Dashboard overview stats
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /dashboard/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recent activity feed
+      responses:
+        "200":
+          description: Activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /dashboard/top-matches:
+    get:
+      operationId: getTopMatches
+      tags: [dashboard]
+      summary: Top new matches across all candidates
+      responses:
+        "200":
+          description: Top matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+  /crm-sync-events:
+    get:
+      operationId: listCrmSyncEvents
+      tags: [admin]
+      summary: List CRM sync events
+      responses:
+        "200":
+          description: Sync events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CrmSyncEvent"
+  /audit-logs:
+    get:
+      operationId: listAuditLogs
+      tags: [admin]
+      summary: List audit logs
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +574,329 @@ components:
           type: string
       required:
         - status
-
+    ApiMessage:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    Candidate:
+      type: object
+      required:
+        [
+          id,
+          firstName,
+          lastName,
+          status,
+          skills,
+          titles,
+          industries,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        currentTitle: { type: ["string", "null"] }
+        currentCompany: { type: ["string", "null"] }
+        locationText: { type: ["string", "null"] }
+        summary: { type: ["string", "null"] }
+        seniority: { type: ["string", "null"] }
+        skills:
+          type: array
+          items: { type: string }
+        titles:
+          type: array
+          items: { type: string }
+        industries:
+          type: array
+          items: { type: string }
+        remotePreference: { type: ["string", "null"] }
+        desiredSalaryMin: { type: ["number", "null"] }
+        desiredSalaryMax: { type: ["number", "null"] }
+        salaryCurrency: { type: ["string", "null"] }
+        cvFileName: { type: ["string", "null"] }
+        cvText: { type: ["string", "null"] }
+        status: { type: string }
+        lastMatchedAt: { type: ["string", "null"] }
+        bestMatchScore: { type: ["number", "null"] }
+        matchCount: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    CandidateInput:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        firstName: { type: string, minLength: 1 }
+        lastName: { type: string, minLength: 1 }
+        email: { type: string }
+        phone: { type: string }
+        currentTitle: { type: string }
+        currentCompany: { type: string }
+        locationText: { type: string }
+        summary: { type: string }
+        seniority: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        titles:
+          type: array
+          items: { type: string }
+        industries:
+          type: array
+          items: { type: string }
+        remotePreference: { type: string }
+        desiredSalaryMin: { type: number }
+        desiredSalaryMax: { type: number }
+        salaryCurrency: { type: string }
+    CandidateUpdate:
+      type: object
+      properties:
+        firstName: { type: string, minLength: 1 }
+        lastName: { type: string, minLength: 1 }
+        email: { type: string }
+        phone: { type: string }
+        currentTitle: { type: string }
+        currentCompany: { type: string }
+        locationText: { type: string }
+        summary: { type: string }
+        seniority: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        titles:
+          type: array
+          items: { type: string }
+        industries:
+          type: array
+          items: { type: string }
+        remotePreference: { type: string }
+        desiredSalaryMin: { type: number }
+        desiredSalaryMax: { type: number }
+        salaryCurrency: { type: string }
+        status: { type: string }
+    CvUploadInput:
+      type: object
+      required: [fileName, cvText]
+      properties:
+        fileName: { type: string, minLength: 1 }
+        cvText:
+          type: string
+          minLength: 20
+          description: Extracted plain text of the CV (client extracts from PDF/DOCX/TXT)
+    Job:
+      type: object
+      required: [id, title, status, skills, createdAt]
+      properties:
+        id: { type: string }
+        sourceId: { type: ["string", "null"] }
+        sourceName: { type: ["string", "null"] }
+        title: { type: string }
+        companyName: { type: ["string", "null"] }
+        locationText: { type: ["string", "null"] }
+        remoteType: { type: ["string", "null"] }
+        employmentType: { type: ["string", "null"] }
+        salaryMin: { type: ["number", "null"] }
+        salaryMax: { type: ["number", "null"] }
+        salaryCurrency: { type: ["string", "null"] }
+        descriptionText: { type: ["string", "null"] }
+        applyUrl: { type: ["string", "null"] }
+        industry: { type: ["string", "null"] }
+        skills:
+          type: array
+          items: { type: string }
+        postedAt: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+        status: { type: string }
+        createdAt: { type: string }
+    JobSource:
+      type: object
+      required: [id, name, sourceType, isActive, jobCount, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        sourceType: { type: string }
+        baseUrl: { type: ["string", "null"] }
+        isActive: { type: boolean }
+        healthStatus: { type: ["string", "null"] }
+        lastSyncAt: { type: ["string", "null"] }
+        jobCount: { type: integer }
+        createdAt: { type: string }
+    JobSourceInput:
+      type: object
+      required: [name, sourceType]
+      properties:
+        name: { type: string, minLength: 1 }
+        sourceType: { type: string, minLength: 1 }
+        baseUrl: { type: string }
+        isActive: { type: boolean }
+    JobSourceUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        sourceType: { type: string }
+        baseUrl: { type: string }
+        isActive: { type: boolean }
+    ScoreBreakdown:
+      type: object
+      required: [skills, title, industry, location, comp, recency]
+      properties:
+        skills: { type: number }
+        title: { type: number }
+        industry: { type: number }
+        location: { type: number }
+        comp: { type: number }
+        recency: { type: number }
+    Match:
+      type: object
+      required:
+        [
+          id,
+          matchRunId,
+          candidateId,
+          jobId,
+          overallScore,
+          scoreBreakdown,
+          explanation,
+          matchedSkills,
+          recruiterStatus,
+          pushedToCrm,
+          createdAt,
+        ]
+      properties:
+        id: { type: string }
+        matchRunId: { type: string }
+        candidateId: { type: string }
+        candidateName: { type: ["string", "null"] }
+        jobId: { type: string }
+        job:
+          $ref: "#/components/schemas/Job"
+        overallScore: { type: number }
+        scoreBreakdown:
+          $ref: "#/components/schemas/ScoreBreakdown"
+        explanation:
+          type: array
+          items: { type: string }
+        matchedSkills:
+          type: array
+          items: { type: string }
+        missingSkills:
+          type: array
+          items: { type: string }
+        recruiterStatus: { type: string }
+        recruiterNote: { type: ["string", "null"] }
+        pushedToCrm: { type: boolean }
+        createdAt: { type: string }
+    MatchUpdate:
+      type: object
+      properties:
+        recruiterStatus:
+          type: string
+          description: new | shortlisted | dismissed | pushed
+        recruiterNote: { type: string }
+    MatchRun:
+      type: object
+      required:
+        [id, candidateId, triggerType, status, matchCount, startedAt]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        triggerType: { type: string }
+        modelVersion: { type: ["string", "null"] }
+        status: { type: string }
+        matchCount: { type: integer }
+        startedAt: { type: string }
+        completedAt: { type: ["string", "null"] }
+    CrmPushInput:
+      type: object
+      required: [crmName]
+      properties:
+        crmName: { type: string, minLength: 1 }
+        note: { type: string }
+    CrmSyncEvent:
+      type: object
+      required: [id, direction, crmName, status, createdAt]
+      properties:
+        id: { type: string }
+        candidateId: { type: ["string", "null"] }
+        candidateName: { type: ["string", "null"] }
+        jobId: { type: ["string", "null"] }
+        jobTitle: { type: ["string", "null"] }
+        direction: { type: string }
+        crmName: { type: string }
+        payloadSummary: { type: ["string", "null"] }
+        status: { type: string }
+        createdAt: { type: string }
+        processedAt: { type: ["string", "null"] }
+    AlertRule:
+      type: object
+      required: [id, candidateId, minScore, frequency, isActive, createdAt]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        candidateName: { type: ["string", "null"] }
+        minScore: { type: number }
+        frequency: { type: string }
+        isActive: { type: boolean }
+        lastCheckedAt: { type: ["string", "null"] }
+        lastTriggeredAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+    AlertRuleInput:
+      type: object
+      required: [candidateId, minScore, frequency]
+      properties:
+        candidateId: { type: string, minLength: 1 }
+        minScore: { type: number }
+        frequency: { type: string, minLength: 1 }
+        isActive: { type: boolean }
+    AlertRuleUpdate:
+      type: object
+      properties:
+        minScore: { type: number }
+        frequency: { type: string }
+        isActive: { type: boolean }
+    DashboardSummary:
+      type: object
+      required:
+        [
+          candidateCount,
+          activeJobCount,
+          activeSourceCount,
+          matchRunCount,
+          shortlistedCount,
+          pushedToCrmCount,
+          avgTopScore,
+          newMatchesThisWeek,
+        ]
+      properties:
+        candidateCount: { type: integer }
+        activeJobCount: { type: integer }
+        activeSourceCount: { type: integer }
+        matchRunCount: { type: integer }
+        shortlistedCount: { type: integer }
+        pushedToCrmCount: { type: integer }
+        avgTopScore: { type: number }
+        newMatchesThisWeek: { type: integer }
+    ActivityItem:
+      type: object
+      required: [id, action, entityType, description, createdAt]
+      properties:
+        id: { type: string }
+        action: { type: string }
+        entityType: { type: string }
+        entityId: { type: ["string", "null"] }
+        description: { type: string }
+        createdAt: { type: string }
+    AuditLog:
+      type: object
+      required: [id, actorName, action, entityType, createdAt]
+      properties:
+        id: { type: string }
+        actorName: { type: string }
+        action: { type: string }
+        entityType: { type: string }
+        entityId: { type: ["string", "null"] }
+        metadata: { type: ["string", "null"] }
+        createdAt: { type: string }
