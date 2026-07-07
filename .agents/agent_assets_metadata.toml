@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "X0TIu8h61oZDOUXhAgNYd"
+uri = "file://artifacts/promo-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "background music"
