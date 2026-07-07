@@ -122,6 +122,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Debug explainability: `debug=1` on GET /jobs and /candidates adds optional `searchDebug` (score, sector, function, employerType, boosts) — additive OpenAPI change; search log events include finIntent + topResults
 - Tests: finServices.test.ts (classification/intent/boost cases) + matching.test.ts (industryScore guards); `pnpm --filter @workspace/api-server run test`
 
+## Recruiter job search (Phase 13)
+
+- GET /jobs/search (q, location, sector enum, page, pageSize ≤50) — tenant-scoped, active+canonical jobs only; registered BEFORE /jobs/:id in `routes/jobs.ts`; 400 on unknown sector (documented in OpenAPI); logs `search` event with scope `jobs_search`
+- Config-only dictionaries in `lib/search/jobSearchFilters.ts` (SECTOR_INPUT_ALIASES, LOCATION_GROUPS — extend these for new sector shorthand/location groupings); explicit boosts in `jobSearchRank.ts` (sector 25, location 15, direct employer 15, recency ≤14d 8 / ≤30d 4) layered on existing `scoreJob`; explanation flags returned per result
+- Sector tags computed at query time via `classifyVacancy` (never persisted); fetch cap 200 rows ordered by postedAt before in-memory rank
+- UI: `pages/job-search.tsx` at `/job-search` (nav "Job Search") — sector quick chips, filter chips, explanation/source badges, pagination (25/page), URL-param init (`?q=&location=&sector=`); PostHog job_search_* events; tests in `jobSearch.test.ts`
+
 ## Product
 
 - Upload CV → AI-parsed profile → ranked, explainable job matches

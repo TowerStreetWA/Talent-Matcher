@@ -47,6 +47,7 @@ import type {
   InviteCreated,
   InvitePreview,
   Job,
+  JobSearchResponse,
   JobSource,
   JobSourceInput,
   JobSourceUpdate,
@@ -63,6 +64,7 @@ import type {
   RequestUploadUrlResult,
   ResearchUrlInput,
   ScrapedPage,
+  SearchJobsParams,
   SearchResearchCompaniesParams,
   SearchSuggestion,
   SignupInput,
@@ -2471,6 +2473,90 @@ export function useListSearchSuggestions<TData = Awaited<ReturnType<typeof listS
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListSearchSuggestionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSearchJobsUrl = (params?: SearchJobsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/jobs/search?${stringifiedParams}` : `/api/jobs/search`
+}
+
+/**
+ * @summary Recruiter-facing ranked job search with location/sector filters and pagination
+ */
+export const searchJobs = async (params?: SearchJobsParams, options?: RequestInit): Promise<JobSearchResponse> => {
+
+  return customFetch<JobSearchResponse>(getSearchJobsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchJobsQueryKey = (params?: SearchJobsParams,) => {
+    return [
+    `/api/jobs/search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchJobsQueryOptions = <TData = Awaited<ReturnType<typeof searchJobs>>, TError = ErrorType<ApiMessage>>(params?: SearchJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchJobsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchJobs>>> = ({ signal }) => searchJobs(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchJobsQueryResult = NonNullable<Awaited<ReturnType<typeof searchJobs>>>
+export type SearchJobsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Recruiter-facing ranked job search with location/sector filters and pagination
+ */
+
+export function useSearchJobs<TData = Awaited<ReturnType<typeof searchJobs>>, TError = ErrorType<ApiMessage>>(
+ params?: SearchJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchJobsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

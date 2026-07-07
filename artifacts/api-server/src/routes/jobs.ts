@@ -1,12 +1,21 @@
 import { Router, type IRouter } from "express";
 import { desc, eq, and, ilike, or, sql } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable } from "@workspace/db";
-import { ListJobsResponse, GetJobResponse } from "@workspace/api-zod";
+import {
+  ListJobsResponse,
+  GetJobResponse,
+  SearchJobsResponse,
+} from "@workspace/api-zod";
 import { toJobDto } from "../lib/dto";
 import { tenantOf } from "../middlewares/auth";
 import { normalizeQuery } from "../lib/search/normalize";
 import { scoreJob, type ScoreBreakdown } from "../lib/search/rank";
 import { inferQueryFinIntent } from "../lib/search/finClassify";
+import {
+  resolveSectorInput,
+  expandLocationInput,
+} from "../lib/search/jobSearchFilters";
+import { scoreJobSearch } from "../lib/search/jobSearchRank";
 import type { SearchDebugDto } from "../lib/dto";
 
 const toSearchDebug = (b: ScoreBreakdown): SearchDebugDto => ({
@@ -111,6 +120,148 @@ router.get("/jobs", async (req, res): Promise<void> => {
         toJobDto(r.job, r.sourceName, debugByJobId?.get(r.job.id)),
       ),
     ),
+  );
+});
+
+const DEFAULT_PAGE_SIZE = 25;
+const MAX_PAGE_SIZE = 50;
+/** Total-result cap: we never fetch/rank more than this many rows. */
+const TOTAL_CAP = 200;
+
+const intParam = (raw: unknown, fallback: number, min: number, max: number): number => {
+  if (typeof raw !== "string") return fallback;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(Math.max(n, min), max);
+};
+
+// NOTE: must stay registered before /jobs/:id so "search" isn't captured as an id.
+router.get("/jobs/search", async (req, res): Promise<void> => {
+  const q = typeof req.query["q"] === "string" ? req.query["q"] : "";
+  const locationRaw =
+    typeof req.query["location"] === "string" ? req.query["location"] : "";
+  const sectorRaw =
+    typeof req.query["sector"] === "string" ? req.query["sector"] : "";
+  const page = intParam(req.query["page"], 1, 1, 1000);
+  const pageSize = intParam(
+    req.query["pageSize"],
+    DEFAULT_PAGE_SIZE,
+    1,
+    MAX_PAGE_SIZE,
+  );
+
+  const sectorFilter = resolveSectorInput(sectorRaw);
+  if (sectorRaw && !sectorFilter) {
+    res.status(400).json({
+      message:
+        "Unknown sector. Supported: insurance, banking, pensions, asset_management.",
+    });
+    return;
+  }
+  const locationVariants = locationRaw ? expandLocationInput(locationRaw) : [];
+  const nq = q.trim() ? normalizeQuery(q) : null;
+
+  const conditions = [
+    eq(jobsTable.tenantId, tenantOf(req)),
+    eq(jobsTable.status, "active"),
+    eq(jobsTable.isCanonical, true),
+  ];
+  if (nq) {
+    const likeConds = [];
+    for (const variant of nq.variants.slice(0, 15)) {
+      const like = `%${variant}%`;
+      likeConds.push(
+        ilike(jobsTable.title, like),
+        ilike(jobsTable.companyName, like),
+        ilike(jobsTable.industry, like),
+        ilike(jobsTable.descriptionText, like),
+        sql`array_to_string(${jobsTable.skills}, ' ') ILIKE ${like}`,
+      );
+    }
+    const searchCond = or(...likeConds);
+    if (searchCond) conditions.push(searchCond);
+  }
+  if (locationVariants.length > 0) {
+    const locConds = locationVariants.map((v) =>
+      ilike(jobsTable.locationText, `%${v}%`),
+    );
+    const locCond = or(...locConds);
+    if (locCond) conditions.push(locCond);
+  }
+
+  const rows = await db
+    .select({ job: jobsTable, sourceName: jobSourcesTable.name })
+    .from(jobsTable)
+    .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
+    .where(and(...conditions))
+    .orderBy(desc(jobsTable.postedAt))
+    .limit(TOTAL_CAP);
+
+  const scored = rows
+    .map((r) => ({
+      r,
+      s: scoreJobSearch(nq, r.job, { sectorFilter, locationVariants }),
+    }))
+    .filter(({ s }) => (sectorFilter ? s.sector === sectorFilter : true))
+    .sort(
+      (a, b) =>
+        b.s.score - a.s.score ||
+        (b.r.job.postedAt?.getTime() ?? 0) - (a.r.job.postedAt?.getTime() ?? 0),
+    );
+
+  const total = scored.length;
+  const start = (page - 1) * pageSize;
+  const pageRows = scored.slice(start, start + pageSize);
+
+  req.log.info(
+    {
+      event: "search",
+      scope: "jobs_search",
+      rawQuery: q.slice(0, 200),
+      normalizedQuery: nq?.cleaned.slice(0, 200),
+      variantCount: nq?.variants.length ?? 0,
+      filters: {
+        location: locationRaw ? locationRaw.slice(0, 100) : undefined,
+        sector: sectorFilter ?? undefined,
+      },
+      page,
+      pageSize,
+      resultCount: total,
+      zeroResults: total === 0,
+      topResults: scored.slice(0, 3).map(({ r, s }) => ({
+        title: (r.job.title ?? "").slice(0, 80),
+        score: s.score,
+        sector: s.sector ?? undefined,
+      })),
+    },
+    "job search executed",
+  );
+
+  res.json(
+    SearchJobsResponse.parse({
+      results: pageRows.map(({ r, s }) => ({
+        id: r.job.id,
+        title: r.job.title,
+        companyName: r.job.companyName,
+        locationText: r.job.locationText,
+        sector: s.sector,
+        sourceType: r.job.sourceType,
+        sourceProvider: r.job.sourceProvider,
+        sourceName: r.sourceName,
+        postedAt: r.job.postedAt?.toISOString() ?? null,
+        salaryText: r.job.salaryText,
+        skills: r.job.skills ?? [],
+        summary: r.job.descriptionText
+          ? r.job.descriptionText.slice(0, 240)
+          : null,
+        applyUrl: r.job.applyUrl,
+        score: s.score,
+        explanation: s.explanation,
+      })),
+      page,
+      pageSize,
+      total,
+    }),
   );
 });
 

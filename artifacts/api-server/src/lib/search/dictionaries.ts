@@ -89,7 +89,7 @@ export const SYNONYM_GROUPS: string[][] = [
   ["underwriter", "underwriting"],
   ["assistant underwriter", "underwriting assistant", "trading underwriter"],
   ["claims handler", "claims adjuster", "claims technician"],
-  ["broking technician", "account handler"],
+  ["broker", "broking technician", "account handler"],
   ["delegated authority", "da analyst", "binder technician"],
   ["bordereaux", "bordereaux analyst", "bordereau"],
   ["actuary", "actuarial"],

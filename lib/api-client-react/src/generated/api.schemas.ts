@@ -503,6 +503,68 @@ export interface Job {
   searchDebug?: SearchDebug;
 }
 
+/**
+ * Why this job matched — explicit boolean signals from the ranking layer
+ */
+export interface JobSearchExplanation {
+  /** Query matched the job title (exact, phrase, variant, or token hit) */
+  titleMatch: boolean;
+  /** Job's classified sector matches the requested/inferred sector */
+  sectorMatch: boolean;
+  /** Job location matched the location filter */
+  locationMatch: boolean;
+  /** Sourced directly from the employer's career site */
+  directEmployer: boolean;
+  /** Posted within the last 14 days */
+  recentPosting: boolean;
+}
+
+export interface JobSearchResult {
+  id: string;
+  title: string;
+  /** @nullable */
+  companyName?: string | null;
+  /** @nullable */
+  locationText?: string | null;
+  /**
+     * Classified FS sector tag: insurance/banking/pensions/asset_management; null when not FS
+     * @nullable
+     */
+  sector?: string | null;
+  /**
+     * direct_employer, google_jobs, job_board, agency; null for manual/legacy rows
+     * @nullable
+     */
+  sourceType?: string | null;
+  /** @nullable */
+  sourceProvider?: string | null;
+  /** @nullable */
+  sourceName?: string | null;
+  /** @nullable */
+  postedAt?: string | null;
+  /** @nullable */
+  salaryText?: string | null;
+  skills: string[];
+  /**
+     * Short description snippet (truncated)
+     * @nullable
+     */
+  summary?: string | null;
+  /** @nullable */
+  applyUrl?: string | null;
+  /** Relevance score used for ordering */
+  score: number;
+  explanation: JobSearchExplanation;
+}
+
+export interface JobSearchResponse {
+  results: JobSearchResult[];
+  page: number;
+  pageSize: number;
+  /** Total matching jobs (capped at 200 for performance) */
+  total: number;
+}
+
 export interface JobSource {
   id: string;
   name: string;
@@ -711,6 +773,42 @@ export type ListSearchSuggestionsScope = typeof ListSearchSuggestionsScope[keyof
 export const ListSearchSuggestionsScope = {
   candidates: 'candidates',
   jobs: 'jobs',
+} as const;
+
+export type SearchJobsParams = {
+/**
+ * Job title / keywords free-text query
+ */
+q?: string;
+/**
+ * City, region, or country filter (rule-based normalization, ILIKE match)
+ */
+location?: string;
+/**
+ * Industry/sector filter mapped to internal FS sector tags
+ */
+sector?: SearchJobsSector;
+/**
+ * 1-based page number (default 1)
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Results per page (default 25, max 50)
+ * @minimum 1
+ * @maximum 50
+ */
+pageSize?: number;
+};
+
+export type SearchJobsSector = typeof SearchJobsSector[keyof typeof SearchJobsSector];
+
+
+export const SearchJobsSector = {
+  insurance: 'insurance',
+  banking: 'banking',
+  pensions: 'pensions',
+  asset_management: 'asset_management',
 } as const;
 
 export type SearchResearchCompaniesParams = {

@@ -975,6 +975,52 @@ export const ListSearchSuggestionsResponse = zod.array(ListSearchSuggestionsResp
 
 
 /**
+ * @summary Recruiter-facing ranked job search with location/sector filters and pagination
+ */
+
+export const searchJobsQueryPageSizeMax = 50;
+
+
+
+export const SearchJobsQueryParams = zod.object({
+  "q": zod.coerce.string().optional().describe('Job title \/ keywords free-text query'),
+  "location": zod.coerce.string().optional().describe('City, region, or country filter (rule-based normalization, ILIKE match)'),
+  "sector": zod.enum(['insurance', 'banking', 'pensions', 'asset_management']).optional().describe('Industry\/sector filter mapped to internal FS sector tags'),
+  "page": zod.coerce.number().min(1).optional().describe('1-based page number (default 1)'),
+  "pageSize": zod.coerce.number().min(1).max(searchJobsQueryPageSizeMax).optional().describe('Results per page (default 25, max 50)')
+})
+
+export const SearchJobsResponse = zod.object({
+  "results": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "companyName": zod.string().nullish(),
+  "locationText": zod.string().nullish(),
+  "sector": zod.string().nullish().describe('Classified FS sector tag: insurance\/banking\/pensions\/asset_management; null when not FS'),
+  "sourceType": zod.string().nullish().describe('direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceName": zod.string().nullish(),
+  "postedAt": zod.string().nullish(),
+  "salaryText": zod.string().nullish(),
+  "skills": zod.array(zod.string()),
+  "summary": zod.string().nullish().describe('Short description snippet (truncated)'),
+  "applyUrl": zod.string().nullish(),
+  "score": zod.number().describe('Relevance score used for ordering'),
+  "explanation": zod.object({
+  "titleMatch": zod.boolean().describe('Query matched the job title (exact, phrase, variant, or token hit)'),
+  "sectorMatch": zod.boolean().describe('Job\'s classified sector matches the requested\/inferred sector'),
+  "locationMatch": zod.boolean().describe('Job location matched the location filter'),
+  "directEmployer": zod.boolean().describe('Sourced directly from the employer\'s career site'),
+  "recentPosting": zod.boolean().describe('Posted within the last 14 days')
+}).describe('Why this job matched — explicit boolean signals from the ranking layer')
+})),
+  "page": zod.number(),
+  "pageSize": zod.number(),
+  "total": zod.number().describe('Total matching jobs (capped at 200 for performance)')
+})
+
+
+/**
  * @summary Get a job
  */
 export const GetJobParams = zod.object({

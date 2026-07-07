@@ -11,3 +11,4 @@
 - [Long-running HTTP ingestion](long-running-ingestion.md) — Node drops request connections at ~5 min and detached bash curls die with the shell; keep scrape runs under ~2 min via limited concurrency, retry once after upstream cache warm-up.
 - [Careers-page URL staleness](careers-url-staleness.md) — curated employer career-site URLs 404 over time; curl-probe the URL before debugging extraction logic.
 - [Stripe pricing/currency lessons](stripe-pricing-lessons.md) — Stripe blocks cross-currency checkout for existing customers; catch → 400 + portal; never name a state setter `setInterval`.
+- [Screenshots behind login](screenshot-auth.md) — temp dev-only session-redirect route (removed after use) is how to capture authenticated app-preview screenshots.

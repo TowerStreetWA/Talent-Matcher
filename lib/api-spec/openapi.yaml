@@ -745,6 +745,52 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SearchSuggestion"
+  /jobs/search:
+    get:
+      operationId: searchJobs
+      tags: [jobs]
+      summary: Recruiter-facing ranked job search with location/sector filters and pagination
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Job title / keywords free-text query
+          schema: { type: string }
+        - name: location
+          in: query
+          required: false
+          description: City, region, or country filter (rule-based normalization, ILIKE match)
+          schema: { type: string }
+        - name: sector
+          in: query
+          required: false
+          description: Industry/sector filter mapped to internal FS sector tags
+          schema:
+            type: string
+            enum: [insurance, banking, pensions, asset_management]
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number (default 1)
+          schema: { type: integer, minimum: 1 }
+        - name: pageSize
+          in: query
+          required: false
+          description: Results per page (default 25, max 50)
+          schema: { type: integer, minimum: 1, maximum: 50 }
+      responses:
+        "200":
+          description: Ranked, paginated job search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSearchResponse"
+        "400":
+          description: Unknown sector value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
   /jobs/{id}:
     get:
       operationId: getJob
@@ -1526,6 +1572,55 @@ components:
         createdAt: { type: string }
         searchDebug:
           $ref: "#/components/schemas/SearchDebug"
+    JobSearchResponse:
+      type: object
+      required: [results, page, pageSize, total]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobSearchResult"
+        page: { type: integer }
+        pageSize: { type: integer }
+        total:
+          type: integer
+          description: Total matching jobs (capped at 200 for performance)
+    JobSearchResult:
+      type: object
+      required: [id, title, skills, score, explanation]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        companyName: { type: ["string", "null"] }
+        locationText: { type: ["string", "null"] }
+        sector:
+          type: ["string", "null"]
+          description: "Classified FS sector tag: insurance/banking/pensions/asset_management; null when not FS"
+        sourceType: { type: ["string", "null"], description: "direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
+        sourceProvider: { type: ["string", "null"] }
+        sourceName: { type: ["string", "null"] }
+        postedAt: { type: ["string", "null"] }
+        salaryText: { type: ["string", "null"] }
+        skills:
+          type: array
+          items: { type: string }
+        summary:
+          type: ["string", "null"]
+          description: Short description snippet (truncated)
+        applyUrl: { type: ["string", "null"] }
+        score: { type: number, description: "Relevance score used for ordering" }
+        explanation:
+          $ref: "#/components/schemas/JobSearchExplanation"
+    JobSearchExplanation:
+      type: object
+      description: Why this job matched — explicit boolean signals from the ranking layer
+      required: [titleMatch, sectorMatch, locationMatch, directEmployer, recentPosting]
+      properties:
+        titleMatch: { type: boolean, description: "Query matched the job title (exact, phrase, variant, or token hit)" }
+        sectorMatch: { type: boolean, description: "Job's classified sector matches the requested/inferred sector" }
+        locationMatch: { type: boolean, description: "Job location matched the location filter" }
+        directEmployer: { type: boolean, description: "Sourced directly from the employer's career site" }
+        recentPosting: { type: boolean, description: "Posted within the last 14 days" }
     SearchDebug:
       type: object
       description: Dev/internal search ranking explainability (present only when debug=1 on a search)

@@ -1,0 +1,215 @@
+Please implement a recruiter-facing job search feature in VacancyMatch AI.
+
+GOAL
+
+Add a clean job search workflow where recruiters can:
+- search for jobs by name (title/keywords),
+- filter by location,
+- filter by industry/sector,
+
+using the vacancies already stored in the database (including direct employer + Google Jobs sources), and surface results in a dedicated Jobs search UI.
+
+Do not change the existing candidate/CV matching flow. This feature is an additional recruiter tool.
+
+SCOPE
+
+Implement all of the following:
+
+1. A backend search endpoint for jobs.
+2. Query parsing and filters for:
+   - job name / title / keywords,
+   - location,
+   - industry/sector.
+3. A ranked results list based on relevance.
+4. A front-end Jobs search page with:
+   - search bar,
+   - basic filters (location, industry),
+   - paginated result list.
+5. Minimal explainability metadata (e.g. why a job matched, basic source badges).
+
+BACKEND
+
+1) API route
+
+Add a new API route, for example:
+
+- GET /api/jobs/search
+
+Accept query parameters such as:
+
+- q (string): job name / keywords (title, skills, free text).
+- location (string, optional): city, region or country.
+- sector (string, optional): industry/sector, e.g. insurance, banking, pensions, asset_management.
+- page (number, optional): for pagination.
+- pageSize (number, optional): page size (with a sensible max).
+
+2) Query normalization
+
+Reuse the existing search normalization approach where possible:
+
+- lowercasing
+- trimming
+- punctuation cleanup
+- quoted phrase preservation
+
+Additionally, for jobs:
+
+- Map sector/industry strings to your internal sector tags, e.g.:
+  - "insurance" → insurance
+  - "banking" → banking
+  - "pensions" → pensions
+  - "asset management" / "asset mgmt" → asset_management
+- Normalize location input (e.g. "London" vs "Greater London") in a simple rule-based way.
+- For job titles, handle commons variants:
+  - underwriter ↔ underwriting
+  - claims handler ↔ claims adjuster ↔ claims technician
+  - broker ↔ broking technician ↔ account handler
+  - fund accountant ↔ fund controller
+  - pensions administrator ↔ pensions admin
+  - KYC/AML/Onboarding in banking
+
+Do this with explicit, inspectable dictionaries/config, consistent with your existing search patterns.
+
+3) Database query
+
+Implement the search using Postgres:
+
+- Use ILIKE or your existing full-text approach across:
+  - title
+  - description
+  - skills / tags (if present)
+- Filter by:
+  - sector tag (if provided)
+  - location field (if provided; use ILIKE for a first version)
+- Apply a result cap per page (e.g. 50) and a total cap (e.g. 200) to keep performance reasonable.
+
+4) Ranking model
+
+Apply a simple relevance score for jobs:
+
+- Boost exact title matches (e.g. "delegated authority analyst").
+- Boost sector matches (insurance, banking, pensions, asset_management) when the sector filter is present.
+- Boost direct employer jobs over agency/board jobs when source_type is available.
+- Boost location matches (exact or close).
+- Slightly boost recent postings (`posted_at`).
+
+This can be implemented as a weighted score in SQL or in code after fetching, similar to your existing explicit scoring layer.
+
+5) Response shape
+
+Return a JSON response such as:
+
+{
+  "results": [
+    {
+      "id": "...",
+      "title": "...",
+      "company": "...",
+      "location": "...",
+      "sector": "...",
+      "source_type": "...",
+      "source_provider": "...",
+      "posted_at": "...",
+      "summary": "...",
+      "score": 0.87,
+      "explanation": {
+        "title_match": true,
+        "sector_match": true,
+        "location_match": true,
+        "direct_employer": true
+      }
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "total": 123
+}
+
+FRONTEND
+
+1) Jobs search page route
+
+Create a new route in the web app, for example:
+
+- /jobs or /search/jobs
+
+This page should show:
+
+- a top search bar for job name/keywords,
+- filters for location and sector/industry,
+- a results list below.
+
+2) Search controls
+
+Top search bar:
+
+- Input for “Job title or keywords”.
+- Optional chips or dropdowns for quick sectors:
+  - Insurance
+  - Banking
+  - Pensions
+  - Asset Management
+
+Filters:
+
+- Location input (free text or simple dropdown).
+- Sector dropdown (same mapping to internal tags as the backend).
+- Clear-all button for filters.
+
+Tie these inputs to the backend endpoint (q, location, sector).
+
+3) Results list
+
+Each job card should show:
+
+- Job title.
+- Company name.
+- Location.
+- Sector/industry badge.
+- Source badge (e.g. “Direct employer”, “Google Jobs”, “Agency”).
+- Short summary/description snippet.
+- “View details” or equivalent action (even if the detailed view is minimal for now).
+
+Order results by the relevance score from the backend.
+
+4) UX details
+
+- Show a simple “X jobs found” count.
+- Show active filters visibly (chips).
+- Support pagination or infinite scroll if convenient.
+- Handle no-results state with a constructive message:
+  - “No jobs found for this combination. Try broadening the title, removing some filters, or switching sector.”
+
+Use the existing visual style and components where possible.
+
+INTEGRATION
+
+- Link the new Jobs search page from the main nav or dashboard (e.g. “Jobs”).
+- Do not remove or alter the candidate / CV matching flow — this is an additional entry point where recruiters can start from “search jobs” instead of “start from a CV.”
+
+CONSTRAINTS
+
+- Do not replace the existing search stack; reuse Postgres + the explicit scoring layer.
+- Keep the implementation deterministic and inspectable, not opaque AI magic.
+- Keep performance reasonable (caps on results, indexes where needed).
+- Do not change billing or auth code.
+
+ACCEPTANCE CRITERIA
+
+1. There is a backend jobs search endpoint supporting q, location, sector, page, pageSize.
+2. Jobs are normalized and filtered by title/keywords, location, and sector/industry.
+3. Results are ranked sensibly (title, sector, location, direct employer, recency).
+4. A recruiter-facing Jobs search page exists with search bar, filters, and results list.
+5. No-results states are handled gracefully with suggestions.
+6. Existing features remain unchanged (candidate matching still works as before).
+7. Full typecheck passes and existing tests still pass.
+
+REPORT BACK
+
+When done, please report:
+- Files changed (backend, frontend, config).
+- The final API contract for /api/jobs/search.
+- How title/location/sector normalization works.
+- The ranking rules applied.
+- A couple of example queries and screenshots showing the new Jobs search in action.
+- Typecheck/test outcomes.

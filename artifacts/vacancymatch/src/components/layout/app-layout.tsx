@@ -24,6 +24,7 @@ const navItems = [
   { href: "/candidates", label: "Candidates", icon: Users },
   { href: "/matches", label: "Matches", icon: Target },
   { href: "/jobs", label: "Live Jobs", icon: Briefcase },
+  { href: "/job-search", label: "Job Search", icon: Search },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/team", label: "Team", icon: UserPlus, adminOnly: true },

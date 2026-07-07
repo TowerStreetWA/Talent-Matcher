@@ -14,6 +14,7 @@ import Candidates from "@/pages/candidates";
 import CandidateDetail from "@/pages/candidate-detail";
 import Matches from "@/pages/matches";
 import Jobs from "@/pages/jobs";
+import JobSearch from "@/pages/job-search";
 import Sources from "@/pages/sources";
 import Alerts from "@/pages/alerts";
 import Admin from "@/pages/admin";
@@ -41,6 +42,7 @@ function Router() {
         <Route path="/candidates/:id" component={CandidateDetail} />
         <Route path="/matches" component={Matches} />
         <Route path="/jobs" component={Jobs} />
+        <Route path="/job-search" component={JobSearch} />
         <Route path="/sources" component={Sources} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/admin" component={Admin} />
