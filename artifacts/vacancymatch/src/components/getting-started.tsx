@@ -38,7 +38,7 @@ export default function GettingStarted() {
     }
   });
 
-  if (dismissed || !summary || !subscription) return null;
+  if (!summary || !subscription) return null;
 
   const steps: Step[] = [
     {
@@ -89,6 +89,31 @@ export default function GettingStarted() {
     }
     setDismissed(true);
   };
+
+  const restore = () => {
+    try {
+      localStorage.removeItem(dismissKey(user?.tenantId));
+    } catch {
+      // localStorage unavailable — restore for this session only
+    }
+    setDismissed(false);
+  };
+
+  if (dismissed) {
+    return (
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          onClick={restore}
+          data-testid="button-show-setup-guide"
+        >
+          <Rocket className="w-4 h-4 mr-1.5" /> Show setup guide ({doneCount}/{steps.length})
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Card className="border-primary/30" data-testid="getting-started-panel">
