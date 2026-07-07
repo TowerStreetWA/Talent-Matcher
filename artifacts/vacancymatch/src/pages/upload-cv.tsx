@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useUploadCv, useRequestUploadUrl } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,12 @@ import { isBillingGateError } from "@/lib/billing-gate";
 import { UploadCloud, FileText, X } from "lucide-react";
 
 const ACCEPTED = ".pdf,.docx,.doc,.txt";
+const ACCEPTED_EXTENSIONS = ACCEPTED.split(",");
+
+function isAcceptedFile(file: File) {
+  const name = file.name.toLowerCase();
+  return ACCEPTED_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
 
 export default function UploadCv() {
   const [, setLocation] = useLocation();
@@ -23,13 +29,54 @@ export default function UploadCv() {
   const [fileName, setFileName] = useState("");
   const [cvText, setCvText] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragDepth = useRef(0);
+
+  const acceptFile = (selected: File | undefined) => {
+    if (!selected) return;
+    if (!isAcceptedFile(selected)) {
+      toast({
+        title: "Unsupported file type",
+        description: "Please use a PDF, DOCX, DOC, or TXT file.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setFile(selected);
+    setFileName(selected.name);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      setFile(selected);
-      setFileName(selected.name);
+    acceptFile(e.target.files?.[0]);
+    e.target.value = "";
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current += 1;
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current -= 1;
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0;
+      setIsDragging(false);
     }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setIsDragging(false);
+    if (!e.dataTransfer.files?.length) return;
+    acceptFile(e.dataTransfer.files[0]);
   };
 
   const clearFile = () => {
@@ -125,7 +172,7 @@ export default function UploadCv() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="file">Upload File (.pdf, .docx, .txt)</Label>
+              <Label htmlFor="file">Upload File (.pdf, .docx, .doc, .txt)</Label>
               {file ? (
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                   <FileText className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +182,44 @@ export default function UploadCv() {
                   </Button>
                 </div>
               ) : (
-                <Input id="file" type="file" accept={ACCEPTED} onChange={handleFileChange} />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload a CV file: drag and drop or click to browse"
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  data-testid="cv-dropzone"
+                  className={`flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-6 py-10 text-center cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50 hover:bg-muted/50"
+                  }`}
+                >
+                  <UploadCloud className={`h-8 w-8 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                  <p className="text-sm font-medium">
+                    {isDragging ? "Drop the file here" : "Drag & drop a CV here"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    or click to browse — PDF, DOCX, DOC, or TXT
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    id="file"
+                    type="file"
+                    accept={ACCEPTED}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
               )}
             </div>
 
