@@ -29,6 +29,9 @@ async function buildAll() {
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "*.node",
+      // stripe-replit-sync reads its migrations directory from disk relative
+      // to its own __dirname, so it cannot be bundled.
+      "stripe-replit-sync",
       "sharp",
       "better-sqlite3",
       "sqlite3",

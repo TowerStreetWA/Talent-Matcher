@@ -9,6 +9,7 @@ import {
   Database, 
   Bell, 
   ShieldCheck,
+  CreditCard,
   Search,
   LogOut
 } from "lucide-react";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/admin", label: "Compliance", icon: ShieldCheck, adminOnly: true },
+  { href: "/billing", label: "Billing", icon: CreditCard },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

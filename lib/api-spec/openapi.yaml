@@ -94,6 +94,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
+  /billing/plans:
+    get:
+      operationId: listBillingPlans
+      tags: [billing]
+      summary: List available billing plans with prices
+      responses:
+        "200":
+          description: Plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BillingPlan"
+  /billing/subscription:
+    get:
+      operationId: getBillingSubscription
+      tags: [billing]
+      summary: Get the current tenant's billing state
+      responses:
+        "200":
+          description: Billing state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingState"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /billing/checkout:
+    post:
+      operationId: createBillingCheckout
+      tags: [billing]
+      summary: Create a Stripe Checkout session for a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingUrl"
+        "400":
+          description: Invalid plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /billing/portal:
+    post:
+      operationId: createBillingPortal
+      tags: [billing]
+      summary: Create a Stripe Customer Portal session
+      responses:
+        "200":
+          description: Portal session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingUrl"
+        "400":
+          description: No billing customer yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
   /candidates:
     get:
       operationId: listCandidates
@@ -653,6 +727,42 @@ components:
         role:
           type: string
           enum: [owner, admin, recruiter, viewer]
+    BillingPlan:
+      type: object
+      required: [key, label, description, trialDays, features]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        description: { type: string }
+        trialDays: { type: integer }
+        features:
+          type: array
+          items: { type: string }
+        priceId: { type: ["string", "null"] }
+        unitAmount: { type: ["number", "null"] }
+        currency: { type: ["string", "null"] }
+        interval: { type: ["string", "null"] }
+    BillingState:
+      type: object
+      required: [status, canUseCoreProduct, cancelAtPeriodEnd]
+      properties:
+        planKey: { type: ["string", "null"] }
+        planLabel: { type: ["string", "null"] }
+        status: { type: string }
+        trialEndsAt: { type: ["string", "null"] }
+        currentPeriodEnd: { type: ["string", "null"] }
+        cancelAtPeriodEnd: { type: boolean }
+        canUseCoreProduct: { type: boolean }
+    CheckoutInput:
+      type: object
+      required: [planKey]
+      properties:
+        planKey: { type: string, minLength: 1 }
+    BillingUrl:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
     Candidate:
       type: object
       required:

@@ -16,6 +16,7 @@ import Jobs from "@/pages/jobs";
 import Sources from "@/pages/sources";
 import Alerts from "@/pages/alerts";
 import Admin from "@/pages/admin";
+import Billing from "@/pages/billing";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/sources" component={Sources} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/admin" component={Admin} />
+        <Route path="/billing" component={Billing} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

@@ -36,7 +36,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Error responses use `{ message }` shape (ApiMessage)
 - Auth: custom email/password (NOT Clerk/Replit Auth, per spec). Cookie sessions (`vm_session`, httpOnly, 7-day TTL, sha256 token hash stored in `user_sessions`); roles owner/admin/recruiter/viewer; viewers are read-only (`blockViewerWrites`); `/crm-sync-events` + `/audit-logs` are admin+ only; login/logout/auth failures are audit-logged
 - Tenant scoping is enforced on all data routes: `tenantId` on data rows is the tenant **slug** (matches legacy `"demo"` text data), while `tenant_users.tenantId` is the tenants uuid PK; `tenantOf(req)` returns the slug
-- Stripe billing is a deferred fast-follow (Phase 2)
+- Stripe billing (Phase 2, DONE): Replit Stripe integration (`stripe` + `stripe-replit-sync`, credentials via connector API in `src/lib/stripeClient.ts` — NOT env vars). Managed webhook at `/api/stripe/webhook` (raw body, registered in app.ts BEFORE express.json). Webhook-synced Stripe data lives in the `stripe` DB schema (read-only; never write to it). `tenant_billing` caches per-tenant state (tenantId = slug), refreshed from `stripe.subscriptions` on GET /billing/subscription — never from checkout redirects. Plans: Starter $49/mo (7-day trial, no card via `payment_method_collection: if_required`), Team $149/mo; price IDs resolved from `stripe.prices` via product `metadata.plan_key`. Access gate (`middlewares/billing.ts`): trialing/active/past_due → full access; none/canceled/etc → reads OK, writes 402; billing + auth routes always reachable. Checkout/portal are admin+ only. Billing events are audit-logged. Scripts: `pnpm --filter @workspace/scripts exec tsx src/seedStripeProducts.ts` (idempotent) and `src/devStartTrial.ts` (dev trial for demo tenant)
 
 ## Product
 
@@ -54,6 +54,9 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - After changing `lib/*` packages, run `pnpm run typecheck:libs` before artifact typechecks (stale declarations cause phantom TS2305 errors)
 - Workflow names are prefixed: `artifacts/api-server: API Server`, `artifacts/vacancymatch: web`
 - Seed only runs when `job_sources` table is empty
+- `stripe-replit-sync` must stay in esbuild `external` (build.mjs) — it reads its migrations dir from its own `__dirname` and silently skips migrations if bundled
+- `syncBackfill()` must be called with `{ object: "all" }` — no args syncs nothing
+- Stripe connector settings keys are `secret` / `publishable` (not `secret_key`)
 
 ## Pointers
 

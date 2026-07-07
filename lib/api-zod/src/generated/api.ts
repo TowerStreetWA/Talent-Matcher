@@ -61,6 +61,60 @@ export const GetMeResponse = zod.object({
 
 
 /**
+ * @summary List available billing plans with prices
+ */
+export const ListBillingPlansResponseItem = zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "description": zod.string(),
+  "trialDays": zod.number(),
+  "features": zod.array(zod.string()),
+  "priceId": zod.string().nullish(),
+  "unitAmount": zod.number().nullish(),
+  "currency": zod.string().nullish(),
+  "interval": zod.string().nullish()
+})
+export const ListBillingPlansResponse = zod.array(ListBillingPlansResponseItem)
+
+
+/**
+ * @summary Get the current tenant's billing state
+ */
+export const GetBillingSubscriptionResponse = zod.object({
+  "planKey": zod.string().nullish(),
+  "planLabel": zod.string().nullish(),
+  "status": zod.string(),
+  "trialEndsAt": zod.string().nullish(),
+  "currentPeriodEnd": zod.string().nullish(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "canUseCoreProduct": zod.boolean()
+})
+
+
+/**
+ * @summary Create a Stripe Checkout session for a subscription
+ */
+
+
+
+export const CreateBillingCheckoutBody = zod.object({
+  "planKey": zod.string().min(1)
+})
+
+export const CreateBillingCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Create a Stripe Customer Portal session
+ */
+export const CreateBillingPortalResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
  * @summary List candidates
  */
 export const ListCandidatesQueryParams = zod.object({

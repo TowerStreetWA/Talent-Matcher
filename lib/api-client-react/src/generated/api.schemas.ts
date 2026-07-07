@@ -39,6 +39,45 @@ export interface AuthUser {
   role: AuthUserRole;
 }
 
+export interface BillingPlan {
+  key: string;
+  label: string;
+  description: string;
+  trialDays: number;
+  features: string[];
+  /** @nullable */
+  priceId?: string | null;
+  /** @nullable */
+  unitAmount?: number | null;
+  /** @nullable */
+  currency?: string | null;
+  /** @nullable */
+  interval?: string | null;
+}
+
+export interface BillingState {
+  /** @nullable */
+  planKey?: string | null;
+  /** @nullable */
+  planLabel?: string | null;
+  status: string;
+  /** @nullable */
+  trialEndsAt?: string | null;
+  /** @nullable */
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd: boolean;
+  canUseCoreProduct: boolean;
+}
+
+export interface CheckoutInput {
+  /** @minLength 1 */
+  planKey: string;
+}
+
+export interface BillingUrl {
+  url: string;
+}
+
 export interface Candidate {
   id: string;
   firstName: string;
