@@ -1,0 +1,179 @@
+VacancyMatch AI is now through auth, billing gate, signup, invites, and team management. That phase is done.
+
+The next phase is to optimise search results quality and search UX.
+
+This is not a broad rewrite of search infrastructure.
+Do not replace the current search stack unless you discover a clear blocker.
+Do not touch Stripe, auth, signup, invites, team management, Sentry, PostHog, email, or unrelated UI.
+Stay tightly scoped to search relevance, query handling, filters, autocomplete, and zero-result recovery.
+
+Goal:
+Make recruiter-style searches feel smarter and more reliable, especially short or underspecified queries, while preserving tenant isolation and existing permissions.
+
+Context:
+This app is a recruitment SaaS. Users will often search with shorthand, fragments, titles, role variants, and partial employer names rather than neat full queries.
+Search quality matters more than adding more filters.
+We want the best results first, clearer search behaviour, and fewer “I typed something obvious and got bad results” moments.
+
+What I want built:
+
+1. Audit current search flow first
+- Trace the full path from search box input to normalized query to backend search to ranking to results rendering.
+- Identify:
+  - where normalization happens,
+  - how matching is currently done,
+  - whether there is any weighting/ranking already,
+  - how filters are combined,
+  - what happens on zero results,
+  - whether autocomplete/suggestions already exist.
+- Do not change code until you understand the existing path.
+
+2. Add query normalization layer
+Implement a controlled normalization layer for recruiter-style searches.
+It should support:
+- lowercasing / trimming / whitespace normalization
+- punctuation cleanup where safe
+- abbreviation expansion
+- title synonym mapping
+- plural/singular tolerance where reasonable
+- exact-phrase preservation when quoted, if the current stack supports it cleanly
+
+Examples of the kind of behaviour we want:
+- “GL” can expand intelligently where appropriate rather than behaving like a meaningless 2-letter token
+- title variants and role synonyms can converge to the same intended match family
+- partial employer names should still work sensibly
+- short inputs should not produce obviously junky results just because they are short
+
+Important:
+- Keep synonym/abbreviation logic explicit and inspectable, not hidden in prompts or opaque AI behaviour
+- Prefer domain dictionaries/config over hardcoded logic scattered across components
+- Keep the design extendable so we can add more recruiter shorthand later without rewriting search
+
+3. Improve ranking/relevance
+Add a lightweight, explicit relevance model on top of existing search.
+Do not overengineer.
+
+Desired ranking priorities:
+- exact title / exact phrase match highest
+- strong normalized title synonym match very high
+- current role/title field matches above general text matches
+- employer/company match meaningful but below exact role/title intent when role is clear
+- structured taxonomy/class matches above loose blob text matches
+- fuzzy/background text matches lowest
+- demote noisy matches that only hit weak fields
+
+Make the ranking understandable in code.
+If useful, implement a simple score composition approach rather than hidden heuristics.
+For example:
+- exact title match score
+- normalized synonym hit score
+- employer hit score
+- taxonomy/class hit score
+- partial/fuzzy hit score
+Then combine into a final relevance score.
+
+4. Autocomplete / suggestions
+If a suggestion layer already exists, improve it.
+If it does not exist and can be added cleanly without big architectural churn, add a lightweight version.
+
+Requirements:
+- suggestions should be relevant, not just alphabetic junk
+- prioritize known high-value search intents
+- support shorthand/expanded intent where sensible
+- suppress duplicate-looking suggestions
+- keep suggestion count modest
+- keyboard navigation must work
+- do not create a huge noisy dropdown
+
+Helpful patterns:
+- show suggestions early
+- rank by relevance/usefulness, not raw frequency alone
+- make suggestions guide the user toward “searchable” concepts
+
+5. Filters and zero-results recovery
+Improve filtering UX/logic so filters help rather than trap users.
+
+Requirements:
+- active filters should remain visible near results
+- removing one filter should be easy
+- clear-all should exist if missing
+- preserve user orientation when filters change
+- do not silently reset unrelated state
+- when zero results occur, show recovery guidance instead of a dead-end blank screen
+
+Zero-result state should:
+- explain that current search + filters are too restrictive
+- suggest the easiest broadening action
+- ideally identify likely restrictive filters
+- offer 1-click recovery actions where cleanly possible, such as clear one filter / clear all / broaden query
+
+6. Search instrumentation
+Add lightweight analytics / auditability for search quality tuning.
+I want enough visibility to tune the system later from evidence.
+
+Track events or server logs for:
+- raw query
+- normalized query
+- filters applied
+- result count
+- zero-result event
+- suggestion selected vs typed query submitted
+- result click/open event if there is a natural place to capture it
+
+Do this safely:
+- no leaking sensitive document contents
+- avoid logging large payloads unnecessarily
+- respect existing tenant boundaries
+
+7. UX clarity
+Improve the search UI copy if needed.
+Examples:
+- placeholder text that teaches the user what kinds of searches work
+- helper copy for shorthand / titles / employers
+- clearer empty/zero-results states
+- visible result count
+- visible applied filters
+
+Keep this practical and restrained.
+Do not turn the UI into a tutorial.
+
+Guardrails:
+- preserve tenant isolation
+- preserve permission boundaries
+- preserve current API contracts where possible
+- no unrelated refactors
+- no hidden AI ranking magic
+- no broad schema rewrite unless absolutely required
+- if you think Elasticsearch/Algolia/Meilisearch/etc. is needed, do not implement it in this phase; document why instead
+
+Implementation preference:
+- explicit, testable TypeScript logic
+- config/dictionary driven where possible
+- small, understandable ranking functions
+- comments only where they help future maintenance
+
+Acceptance criteria:
+- obvious recruiter-style searches return meaningfully better top results than before
+- short queries are handled more gracefully
+- title/role intent outranks weak incidental text hits
+- filters are visible and removable
+- zero-results states are recoverable
+- suggestions/autocomplete are useful rather than noisy
+- search actions are instrumented enough for future tuning
+- tenant isolation still holds
+- full typecheck passes
+
+Verification required:
+- backend or integration tests for normalization, ranking, filter combination, and zero-result behaviour
+- include at least a few representative shorthand/title-variant tests
+- browser verification of search input → results → filters → zero-result recovery
+- confirm typecheck passes
+- give me a concise summary of:
+  - files changed
+  - ranking model added
+  - normalization/synonym approach
+  - tests added
+  - any follow-up recommendations, but only if genuinely necessary
+
+Important:
+Before coding, first inspect the current search implementation and tell me if there is any architectural constraint that would change the best approach. Otherwise proceed with the scoped implementation above.

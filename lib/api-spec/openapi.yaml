@@ -710,6 +710,29 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Job"
+  /search/suggestions:
+    get:
+      operationId: listSearchSuggestions
+      tags: [search]
+      summary: Ranked search suggestions for a scope
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema: { type: string, enum: [candidates, jobs] }
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchSuggestion"
   /jobs/{id}:
     get:
       operationId: getJob
@@ -946,6 +969,15 @@ components:
           type: string
       required:
         - status
+    SearchSuggestion:
+      type: object
+      required: [label, kind]
+      properties:
+        label:
+          type: string
+        kind:
+          type: string
+          enum: [title, company, skill]
     ApiMessage:
       type: object
       required: [message]

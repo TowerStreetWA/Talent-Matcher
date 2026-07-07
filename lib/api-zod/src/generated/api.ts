@@ -827,6 +827,21 @@ export const ListJobsResponse = zod.array(ListJobsResponseItem)
 
 
 /**
+ * @summary Ranked search suggestions for a scope
+ */
+export const ListSearchSuggestionsQueryParams = zod.object({
+  "scope": zod.enum(['candidates', 'jobs']),
+  "q": zod.coerce.string()
+})
+
+export const ListSearchSuggestionsResponseItem = zod.object({
+  "label": zod.string(),
+  "kind": zod.enum(['title', 'company', 'skill'])
+})
+export const ListSearchSuggestionsResponse = zod.array(ListSearchSuggestionsResponseItem)
+
+
+/**
  * @summary Get a job
  */
 export const GetJobParams = zod.object({

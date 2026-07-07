@@ -52,6 +52,14 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Sentry: DSN in `SENTRY_DSN` / `VITE_SENTRY_DSN` env vars (shared). Server: `lib/sentry.ts` (env-gated init, PII scrubbing in beforeSend, tenant/user/role tags via middleware, `Sentry.setupExpressErrorHandler`); `index.ts` is a bootstrap that inits Sentry then dynamically imports `start.ts` (ESM import hoisting would otherwise load Express first). Dev-only `/api/debug-sentry` route throws to verify capture. Client: init + ErrorBoundary in `main.tsx`. Both no-op when DSN unset
 - PostHog: client-side `src/lib/analytics.ts` (env-gated on `VITE_PUBLIC_POSTHOG_KEY` secret; `VITE_PUBLIC_POSTHOG_HOST` is set to https://eu.i.posthog.com — the account is on EU cloud; default would be US); identify on login (userId, tenant, role), events: login, cv_upload_started/failed, cv_parse_succeeded/failed, match_run_completed, match_status_updated, billing_page_viewed, checkout_started. No-ops when key unset
 
+## Search quality (Phase 5)
+
+- `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)
+- Candidates/jobs GET: variants broaden ILIKE across name/title/company/location/skills/titles/industries (arrays via `array_to_string`), then in-memory rank when `search` present; date order otherwise. Every search is logged via `req.log` (event `search`: truncated raw/normalized query, filters, resultCount, zeroResults)
+- GET /search/suggestions?scope=jobs|candidates&q= (min 2 chars) — tenant-scoped titles/companies/skills, prefix>word>substring ranked, max 8
+- Frontend: `components/search-box.tsx` (debounced suggestions dropdown, keyboard nav), `hooks/use-debounce.ts`; candidates/jobs/matches pages have filter chips + clear-all + result counts + zero-result recovery buttons; PostHog events: search_performed, search_zero_results, suggestion_selected, search_result_clicked
+- Unit tests: `pnpm --filter @workspace/api-server run test` (vitest, search lib)
+
 ## Product
 
 - Upload CV → AI-parsed profile → ranked, explainable job matches

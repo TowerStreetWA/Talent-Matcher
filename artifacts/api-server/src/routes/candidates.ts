@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, and, ilike, or } from "drizzle-orm";
+import { desc, eq, and, ilike, or, sql } from "drizzle-orm";
 import {
   db,
   candidatesTable,
@@ -29,6 +29,8 @@ import { recordAudit } from "../lib/audit";
 import { tenantOf, auditActor } from "../middlewares/auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { extractCvText, CvExtractionError } from "../lib/extractCvText";
+import { normalizeQuery } from "../lib/search/normalize";
+import { scoreCandidate } from "../lib/search/rank";
 
 const router: IRouter = Router();
 const objectStorage = new ObjectStorageService();
@@ -40,22 +42,56 @@ router.get("/candidates", async (req, res): Promise<void> => {
   const search = typeof req.query["search"] === "string" ? req.query["search"] : "";
   const status = typeof req.query["status"] === "string" ? req.query["status"] : "";
   const conditions = [eq(candidatesTable.tenantId, tenantOf(req))];
-  if (search) {
-    const like = `%${search}%`;
-    const searchCond = or(
-      ilike(candidatesTable.firstName, like),
-      ilike(candidatesTable.lastName, like),
-      ilike(candidatesTable.currentTitle, like),
-      ilike(candidatesTable.currentCompany, like),
-    );
+  const nq = search ? normalizeQuery(search) : null;
+  if (nq) {
+    const likeConds = [];
+    for (const variant of nq.variants.slice(0, 15)) {
+      const like = `%${variant}%`;
+      likeConds.push(
+        ilike(candidatesTable.firstName, like),
+        ilike(candidatesTable.lastName, like),
+        ilike(candidatesTable.currentTitle, like),
+        ilike(candidatesTable.currentCompany, like),
+        ilike(candidatesTable.locationText, like),
+        sql`array_to_string(${candidatesTable.skills}, ' ') ILIKE ${like}`,
+        sql`array_to_string(${candidatesTable.titles}, ' ') ILIKE ${like}`,
+        sql`array_to_string(${candidatesTable.industries}, ' ') ILIKE ${like}`,
+      );
+    }
+    const searchCond = or(...likeConds);
     if (searchCond) conditions.push(searchCond);
   }
   if (status) conditions.push(eq(candidatesTable.status, status));
-  const rows = await db
+  let rows = await db
     .select()
     .from(candidatesTable)
     .where(and(...conditions))
     .orderBy(desc(candidatesTable.createdAt));
+  if (nq) {
+    rows = rows
+      .map((row) => ({ row, score: scoreCandidate(nq, row).total }))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.row.createdAt.getTime() - a.row.createdAt.getTime(),
+      )
+      .map(({ row }) => row);
+  }
+  if (nq) {
+    req.log.info(
+      {
+        event: "search",
+        scope: "candidates",
+        rawQuery: search.slice(0, 200),
+        normalizedQuery: nq.cleaned.slice(0, 200),
+        variantCount: nq.variants.length,
+        filters: { status: status || undefined },
+        resultCount: rows.length,
+        zeroResults: rows.length === 0,
+      },
+      "candidate search executed",
+    );
+  }
   res.json(ListCandidatesResponse.parse(rows.map(toCandidateDto)));
 });
 

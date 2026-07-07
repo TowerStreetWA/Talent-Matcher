@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Target, Filter } from "lucide-react";
+import { Target, Filter, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -23,6 +23,14 @@ export default function Matches() {
     recruiterStatus: recruiterStatus === "all" ? undefined : recruiterStatus,
     minScore: minScore[0]
   });
+
+  const DEFAULT_MIN_SCORE = 70;
+  const hasActiveFilters =
+    recruiterStatus !== "all" || (minScore[0] ?? DEFAULT_MIN_SCORE) !== DEFAULT_MIN_SCORE;
+  const resetFilters = (): void => {
+    setRecruiterStatus("all");
+    setMinScore([DEFAULT_MIN_SCORE]);
+  };
 
   return (
     <div className="space-y-6">
@@ -63,6 +71,43 @@ export default function Matches() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 text-sm min-h-6">
+        {recruiterStatus !== "all" && (
+          <Badge variant="secondary" className="gap-1 font-normal capitalize">
+            Status: {recruiterStatus}
+            <button
+              aria-label="Clear status filter"
+              onClick={() => setRecruiterStatus("all")}
+              className="ml-0.5 hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
+        {(minScore[0] ?? DEFAULT_MIN_SCORE) !== DEFAULT_MIN_SCORE && (
+          <Badge variant="secondary" className="gap-1 font-normal">
+            Min score: {minScore[0]}
+            <button
+              aria-label="Reset min score"
+              onClick={() => setMinScore([DEFAULT_MIN_SCORE])}
+              className="ml-0.5 hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={resetFilters}>
+            Reset filters
+          </Button>
+        )}
+        {!isLoading && matches && (
+          <span className="text-muted-foreground ml-auto">
+            {matches.length} match{matches.length === 1 ? "" : "es"}
+          </span>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -86,8 +131,29 @@ export default function Matches() {
           <Target className="h-12 w-12 text-muted-foreground/30 mb-4" />
           <h3 className="text-lg font-medium">No matches found</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm text-center">
-            Try lowering your minimum score or changing the status filter.
+            {(minScore[0] ?? 70) > 30
+              ? `The minimum score of ${minScore[0]} may be filtering everything out.`
+              : recruiterStatus !== "all"
+                ? `No matches with status “${recruiterStatus}”.`
+                : "Run a match from a candidate profile to generate matches."}
           </p>
+          <div className="flex gap-2 mt-4">
+            {(minScore[0] ?? 70) > 30 && (
+              <Button variant="outline" size="sm" onClick={() => setMinScore([30])}>
+                Lower min score to 30
+              </Button>
+            )}
+            {recruiterStatus !== "all" && (
+              <Button variant="outline" size="sm" onClick={() => setRecruiterStatus("all")}>
+                Show all statuses
+              </Button>
+            )}
+            {hasActiveFilters && (
+              <Button variant="secondary" size="sm" onClick={resetFilters}>
+                Reset filters
+              </Button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

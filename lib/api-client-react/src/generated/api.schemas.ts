@@ -9,6 +9,20 @@ export interface HealthStatus {
   status: string;
 }
 
+export type SearchSuggestionKind = typeof SearchSuggestionKind[keyof typeof SearchSuggestionKind];
+
+
+export const SearchSuggestionKind = {
+  title: 'title',
+  company: 'company',
+  skill: 'skill',
+} as const;
+
+export interface SearchSuggestion {
+  label: string;
+  kind: SearchSuggestionKind;
+}
+
 export interface ApiMessage {
   message: string;
 }
@@ -552,4 +566,17 @@ search?: string;
 sourceId?: string;
 status?: string;
 };
+
+export type ListSearchSuggestionsParams = {
+scope: ListSearchSuggestionsScope;
+q: string;
+};
+
+export type ListSearchSuggestionsScope = typeof ListSearchSuggestionsScope[keyof typeof ListSearchSuggestionsScope];
+
+
+export const ListSearchSuggestionsScope = {
+  candidates: 'candidates',
+  jobs: 'jobs',
+} as const;
 

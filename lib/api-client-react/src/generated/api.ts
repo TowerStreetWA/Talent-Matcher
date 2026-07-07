@@ -50,6 +50,7 @@ import type {
   ListCandidatesParams,
   ListJobsParams,
   ListMatchesParams,
+  ListSearchSuggestionsParams,
   LoginInput,
   LookupInviteParams,
   Match,
@@ -57,6 +58,7 @@ import type {
   MatchUpdate,
   RequestUploadUrlInput,
   RequestUploadUrlResult,
+  SearchSuggestion,
   SignupInput,
   TeamInvite,
   TeamMember,
@@ -2379,6 +2381,90 @@ export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListSearchSuggestionsUrl = (params: ListSearchSuggestionsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/search/suggestions?${stringifiedParams}` : `/api/search/suggestions`
+}
+
+/**
+ * @summary Ranked search suggestions for a scope
+ */
+export const listSearchSuggestions = async (params: ListSearchSuggestionsParams, options?: RequestInit): Promise<SearchSuggestion[]> => {
+
+  return customFetch<SearchSuggestion[]>(getListSearchSuggestionsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSearchSuggestionsQueryKey = (params?: ListSearchSuggestionsParams,) => {
+    return [
+    `/api/search/suggestions`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListSearchSuggestionsQueryOptions = <TData = Awaited<ReturnType<typeof listSearchSuggestions>>, TError = ErrorType<unknown>>(params: ListSearchSuggestionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSearchSuggestions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSearchSuggestionsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSearchSuggestions>>> = ({ signal }) => listSearchSuggestions(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSearchSuggestions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSearchSuggestionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSearchSuggestions>>>
+export type ListSearchSuggestionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Ranked search suggestions for a scope
+ */
+
+export function useListSearchSuggestions<TData = Awaited<ReturnType<typeof listSearchSuggestions>>, TError = ErrorType<unknown>>(
+ params: ListSearchSuggestionsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSearchSuggestions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSearchSuggestionsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -1,9 +1,11 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, and, ilike, or } from "drizzle-orm";
+import { desc, eq, and, ilike, or, sql } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable } from "@workspace/db";
 import { ListJobsResponse, GetJobResponse } from "@workspace/api-zod";
 import { toJobDto } from "../lib/dto";
 import { tenantOf } from "../middlewares/auth";
+import { normalizeQuery } from "../lib/search/normalize";
+import { scoreJob } from "../lib/search/rank";
 
 const router: IRouter = Router();
 
@@ -16,24 +18,58 @@ router.get("/jobs", async (req, res): Promise<void> => {
     typeof req.query["sourceId"] === "string" ? req.query["sourceId"] : "";
   const status = typeof req.query["status"] === "string" ? req.query["status"] : "";
   const conditions = [eq(jobsTable.tenantId, tenantOf(req))];
-  if (search) {
-    const like = `%${search}%`;
-    const searchCond = or(
-      ilike(jobsTable.title, like),
-      ilike(jobsTable.companyName, like),
-      ilike(jobsTable.locationText, like),
-    );
+  const nq = search ? normalizeQuery(search) : null;
+  if (nq) {
+    const likeConds = [];
+    for (const variant of nq.variants.slice(0, 15)) {
+      const like = `%${variant}%`;
+      likeConds.push(
+        ilike(jobsTable.title, like),
+        ilike(jobsTable.companyName, like),
+        ilike(jobsTable.locationText, like),
+        ilike(jobsTable.industry, like),
+        ilike(jobsTable.descriptionText, like),
+        sql`array_to_string(${jobsTable.skills}, ' ') ILIKE ${like}`,
+      );
+    }
+    const searchCond = or(...likeConds);
     if (searchCond) conditions.push(searchCond);
   }
   if (sourceId) conditions.push(eq(jobsTable.sourceId, sourceId));
   if (status) conditions.push(eq(jobsTable.status, status));
-  const rows = await db
+  let rows = await db
     .select({ job: jobsTable, sourceName: jobSourcesTable.name })
     .from(jobsTable)
     .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
     .where(and(...conditions))
     .orderBy(desc(jobsTable.postedAt))
     .limit(200);
+  if (nq) {
+    rows = rows
+      .map((r) => ({ r, score: scoreJob(nq, r.job).total }))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          (b.r.job.postedAt?.getTime() ?? 0) - (a.r.job.postedAt?.getTime() ?? 0),
+      )
+      .map(({ r }) => r);
+    req.log.info(
+      {
+        event: "search",
+        scope: "jobs",
+        rawQuery: search.slice(0, 200),
+        normalizedQuery: nq.cleaned.slice(0, 200),
+        variantCount: nq.variants.length,
+        filters: {
+          sourceId: sourceId || undefined,
+          status: status || undefined,
+        },
+        resultCount: rows.length,
+        zeroResults: rows.length === 0,
+      },
+      "job search executed",
+    );
+  }
   res.json(
     ListJobsResponse.parse(rows.map((r) => toJobDto(r.job, r.sourceName))),
   );
