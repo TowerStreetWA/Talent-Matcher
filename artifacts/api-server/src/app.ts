@@ -9,6 +9,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./lib/webhookHandlers";
+import { setupSentryErrorHandler } from "./lib/sentry";
 
 const app: Express = express();
 
@@ -65,6 +66,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+setupSentryErrorHandler(app);
 
 app.use(
   (err: unknown, req: Request, res: Response, _next: NextFunction): void => {

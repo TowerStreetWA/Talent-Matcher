@@ -11,6 +11,7 @@ import adminRouter from "./admin";
 import billingRouter from "./billing";
 import storageRouter from "./storage";
 import { requireAuth, blockViewerWrites, requireRole } from "../middlewares/auth";
+import { sentryContextMiddleware } from "../lib/sentry";
 import { enforceBillingForWrites } from "../middlewares/billing";
 
 const router: IRouter = Router();
@@ -18,7 +19,15 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
 
-router.use(requireAuth, blockViewerWrites);
+router.use(requireAuth, sentryContextMiddleware, blockViewerWrites);
+
+// Dev-only route to verify Sentry captures unhandled route errors.
+if (process.env["NODE_ENV"] !== "production") {
+  router.get("/debug-sentry", () => {
+    throw new Error("Sentry verification error (dev-only route)");
+  });
+}
+
 router.use(billingRouter);
 router.use(enforceBillingForWrites);
 router.use(storageRouter);

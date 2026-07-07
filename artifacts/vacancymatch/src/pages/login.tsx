@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Target } from "lucide-react";
 import { useLogin, type ApiMessage } from "@workspace/api-client-react";
 import { useInvalidateMe } from "@/lib/auth";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export default function Login() {
     mutation: {
       onSuccess: () => {
         setError(null);
+        track("login");
         invalidateMe();
       },
       onError: (err) => {

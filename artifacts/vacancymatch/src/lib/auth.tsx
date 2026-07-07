@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetMe,
@@ -6,6 +6,7 @@ import {
   getGetMeQueryKey,
   type AuthUser,
 } from "@workspace/api-client-react";
+import { identifyUser, resetAnalytics } from "./analytics";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -29,13 +30,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logoutMutation = useLogout({
     mutation: {
       onSettled: () => {
+        resetAnalytics();
         queryClient.clear();
       },
     },
   });
 
+  const user = !isError && data ? data : null;
+
+  useEffect(() => {
+    if (user) {
+      identifyUser(user.id, { tenant: user.tenantId, role: user.role });
+    }
+  }, [user]);
+
   const value: AuthContextValue = {
-    user: !isError && data ? data : null,
+    user,
     isLoading,
     logout: () => logoutMutation.mutate(),
     isLoggingOut: logoutMutation.isPending,

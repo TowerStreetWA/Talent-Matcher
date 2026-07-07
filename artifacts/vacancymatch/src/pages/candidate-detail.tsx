@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { track } from "@/lib/analytics";
 import { 
   Briefcase, 
   MapPin, 
@@ -117,6 +118,7 @@ export default function CandidateDetail() {
   const handleRunMatch = () => {
     runMatch.mutate({ id }, {
       onSuccess: () => {
+        track("match_run_completed", { trigger: "manual" });
         toast({ title: "Match run started", description: "Scanning live jobs..." });
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: getListCandidateMatchesQueryKey(id) });
@@ -128,6 +130,7 @@ export default function CandidateDetail() {
   const handleMatchStatus = (matchId: string, status: string) => {
     updateMatch.mutate({ id: matchId, data: { recruiterStatus: status } }, {
       onSuccess: () => {
+        track("match_status_updated", { status });
         toast({ title: `Match ${status}` });
         queryClient.invalidateQueries({ queryKey: getListCandidateMatchesQueryKey(id) });
       }

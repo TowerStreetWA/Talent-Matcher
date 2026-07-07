@@ -8,6 +8,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { track } from "@/lib/analytics";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,12 +49,17 @@ export default function Billing() {
   const queryClient = useQueryClient();
   const canManage = user?.role === "owner" || user?.role === "admin";
 
+  React.useEffect(() => {
+    track("billing_page_viewed");
+  }, []);
+
   const { data: subscription, isLoading: loadingSub } = useGetBillingSubscription();
   const { data: plans, isLoading: loadingPlans } = useListBillingPlans();
 
   const checkout = useCreateBillingCheckout({
     mutation: {
       onSuccess: (data) => {
+        track("checkout_started");
         window.location.href = data.url;
       },
     },

@@ -14,7 +14,7 @@ runButton = "Project"
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
-integrations = ["stripe:1.0.0", "resend:1.0.0"]
+integrations = ["stripe:1.0.0", "resend:1.0.0", "sentry:1.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"
@@ -22,3 +22,10 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+SENTRY_DSN = "https://9c8f031f8ecfe8d33f16e856e20dc15f@o4511489581514752.ingest.de.sentry.io/4511489622933584"
+VITE_SENTRY_DSN = "https://9c8f031f8ecfe8d33f16e856e20dc15f@o4511489581514752.ingest.de.sentry.io/4511489622933584"
+VITE_PUBLIC_POSTHOG_HOST = "https://eu.i.posthog.com"

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { track } from "@/lib/analytics";
 import { UploadCloud, FileText, X } from "lucide-react";
 
 const ACCEPTED = ".pdf,.docx,.doc,.txt";
@@ -48,6 +49,8 @@ export default function UploadCv() {
       return;
     }
 
+    track("cv_upload_started", { method: file ? "file" : "paste" });
+
     try {
       let objectPath: string | undefined;
       if (file) {
@@ -79,10 +82,12 @@ export default function UploadCv() {
         },
         {
           onSuccess: (data) => {
+            track("cv_parse_succeeded", { method: file ? "file" : "paste" });
             toast({ title: "Success", description: "CV parsed successfully." });
             setLocation(`/candidates/${data.id}`);
           },
           onError: (err: unknown) => {
+            track("cv_parse_failed", { method: file ? "file" : "paste" });
             const message =
               err && typeof err === "object" && "message" in err
                 ? String((err as { message: unknown }).message)
@@ -92,6 +97,7 @@ export default function UploadCv() {
         },
       );
     } catch {
+      track("cv_upload_failed", { stage: "file_transfer" });
       setIsUploading(false);
       toast({
         title: "Error",

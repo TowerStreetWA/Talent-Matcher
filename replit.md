@@ -38,6 +38,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Tenant scoping is enforced on all data routes: `tenantId` on data rows is the tenant **slug** (matches legacy `"demo"` text data), while `tenant_users.tenantId` is the tenants uuid PK; `tenantOf(req)` returns the slug
 - Stripe billing (Phase 2, DONE): Replit Stripe integration (`stripe` + `stripe-replit-sync`, credentials via connector API in `src/lib/stripeClient.ts` — NOT env vars). Managed webhook at `/api/stripe/webhook` (raw body, registered in app.ts BEFORE express.json). Webhook-synced Stripe data lives in the `stripe` DB schema (read-only; never write to it). `tenant_billing` caches per-tenant state (tenantId = slug), refreshed from `stripe.subscriptions` on GET /billing/subscription — never from checkout redirects. Plans: Starter $49/mo (7-day trial, no card via `payment_method_collection: if_required`), Team $149/mo; price IDs resolved from `stripe.prices` via product `metadata.plan_key`. Access gate (`middlewares/billing.ts`): trialing/active/past_due → full access; none/canceled/etc → reads OK, writes 402; billing + auth routes always reachable. Checkout/portal are admin+ only. Billing events are audit-logged. Scripts: `pnpm --filter @workspace/scripts exec tsx src/seedStripeProducts.ts` (idempotent) and `src/devStartTrial.ts` (dev trial for demo tenant)
 
+## Integrations (Phase 3)
+
+- CV file upload: Replit App Storage presigned uploads (`routes/storage.ts`, 10MB, pdf/docx/doc/txt); text extraction in `lib/extractCvText.ts` (unpdf/mammoth); `cvFileKey` on candidates + tenant-scoped download route
+- Resend email: `lib/email.ts` wrapper via connector proxy (never throws); alert-rule match notifications (matchRunner) + checkout-started emails. Sandbox mode: delivers only to the account owner's email until a domain is verified at resend.com/domains; FROM is onboarding@resend.dev
+- Sentry: DSN in `SENTRY_DSN` / `VITE_SENTRY_DSN` env vars (shared). Server: `lib/sentry.ts` (env-gated init, PII scrubbing in beforeSend, tenant/user/role tags via middleware, `Sentry.setupExpressErrorHandler`); `index.ts` is a bootstrap that inits Sentry then dynamically imports `start.ts` (ESM import hoisting would otherwise load Express first). Dev-only `/api/debug-sentry` route throws to verify capture. Client: init + ErrorBoundary in `main.tsx`. Both no-op when DSN unset
+- PostHog: client-side `src/lib/analytics.ts` (env-gated on `VITE_PUBLIC_POSTHOG_KEY` secret; `VITE_PUBLIC_POSTHOG_HOST` is set to https://eu.i.posthog.com — the account is on EU cloud; default would be US); identify on login (userId, tenant, role), events: login, cv_upload_started/failed, cv_parse_succeeded/failed, match_run_completed, match_status_updated, billing_page_viewed, checkout_started. No-ops when key unset
+
 ## Product
 
 - Upload CV → AI-parsed profile → ranked, explainable job matches
@@ -57,6 +64,8 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - `stripe-replit-sync` must stay in esbuild `external` (build.mjs) — it reads its migrations dir from its own `__dirname` and silently skips migrations if bundled
 - `syncBackfill()` must be called with `{ object: "all" }` — no args syncs nothing
 - Stripe connector settings keys are `secret` / `publishable` (not `secret_key`)
+- api-server esbuild externals include `@opentelemetry/*` — any external package's transitive deps must be direct deps of api-server (pnpm strict node_modules), hence the @opentelemetry/* entries in its package.json
+- Adding a package that depends on `@opentelemetry/api` (e.g. @sentry/node) can split drizzle-orm into two peer-resolved type identities — fix by adding `@opentelemetry/api` to lib/db deps too
 
 ## Pointers
 
