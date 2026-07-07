@@ -61,7 +61,12 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// The frontend is served same-origin behind the shared proxy, so cross-origin
+// access is only needed for local development tooling. Keep production locked
+// down: no CORS headers means browsers enforce same-origin for the API.
+if (process.env["NODE_ENV"] !== "production") {
+  app.use(cors());
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

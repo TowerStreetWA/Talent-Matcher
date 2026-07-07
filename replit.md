@@ -38,6 +38,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Tenant scoping is enforced on all data routes: `tenantId` on data rows is the tenant **slug** (matches legacy `"demo"` text data), while `tenant_users.tenantId` is the tenants uuid PK; `tenantOf(req)` returns the slug
 - Stripe billing (Phase 2, DONE): Replit Stripe integration (`stripe` + `stripe-replit-sync`, credentials via connector API in `src/lib/stripeClient.ts` — NOT env vars). Managed webhook at `/api/stripe/webhook` (raw body, registered in app.ts BEFORE express.json). Webhook-synced Stripe data lives in the `stripe` DB schema (read-only; never write to it). `tenant_billing` caches per-tenant state (tenantId = slug), refreshed from `stripe.subscriptions` on GET /billing/subscription — never from checkout redirects. Plans: Starter $49/mo (7-day trial, no card via `payment_method_collection: if_required`), Team $149/mo; price IDs resolved from `stripe.prices` via product `metadata.plan_key`. Access gate (`middlewares/billing.ts`): trialing/active/past_due → full access; none/canceled/etc → reads OK, writes 402; billing + auth routes always reachable. Checkout/portal are admin+ only. Billing events are audit-logged. Scripts: `pnpm --filter @workspace/scripts exec tsx src/seedStripeProducts.ts` (idempotent) and `src/devStartTrial.ts` (dev trial for demo tenant)
 
+## Production go-live (Phase 10)
+
+- Seed guardrails: in production, `ensureAuthSeed()` seeds nothing (not even the demo tenant) unless `SEED_DEMO_PASSWORD` is set; `seedIfEmpty()` seeds nothing unless `SEED_DEMO_DATA=true`. Keep both unset in production — real tenants come via /signup
+- CORS middleware is dev-only; production serves the SPA same-origin behind the shared proxy (no CORS headers). Session cookie: httpOnly, sameSite=lax, secure in prod
+- Deployment: autoscale; api-server builds via esbuild + runs `node dist/index.mjs` with NODE_ENV=production + /api/healthz startup check; vacancymatch is static-served from dist/public with SPA rewrite. Prod DB schema is applied by Replit's Publish flow (schema diff) — never hand-migrate prod
+- Go-live externals (user actions): Stripe connector is in TEST mode — switch to live keys, rerun seedStripeProducts.ts (webhook re-registers itself on boot from prod REPLIT_DOMAINS); Resend is sandbox (FROM onboarding@resend.dev, delivers only to account owner) — verify a domain at resend.com/domains and update FROM in lib/email.ts
+
 ## Signup & Team (Phase 4)
 
 - Self-serve signup: POST /auth/signup creates tenant + owner in one txn; slug auto-generated from company name (`uniqueSlug()` with `-2` suffixes + unique-violation retry); dup email 409. Pages: `/signup`, `/accept-invite` (public routes rendered by AuthGate when logged out)

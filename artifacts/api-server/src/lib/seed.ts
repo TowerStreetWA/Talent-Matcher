@@ -21,6 +21,16 @@ const daysAgo = (n: number): Date =>
 const hoursAgo = (n: number): Date => new Date(Date.now() - n * 60 * 60 * 1000);
 
 export async function ensureAuthSeed(): Promise<void> {
+  if (
+    process.env["NODE_ENV"] === "production" &&
+    !process.env["SEED_DEMO_PASSWORD"]
+  ) {
+    logger.info(
+      "Production without SEED_DEMO_PASSWORD; skipping demo tenant/user seed",
+    );
+    return;
+  }
+
   const [existingTenant] = await db
     .select()
     .from(tenantsTable)
@@ -45,13 +55,6 @@ export async function ensureAuthSeed(): Promise<void> {
     .where(eq(tenantUsersTable.tenantId, tenant.id))
     .limit(1);
   if (existingUsers.length > 0) return;
-
-  if (process.env["NODE_ENV"] === "production" && !process.env["SEED_DEMO_PASSWORD"]) {
-    logger.warn(
-      "No users exist and SEED_DEMO_PASSWORD is not set; skipping demo user seed in production",
-    );
-    return;
-  }
 
   const password = process.env["SEED_DEMO_PASSWORD"] ?? "demo1234";
   const passwordHash = await hashPassword(password);
@@ -90,6 +93,16 @@ export async function ensureAuthSeed(): Promise<void> {
 }
 
 export async function seedIfEmpty(): Promise<void> {
+  if (
+    process.env["NODE_ENV"] === "production" &&
+    process.env["SEED_DEMO_DATA"] !== "true"
+  ) {
+    logger.info(
+      "Production without SEED_DEMO_DATA=true; skipping demo data seed",
+    );
+    return;
+  }
+
   const existing = await db.select().from(jobSourcesTable).limit(1);
   if (existing.length > 0) return;
 

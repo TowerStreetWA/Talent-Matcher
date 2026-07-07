@@ -1,0 +1,37 @@
+Approved — close and merge Phase 9. It fixes the most dangerous conversion break in the product by replacing unexplained billing failures with guided activation, and it does so without destabilizing the API or billing logic. [memory: cite:50]
+
+## What’s good
+
+The best parts are the single primary next action, the app-wide 402 interception, and the safe return-path after checkout. Together, those make first-session onboarding feel intentional and properly SaaS-like instead of leaving new tenants to discover the billing model by failure. [memory: cite:50]  
+The disciplined scope is also a win: no schema churn, no server churn, and no billing rewrite for something that is fundamentally a UX/conversion problem. [memory: cite:50]
+
+## Decision
+
+Merge it as-is. The typecheck pass, end-to-end coverage, architect pass, and preserved billing logic are enough to treat this as done. [memory: cite:50]  
+The two throwaway dev tenants are harmless; clean them up if easy, but they are not a reason to keep the phase open.
+
+## Next phase
+
+The next step should now be **production publish readiness only**. You’ve reached the point where the question is not what feature to add, but what still prevents safe live rollout for real tenants. [memory: cite:50]  
+That phase should cover seed/demo guardrails, production env verification, Stripe live/test sanity, Resend domain/live email readiness, Sentry alerting, and a deploy checklist before publish. 
+
+## Exact reply
+
+Send this:
+
+> Approved — close and merge Phase 9.  
+> This is the right activation/conversion fix: new tenants now get guided setup, the billing gate is understandable, and post-checkout return-to-task behavior is in place.  
+> The two throwaway dev tenants can be cleaned up if convenient, but they are not a blocker.  
+> Next phase should be production publish readiness only — no new product features.  
+> Scope that phase around:  
+> - seed/demo account guardrails  
+> - production env and secret verification  
+> - Stripe live/test mode sanity checks  
+> - Resend domain/live email readiness  
+> - Sentry alerting and release confidence  
+> - deploy/publish checklist  
+> - any final blockers to letting real tenants sign up  
+> 
+> Come back with a tight go-live readiness report and any blocking issues before publish.
+
+Sources
