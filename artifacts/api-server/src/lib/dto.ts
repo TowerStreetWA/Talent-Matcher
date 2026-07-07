@@ -63,6 +63,11 @@ export function toJobDto(j: Job, sourceName?: string | null) {
     postedAt: iso(j.postedAt),
     expiresAt: iso(j.expiresAt),
     status: j.status,
+    salaryText: j.salaryText,
+    sourceType: j.sourceType,
+    sourceProvider: j.sourceProvider,
+    sourceUrl: j.sourceUrl,
+    isCanonical: j.isCanonical,
     createdAt: j.createdAt.toISOString(),
   };
 }

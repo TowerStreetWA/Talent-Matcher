@@ -41,6 +41,9 @@ export async function runMatchForCandidate(
           and(
             eq(jobsTable.status, "active"),
             eq(jobsTable.tenantId, candidate.tenantId),
+            // Only canonical vacancies are matched; duplicate copies of the
+            // same role (isCanonical=false) are excluded.
+            eq(jobsTable.isCanonical, true),
             inArray(jobsTable.sourceId, activeSourceIds),
           ),
         )

@@ -1498,6 +1498,11 @@ components:
         postedAt: { type: ["string", "null"] }
         expiresAt: { type: ["string", "null"] }
         status: { type: string }
+        salaryText: { type: ["string", "null"] }
+        sourceType: { type: ["string", "null"], description: "Discovery source: direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
+        sourceProvider: { type: ["string", "null"] }
+        sourceUrl: { type: ["string", "null"] }
+        isCanonical: { type: boolean, default: true, description: "False when this row is a duplicate copy of another vacancy in the same canonical group" }
         createdAt: { type: string }
     JobSource:
       type: object

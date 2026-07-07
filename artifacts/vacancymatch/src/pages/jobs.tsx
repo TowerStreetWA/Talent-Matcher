@@ -221,6 +221,33 @@ export default function Jobs() {
                         <Badge variant="outline" className="text-xs bg-muted/50 font-normal">
                           {job.sourceName || "Direct"}
                         </Badge>
+                        {job.sourceType === "direct_employer" && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-normal border-primary/40 text-primary"
+                            data-testid={`badge-direct-employer-${job.id}`}
+                          >
+                            Direct employer
+                          </Badge>
+                        )}
+                        {job.sourceType === "google_jobs" && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-normal"
+                            data-testid={`badge-google-jobs-${job.id}`}
+                          >
+                            Google Jobs
+                          </Badge>
+                        )}
+                        {job.isCanonical === false && (
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-normal text-muted-foreground"
+                            data-testid={`badge-duplicate-${job.id}`}
+                          >
+                            Duplicate
+                          </Badge>
+                        )}
                         {job.postedAt && (
                           <span className="text-xs flex items-center gap-1 text-muted-foreground">
                             <Clock className="w-3 h-3" />

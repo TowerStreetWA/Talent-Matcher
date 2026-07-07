@@ -8,3 +8,5 @@
 - [PostHog region routing](posthog-region-routing.md) — phc_ keys don't encode region; wrong ingestion host fails silently as 404s. Verify with /array/<key>/config.js per host.
 - [Secrets hygiene](secrets-hygiene.md) — user-pasted secrets can contain stray whitespace; trim keys in code, and restart workflows after a secret's value changes.
 - [Design subagent scope](design-subagent-scope.md) — restyle briefs may be only partially executed; diff against the brief's scope list and finish gaps directly.
+- [Long-running HTTP ingestion](long-running-ingestion.md) — Node drops request connections at ~5 min and detached bash curls die with the shell; keep scrape runs under ~2 min via limited concurrency, retry once after upstream cache warm-up.
+- [Careers-page URL staleness](careers-url-staleness.md) — curated employer career-site URLs 404 over time; curl-probe the URL before debugging extraction logic.

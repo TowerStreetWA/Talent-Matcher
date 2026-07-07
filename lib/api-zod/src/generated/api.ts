@@ -583,6 +583,8 @@ export const ListCandidateMatchesParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const listCandidateMatchesResponseJobIsCanonicalDefault = true;
+
 export const ListCandidateMatchesResponseItem = zod.object({
   "id": zod.string(),
   "matchRunId": zod.string(),
@@ -608,6 +610,11 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(listCandidateMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 }).optional(),
   "overallScore": zod.number(),
@@ -658,6 +665,8 @@ export const ListMatchesQueryParams = zod.object({
   "minScore": zod.coerce.number().optional()
 })
 
+export const listMatchesResponseJobIsCanonicalDefault = true;
+
 export const ListMatchesResponseItem = zod.object({
   "id": zod.string(),
   "matchRunId": zod.string(),
@@ -683,6 +692,11 @@ export const ListMatchesResponseItem = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(listMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 }).optional(),
   "overallScore": zod.number(),
@@ -717,6 +731,8 @@ export const UpdateMatchBody = zod.object({
   "recruiterNote": zod.string().optional()
 })
 
+export const updateMatchResponseJobIsCanonicalDefault = true;
+
 export const UpdateMatchResponse = zod.object({
   "id": zod.string(),
   "matchRunId": zod.string(),
@@ -742,6 +758,11 @@ export const UpdateMatchResponse = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(updateMatchResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 }).optional(),
   "overallScore": zod.number(),
@@ -802,6 +823,8 @@ export const ListJobsQueryParams = zod.object({
   "status": zod.coerce.string().optional()
 })
 
+export const listJobsResponseIsCanonicalDefault = true;
+
 export const ListJobsResponseItem = zod.object({
   "id": zod.string(),
   "sourceId": zod.string().nullish(),
@@ -821,6 +844,11 @@ export const ListJobsResponseItem = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(listJobsResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 })
 export const ListJobsResponse = zod.array(ListJobsResponseItem)
@@ -848,6 +876,8 @@ export const GetJobParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const getJobResponseIsCanonicalDefault = true;
+
 export const GetJobResponse = zod.object({
   "id": zod.string(),
   "sourceId": zod.string().nullish(),
@@ -867,6 +897,11 @@ export const GetJobResponse = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(getJobResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 })
 
@@ -1059,6 +1094,8 @@ export const GetRecentActivityResponse = zod.array(GetRecentActivityResponseItem
 /**
  * @summary Top new matches across all candidates
  */
+export const getTopMatchesResponseJobIsCanonicalDefault = true;
+
 export const GetTopMatchesResponseItem = zod.object({
   "id": zod.string(),
   "matchRunId": zod.string(),
@@ -1084,6 +1121,11 @@ export const GetTopMatchesResponseItem = zod.object({
   "postedAt": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "status": zod.string(),
+  "salaryText": zod.string().nullish(),
+  "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
+  "sourceProvider": zod.string().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "isCanonical": zod.boolean().default(getTopMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "createdAt": zod.string()
 }).optional(),
   "overallScore": zod.number(),

@@ -242,6 +242,29 @@ export async function scrapeResearchPage(url: URL): Promise<ScrapedPageResult> {
   };
 }
 
+/**
+ * Generic structured extraction: scrape a page and return the raw JSON produced
+ * by Firecrawl for the given prompt + JSON schema. Callers must validate the
+ * result themselves (e.g. with zod).
+ */
+export async function firecrawlExtractJson(
+  url: URL,
+  prompt: string,
+  schema: Record<string, unknown>,
+): Promise<unknown> {
+  const result = await firecrawlScrape({
+    url: url.toString(),
+    formats: [{ type: "json", prompt, schema }],
+    onlyMainContent: true,
+    timeout: PAGE_TIMEOUT_MS,
+  });
+  const raw = result.data?.json;
+  if (raw == null || typeof raw !== "object") {
+    throw new FirecrawlError("upstream", "Firecrawl returned no structured data");
+  }
+  return raw;
+}
+
 export async function extractResearchJob(url: URL): Promise<ExtractedJobFields> {
   const result = await firecrawlScrape({
     url: url.toString(),

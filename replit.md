@@ -87,6 +87,14 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - `components/getting-started.tsx` — dashboard "Get set up" panel: 4 steps (trial → source → CV → shortlist) derived from existing subscription + dashboard-summary queries; only the first incomplete step gets an action button (single primary action); dismissible per tenant via localStorage; auto-hides when complete. Zero-value dashboard metric cards render CTA links
 - upload-cv.tsx suppresses its own 402 toasts (dialog handles them); other pages had no onError handlers. PostHog events: trial_prompt_shown, trial_prompt_checkout_started
 
+## Vacancy discovery (Phase 10b — employer-first ingestion)
+
+- `artifacts/api-server/src/lib/vacancies/` — types.ts (`NormalizedVacancy` + `VacancyProvider` interface), employerSiteProvider.ts (Firecrawl: careers page → job links → per-page JSON extraction, concurrency 3), googleJobsProvider.ts (SerpApi google_jobs engine, `SERPAPI_API_KEY`, 60s timeout — first uncached query can be slow, retry hits cache), dedupe.ts (cluster key = normalized title+company, location compatibility, preference ranks: direct_employer 0 > legacy 1 > google_jobs employer-domain 2 > google_jobs aggregator 3 > job_board 4 > agency 5), ingestionRunner.ts (idempotency via sourceUrl → refresh discoveredAt; canonical swap + duplicate insert are transactional; ensures per-tenant job_sources rows "Company career sites"/"Google Jobs")
+- Jobs schema additions (all additive/nullable): sourceType, sourceProvider, sourceUrl, discoveredAt, canonicalGroupId, isCanonical (default true), backingSources jsonb, salaryText. matchRunner only matches `isCanonical=true` jobs
+- Internal-only entrypoints (admin+, deliberately NOT in openapi.yaml): POST `/internal/ingestion/employer-sites` (`{companies?}` filters config list) and `/internal/ingestion/google-jobs` (`{query, location?, company?}`); both audit-logged + `vacancy_ingestion` log event with counts
+- Employer seed list: `src/config/employerSites.ts` (Monzo greenhouse, Octopus Energy lever, maxJobs 6 each) — external careers URLs rot; curl-probe before debugging extraction
+- UI: source badges on Jobs page ("Direct employer"/"Google Jobs"/"Duplicate"); dedupe unit tests in `dedupe.test.ts`
+
 ## Search quality (Phase 5)
 
 - `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)

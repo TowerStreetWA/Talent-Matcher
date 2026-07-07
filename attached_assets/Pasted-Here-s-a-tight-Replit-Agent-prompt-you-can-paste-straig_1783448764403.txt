@@ -1,0 +1,138 @@
+Here’s a tight Replit Agent prompt you can paste straight in.
+---
+Please implement the next feature phase for VacancyMatch AI:
+Phase 10 — Employer‑First Vacancy Discovery (company sites + Google Jobs)
+Goal
+Make VacancyMatch’s job discovery layer a real asset:
+•	Find live roles directly from employer websites (career pages and job detail pages).
+•	Add Google Jobs as a discovery source.
+•	Prefer direct employer roles over agency/board duplicates.
+•	Feed the cleaned, deduped vacancies into the existing matching/search system.
+This phase is about sources and structure, not about changing the matching UI yet.
+---
+Constraints
+•	No schema or API breaking changes — extend, don’t break.
+•	No changes to billing, auth, or signup.
+•	No generic “grab everything on the web” crawling — this must stay controlled and explainable.
+•	Use existing tools first: Firecrawl for page extraction, current Postgres, current search layer.
+---
+Data model and sources
+1. Vacancy source model
+Introduce a clear source model for vacancies:
+•	 source_type  (enum):
+•	 direct_employer 
+•	 google_jobs 
+•	 job_board  (future)
+•	 agency  (future)
+•	 source_provider  (string):
+•	e.g.  company_site ,  google_jobs_serpapi ,  indeed ,  reed , etc.
+•	 source_url  (string): canonical job detail URL from that source.
+•	 discovered_at  (timestamp)
+If we already have a  jobs  or  vacancies  table, add these fields. If not, propose the minimal extension needed, but do not change existing fields’ meaning.
+2. Direct employer discovery (company sites)
+Use Firecrawl to ingest jobs from company websites:
+•	Start with a configurable list of employers and career-page URLs (e.g. a small seed table or config file).
+•	For each employer career site:
+•	Identify job list pages and job detail pages.
+•	For each job detail page:
+•	Extract structured fields:
+•	title
+•	company
+•	location
+•	description
+•	employment_type
+•	salary_text
+•	remote_type
+•	posted_at (if available)
+•	source_url
+•	Mark  source_type = direct_employer ,  source_provider = company_site .
+•	Prefer to use Firecrawl’s structured/JSON modes where possible (especially if job pages already use  JobPosting  schema).  
+Google’s job posting docs show typical  JobPosting  fields to look for; align the extraction mapper with those concepts.  
+(Ref: Google job posting structured data docs.)
+Tight scope: this phase can start with manual configuration of target companies; no need to build a full auto‑discovery of every employer site.
+3. Google Jobs discovery
+Add a Google Jobs provider for broader coverage:
+•	Implement a provider that can query Google Jobs via a third‑party search API (e.g. SerpApi’s Google Jobs endpoint), not via raw scraping.
+•	Given a query (title, location) and optional company name, retrieve a structured list of job results.
+•	For each result:
+•	Extract fields similar to above.
+•	Set  source_type = google_jobs .
+•	Set  source_provider = google_jobs_serpapi  (or similar).
+•	Store  source_url  pointing at the job detail page, ideally on the employer domain if available.
+We should abstract the provider behind an interface so future providers (job boards, others) can be added without changing core logic.
+---
+Deduplication and source preference
+Implement a vacancy dedupe/canonicalization layer:
+•	For new candidate vacancies:
+•	Normalize:
+•	job title
+•	company name
+•	location
+•	contract type
+•	Identify likely duplicates:
+•	same (or very similar) title
+•	same company (normalized)
+•	similar location
+•	similar salary_text (if available)
+•	For duplicate clusters, select a canonical vacancy record.
+Canonical preference order:
+1.	 direct_employer  (company careers site)
+2.	 google_jobs  where  source_url  is on the employer domain
+3.	 job_board  (future)
+4.	 agency  (future)
+Store:
+•	one canonical record per cluster (used for matching),
+•	with a list of “backing sources” (e.g. JSON field or join table) so we know it also appears on boards/Google Jobs.
+In this phase, we only need the canonical record and maybe a simple list of source URLs. Keep the structure minimal but extendable.
+---
+API and internal entrypoints
+1. Internal ingestion jobs
+Add internal jobs/services:
+•	 runEmployerSiteIngestion()  — ingests jobs from configured employer sites via Firecrawl.
+•	 runGoogleJobsIngestion(query)  — ingests jobs from Google Jobs provider for a given query (e.g. title/location combos).
+For now, these can be manual dev scripts/CLI endpoints or protected internal routes (tenant‑agnostic). Do not expose them to end‑users yet.
+2. No new public API for recruiters yet
+This phase is data‑layer only:
+•	No new public  /jobs/search  endpoints in this phase.
+•	Just ensure that canonical vacancy records can later be surfaced by the existing search/matching layer.
+---
+UI / UX (minimal)
+Very small but useful addition:
+•	In any internal or dev‑only view where vacancies are listed, show:
+•	source badges: “Direct employer”, “Google Jobs”.
+•	canonical vs. duplicate state (even if just in a dev view).
+Do not yet add new recruiter-facing job search pages. That’s for a follow‑up phase once the data layer is solid.
+---
+Implementation details
+•	Reuse existing Firecrawl wrapper and patterns.
+•	Add a new Google Jobs provider module (e.g.  googleJobsProvider.ts ) that:
+•	knows how to call the selected API,
+•	maps results to the normalized vacancy shape,
+•	handles rate‑limits and errors cleanly.
+•	Extend the Postgres schema only where necessary:
+•	 source_type ,  source_provider ,  source_url ,  discovered_at , and a simple way to track duplicate clusters (e.g.  canonical_group_id  or similar).
+•	Keep it as minimal and additive as possible.
+•	Logging:
+•	Log counts of ingested vacancies per run and per source_type/source_provider.
+•	Log dedupe cluster counts (how many merged into canonical vs. unique).
+---
+Acceptance criteria
+1.	There is a direct employer ingestion job that can pull jobs from a small configured list of company career pages via Firecrawl and store them as vacancies with  source_type = direct_employer .
+2.	There is a Google Jobs provider that can pull structured job results for a given query and store them with  source_type = google_jobs  and a provider ID.
+3.	Vacancies are de‑duplicated into canonical records with a clear preference for  direct_employer  sources when duplicates exist.
+4.	The schema is extended additively (no breaking changes), and canonical records can be used by the existing matching/search code later.
+5.	There is at least a dev/internal way to see:
+•	how many vacancies were ingested by source,
+•	which vacancies are canonical vs. duplicate,
+•	and simple source badges.
+6.	Full typecheck passes and existing tests still pass.
+---
+Output back to me
+When done, report:
+•	Files changed (schema, providers, ingestion jobs, any dev views).
+•	The final vacancy schema shape (including new fields).
+•	How direct employer ingestion works (config format, job detail mapping).
+•	How the Google Jobs provider is wired (which API, how errors/rate limiting are handled).
+•	How deduplication/clustering works and how canonical preference is applied.
+•	Typecheck and test results.
+Do not broaden the scope into recruiter UI or matching changes yet — this phase is about building the employer‑first vacancy source layer correctly.

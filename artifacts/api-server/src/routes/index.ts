@@ -10,6 +10,7 @@ import jobSourcesRouter from "./jobSources";
 import alertRulesRouter from "./alertRules";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
+import internalIngestionRouter from "./internalIngestion";
 import billingRouter from "./billing";
 import storageRouter from "./storage";
 import teamRouter from "./team";
@@ -44,6 +45,9 @@ router.use(alertRulesRouter);
 router.use(dashboardRouter);
 router.use(["/crm-sync-events", "/audit-logs"], requireRole("admin"));
 router.use(adminRouter);
+// Internal-only vacancy ingestion entrypoints (not in the public OpenAPI contract)
+router.use("/internal", requireRole("admin"));
+router.use(internalIngestionRouter);
 router.use("/team", requireRole("admin"));
 router.use(teamRouter);
 

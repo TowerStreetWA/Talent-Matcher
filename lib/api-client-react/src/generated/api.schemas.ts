@@ -439,6 +439,19 @@ export interface Job {
   /** @nullable */
   expiresAt?: string | null;
   status: string;
+  /** @nullable */
+  salaryText?: string | null;
+  /**
+     * Discovery source: direct_employer, google_jobs, job_board, agency; null for manual/legacy rows
+     * @nullable
+     */
+  sourceType?: string | null;
+  /** @nullable */
+  sourceProvider?: string | null;
+  /** @nullable */
+  sourceUrl?: string | null;
+  /** False when this row is a duplicate copy of another vacancy in the same canonical group */
+  isCanonical?: boolean;
   createdAt: string;
 }
 
