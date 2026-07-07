@@ -35,7 +35,8 @@ import {
   BellRing,
   Pencil,
   Save,
-  Clock
+  Clock,
+  Download
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -191,6 +192,13 @@ export default function CandidateDetail() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {candidate.cvFileKey && (
+            <Button variant="outline" asChild>
+              <a href={`${import.meta.env.BASE_URL}api/candidates/${candidate.id}/cv-file`} download>
+                <Download className="w-4 h-4 mr-2" /> CV
+              </a>
+            </Button>
+          )}
           <Button variant="outline" onClick={handleCreateAlert}>
             <BellRing className="w-4 h-4 mr-2" /> Alert
           </Button>

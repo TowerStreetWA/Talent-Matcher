@@ -29,6 +29,7 @@ export const candidatesTable = pgTable("candidates", {
   desiredSalaryMax: real("desired_salary_max"),
   salaryCurrency: text("salary_currency"),
   cvFileName: text("cv_file_name"),
+  cvFileKey: text("cv_file_key"),
   cvText: text("cv_text"),
   status: text("status").notNull().default("active"),
   lastMatchedAt: timestamp("last_matched_at", { withTimezone: true }),

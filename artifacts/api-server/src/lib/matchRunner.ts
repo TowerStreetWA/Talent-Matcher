@@ -1,4 +1,4 @@
-import { desc, eq, and, inArray } from "drizzle-orm";
+import { desc, eq, and, inArray, lte } from "drizzle-orm";
 import {
   db,
   candidatesTable,
@@ -6,9 +6,14 @@ import {
   jobSourcesTable,
   matchRunsTable,
   matchesTable,
+  alertRulesTable,
+  tenantsTable,
+  tenantUsersTable,
 } from "@workspace/db";
 import { computeMatch } from "./matching";
 import { recordAudit } from "./audit";
+import { sendEmail, alertMatchEmailHtml } from "./email";
+import { logger } from "./logger";
 
 type Candidate = typeof candidatesTable.$inferSelect;
 type MatchRun = typeof matchRunsTable.$inferSelect;
@@ -49,7 +54,7 @@ export async function runMatchForCandidate(
     .slice(0, 25);
   const bestScore = computed[0]?.result.overallScore ?? null;
 
-  return db.transaction(async (tx) => {
+  const run = await db.transaction(async (tx) => {
     const [run] = await tx
       .insert(matchRunsTable)
       .values({
@@ -102,6 +107,69 @@ export async function runMatchForCandidate(
     );
     return run;
   });
+
+  if (bestScore !== null) {
+    // Fire-and-forget: alert emails must never fail or slow the match run.
+    void notifyAlertRules(candidate, bestScore, computed.length).catch((err) => {
+      logger.warn({ err }, "Alert notification failed");
+    });
+  }
+
+  return run;
+}
+
+async function notifyAlertRules(
+  candidate: Candidate,
+  bestScore: number,
+  matchCount: number,
+): Promise<void> {
+  const now = new Date();
+  const rules = await db
+    .select()
+    .from(alertRulesTable)
+    .where(
+      and(
+        eq(alertRulesTable.candidateId, candidate.id),
+        eq(alertRulesTable.tenantId, candidate.tenantId),
+        eq(alertRulesTable.isActive, true),
+        lte(alertRulesTable.minScore, bestScore),
+      ),
+    );
+  if (rules.length === 0) return;
+
+  const recipients = await db
+    .select({ email: tenantUsersTable.email, role: tenantUsersTable.role })
+    .from(tenantUsersTable)
+    .innerJoin(tenantsTable, eq(tenantUsersTable.tenantId, tenantsTable.id))
+    .where(
+      and(
+        eq(tenantsTable.slug, candidate.tenantId),
+        eq(tenantUsersTable.status, "active"),
+        inArray(tenantUsersTable.role, ["owner", "admin", "recruiter"]),
+      ),
+    );
+  const to = recipients.map((r) => r.email);
+  if (to.length === 0) return;
+
+  const candidateName = `${candidate.firstName} ${candidate.lastName}`;
+  const strongest = rules.reduce((a, b) => (a.minScore <= b.minScore ? a : b));
+  const { subject, html } = alertMatchEmailHtml({
+    candidateName,
+    bestScore,
+    matchCount,
+    minScore: strongest.minScore,
+  });
+  const sent = await sendEmail({ to, subject, html });
+
+  await db
+    .update(alertRulesTable)
+    .set({ lastCheckedAt: now, ...(sent ? { lastTriggeredAt: now } : {}) })
+    .where(
+      inArray(
+        alertRulesTable.id,
+        rules.map((r) => r.id),
+      ),
+    );
 }
 
 export async function latestMatchRun(

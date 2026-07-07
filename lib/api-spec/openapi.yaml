@@ -232,6 +232,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned URL for a CV file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestUploadUrlInput"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestUploadUrlResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /candidates/{id}/cv-file:
+    get:
+      operationId: downloadCandidateCvFile
+      tags: [candidates]
+      summary: Download the original uploaded CV file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: The original CV file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
   /candidates/{id}:
     get:
       operationId: getCandidate
@@ -802,6 +850,7 @@ components:
         desiredSalaryMax: { type: ["number", "null"] }
         salaryCurrency: { type: ["string", "null"] }
         cvFileName: { type: ["string", "null"] }
+        cvFileKey: { type: ["string", "null"] }
         cvText: { type: ["string", "null"] }
         status: { type: string }
         lastMatchedAt: { type: ["string", "null"] }
@@ -863,13 +912,30 @@ components:
         status: { type: string }
     CvUploadInput:
       type: object
-      required: [fileName, cvText]
+      required: [fileName]
       properties:
         fileName: { type: string, minLength: 1 }
         cvText:
           type: string
           minLength: 20
-          description: Extracted plain text of the CV (client extracts from PDF/DOCX/TXT)
+          description: Pasted plain text of the CV. Either cvText or objectPath must be provided.
+        objectPath:
+          type: string
+          minLength: 1
+          description: Object storage path (/objects/...) of an uploaded CV file (PDF/DOCX/TXT). Either cvText or objectPath must be provided.
+    RequestUploadUrlInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: number }
+        contentType: { type: string, minLength: 1 }
+    RequestUploadUrlResult:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string }
+        objectPath: { type: string }
     Job:
       type: object
       required: [id, title, status, skills, createdAt]

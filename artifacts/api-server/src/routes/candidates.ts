@@ -21,13 +21,17 @@ import {
   ListCandidateMatchesResponse,
   ListMatchRunsResponse,
 } from "@workspace/api-zod";
+import { Readable } from "stream";
 import { toCandidateDto, toMatchDto, toMatchRunDto } from "../lib/dto";
 import { runMatchForCandidate } from "../lib/matchRunner";
 import { parseCvText } from "../lib/cvParser";
 import { recordAudit } from "../lib/audit";
 import { tenantOf, auditActor } from "../middlewares/auth";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { extractCvText, CvExtractionError } from "../lib/extractCvText";
 
 const router: IRouter = Router();
+const objectStorage = new ObjectStorageService();
 
 const paramId = (raw: string | string[]): string =>
   Array.isArray(raw) ? (raw[0] ?? "") : raw;
@@ -85,9 +89,47 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
     res.status(400).json({ message: parsed.error.message });
     return;
   }
+  const { fileName, objectPath } = parsed.data;
+  let cvText = parsed.data.cvText ?? "";
+  let cvFileKey: string | null = null;
+
+  if (objectPath) {
+    try {
+      const normalized = objectStorage.normalizeObjectEntityPath(objectPath);
+      const file = await objectStorage.getObjectEntityFile(normalized);
+      const [meta] = await file.getMetadata();
+      const [buffer] = await file.download();
+      cvText = await extractCvText(buffer, fileName, meta.contentType ?? null);
+      await objectStorage.trySetObjectEntityAclPolicy(normalized, {
+        owner: tenantOf(req),
+        visibility: "private",
+      });
+      cvFileKey = normalized;
+    } catch (err) {
+      if (err instanceof ObjectNotFoundError) {
+        res.status(400).json({ message: "Uploaded file not found. Please try again." });
+        return;
+      }
+      if (err instanceof CvExtractionError) {
+        res.status(400).json({ message: err.message });
+        return;
+      }
+      req.log.error({ err }, "CV file processing failed");
+      res.status(500).json({ message: "Failed to process the uploaded file" });
+      return;
+    }
+  }
+
+  if (cvText.trim().length < 20) {
+    res.status(400).json({
+      message: "Please provide the CV as a file upload or pasted text.",
+    });
+    return;
+  }
+
   let profile;
   try {
-    profile = await parseCvText(parsed.data.cvText);
+    profile = await parseCvText(cvText);
   } catch (err) {
     req.log.error({ err }, "CV parsing failed");
     res.status(400).json({
@@ -116,8 +158,9 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
       desiredSalaryMin: profile.desiredSalaryMin ?? null,
       desiredSalaryMax: profile.desiredSalaryMax ?? null,
       salaryCurrency: profile.salaryCurrency ?? null,
-      cvFileName: parsed.data.fileName,
-      cvText: parsed.data.cvText,
+      cvFileName: fileName,
+      cvFileKey,
+      cvText,
     })
     .returning();
   if (!row) {
@@ -128,7 +171,7 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
     action: "candidate.cv_parsed",
     entityType: "candidate",
     entityId: row.id,
-    metadata: `CV "${parsed.data.fileName}" parsed into profile for ${row.firstName} ${row.lastName}`,
+    metadata: `CV "${fileName}" parsed into profile for ${row.firstName} ${row.lastName}`,
     ...auditActor(req),
   });
   await runMatchForCandidate(row, "cv_upload");
@@ -137,6 +180,45 @@ router.post("/candidates/upload-cv", async (req, res): Promise<void> => {
     .from(candidatesTable)
     .where(eq(candidatesTable.id, row.id));
   res.status(201).json(UploadCvResponse.parse(toCandidateDto(refreshed ?? row)));
+});
+
+router.get("/candidates/:id/cv-file", async (req, res): Promise<void> => {
+  const id = paramId(req.params["id"] ?? "");
+  const [row] = await db
+    .select()
+    .from(candidatesTable)
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    );
+  if (!row || !row.cvFileKey) {
+    res.status(404).json({ message: "No CV file stored for this candidate" });
+    return;
+  }
+  try {
+    const file = await objectStorage.getObjectEntityFile(row.cvFileKey);
+    const response = await objectStorage.downloadObject(file);
+    res.status(response.status);
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${(row.cvFileName ?? "cv").replace(/["\\\r\n]/g, "")}"`,
+    );
+    if (response.body) {
+      const nodeStream = Readable.fromWeb(
+        response.body as ReadableStream<Uint8Array>,
+      );
+      nodeStream.pipe(res);
+    } else {
+      res.end();
+    }
+  } catch (err) {
+    if (err instanceof ObjectNotFoundError) {
+      res.status(404).json({ message: "CV file not found in storage" });
+      return;
+    }
+    req.log.error({ err }, "Error serving CV file");
+    res.status(500).json({ message: "Failed to download CV file" });
+  }
 });
 
 router.get("/candidates/:id", async (req, res): Promise<void> => {

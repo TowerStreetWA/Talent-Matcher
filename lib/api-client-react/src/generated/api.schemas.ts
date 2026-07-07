@@ -110,6 +110,8 @@ export interface Candidate {
   /** @nullable */
   cvFileName?: string | null;
   /** @nullable */
+  cvFileKey?: string | null;
+  /** @nullable */
   cvText?: string | null;
   status: string;
   /** @nullable */
@@ -169,10 +171,28 @@ export interface CvUploadInput {
   /** @minLength 1 */
   fileName: string;
   /**
-     * Extracted plain text of the CV (client extracts from PDF/DOCX/TXT)
+     * Pasted plain text of the CV. Either cvText or objectPath must be provided.
      * @minLength 20
      */
-  cvText: string;
+  cvText?: string;
+  /**
+     * Object storage path (/objects/...) of an uploaded CV file (PDF/DOCX/TXT). Either cvText or objectPath must be provided.
+     * @minLength 1
+     */
+  objectPath?: string;
+}
+
+export interface RequestUploadUrlInput {
+  /** @minLength 1 */
+  name: string;
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface RequestUploadUrlResult {
+  uploadURL: string;
+  objectPath: string;
 }
 
 export interface Job {

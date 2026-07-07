@@ -49,7 +49,9 @@ import type {
   LoginInput,
   Match,
   MatchRun,
-  MatchUpdate
+  MatchUpdate,
+  RequestUploadUrlInput,
+  RequestUploadUrlResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -891,6 +893,153 @@ export const useUploadCv = <TError = ErrorType<ApiMessage>,
       > => {
       return useMutation(getUploadCvMutationOptions(options));
     }
+
+export const getRequestUploadUrlUrl = () => {
+
+
+
+
+  return `/api/storage/uploads/request-url`
+}
+
+/**
+ * @summary Request a presigned URL for a CV file upload
+ */
+export const requestUploadUrl = async (requestUploadUrlInput: RequestUploadUrlInput, options?: RequestInit): Promise<RequestUploadUrlResult> => {
+
+  return customFetch<RequestUploadUrlResult>(getRequestUploadUrlUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(requestUploadUrlInput)
+  }
+);}
+
+
+
+
+export const getRequestUploadUrlMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<RequestUploadUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<RequestUploadUrlInput>}, TContext> => {
+
+const mutationKey = ['requestUploadUrl'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestUploadUrl>>, {data: BodyType<RequestUploadUrlInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestUploadUrl(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestUploadUrlMutationResult = NonNullable<Awaited<ReturnType<typeof requestUploadUrl>>>
+    export type RequestUploadUrlMutationBody = BodyType<RequestUploadUrlInput>
+    export type RequestUploadUrlMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Request a presigned URL for a CV file upload
+ */
+export const useRequestUploadUrl = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<RequestUploadUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestUploadUrl>>,
+        TError,
+        {data: BodyType<RequestUploadUrlInput>},
+        TContext
+      > => {
+      return useMutation(getRequestUploadUrlMutationOptions(options));
+    }
+
+export const getDownloadCandidateCvFileUrl = (id: string,) => {
+
+
+
+
+  return `/api/candidates/${id}/cv-file`
+}
+
+/**
+ * @summary Download the original uploaded CV file
+ */
+export const downloadCandidateCvFile = async (id: string, options?: RequestInit): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadCandidateCvFileUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadCandidateCvFileQueryKey = (id: string,) => {
+    return [
+    `/api/candidates/${id}/cv-file`
+    ] as const;
+    }
+
+
+export const getDownloadCandidateCvFileQueryOptions = <TData = Awaited<ReturnType<typeof downloadCandidateCvFile>>, TError = ErrorType<ApiMessage>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCandidateCvFile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadCandidateCvFileQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadCandidateCvFile>>> = ({ signal }) => downloadCandidateCvFile(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadCandidateCvFile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DownloadCandidateCvFileQueryResult = NonNullable<Awaited<ReturnType<typeof downloadCandidateCvFile>>>
+export type DownloadCandidateCvFileQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Download the original uploaded CV file
+ */
+
+export function useDownloadCandidateCvFile<TData = Awaited<ReturnType<typeof downloadCandidateCvFile>>, TError = ErrorType<ApiMessage>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCandidateCvFile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDownloadCandidateCvFileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetCandidateUrl = (id: string,) => {
 

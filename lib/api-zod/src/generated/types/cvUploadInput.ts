@@ -10,8 +10,13 @@ export interface CvUploadInput {
   /** @minLength 1 */
   fileName: string;
   /**
-     * Extracted plain text of the CV (client extracts from PDF/DOCX/TXT)
+     * Pasted plain text of the CV. Either cvText or objectPath must be provided.
      * @minLength 20
      */
-  cvText: string;
+  cvText?: string;
+  /**
+     * Object storage path (/objects/...) of an uploaded CV file (PDF/DOCX/TXT). Either cvText or objectPath must be provided.
+     * @minLength 1
+     */
+  objectPath?: string;
 }

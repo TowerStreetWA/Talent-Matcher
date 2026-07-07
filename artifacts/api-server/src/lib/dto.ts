@@ -32,6 +32,7 @@ export function toCandidateDto(c: Candidate) {
     desiredSalaryMax: c.desiredSalaryMax,
     salaryCurrency: c.salaryCurrency,
     cvFileName: c.cvFileName,
+    cvFileKey: c.cvFileKey,
     cvText: c.cvText,
     status: c.status,
     lastMatchedAt: iso(c.lastMatchedAt),

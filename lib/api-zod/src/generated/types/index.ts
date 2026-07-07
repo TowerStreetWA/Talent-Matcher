@@ -37,4 +37,6 @@ export * from './loginInput';
 export * from './match';
 export * from './matchRun';
 export * from './matchUpdate';
+export * from './requestUploadUrlInput';
+export * from './requestUploadUrlResult';
 export * from './scoreBreakdown';

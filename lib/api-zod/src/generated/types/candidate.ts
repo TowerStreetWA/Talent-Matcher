@@ -38,6 +38,8 @@ export interface Candidate {
   /** @nullable */
   cvFileName?: string | null;
   /** @nullable */
+  cvFileKey?: string | null;
+  /** @nullable */
   cvText?: string | null;
   status: string;
   /** @nullable */

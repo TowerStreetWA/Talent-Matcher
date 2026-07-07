@@ -141,6 +141,7 @@ export const ListCandidatesResponseItem = zod.object({
   "desiredSalaryMax": zod.number().nullish(),
   "salaryCurrency": zod.string().nullish(),
   "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
   "cvText": zod.string().nullish(),
   "status": zod.string(),
   "lastMatchedAt": zod.string().nullish(),
@@ -197,6 +198,7 @@ export const CreateCandidateResponse = zod.object({
   "desiredSalaryMax": zod.number().nullish(),
   "salaryCurrency": zod.string().nullish(),
   "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
   "cvText": zod.string().nullish(),
   "status": zod.string(),
   "lastMatchedAt": zod.string().nullish(),
@@ -215,9 +217,11 @@ export const uploadCvBodyCvTextMin = 20;
 
 
 
+
 export const UploadCvBody = zod.object({
   "fileName": zod.string().min(1),
-  "cvText": zod.string().min(uploadCvBodyCvTextMin).describe('Extracted plain text of the CV (client extracts from PDF\/DOCX\/TXT)')
+  "cvText": zod.string().min(uploadCvBodyCvTextMin).optional().describe('Pasted plain text of the CV. Either cvText or objectPath must be provided.'),
+  "objectPath": zod.string().min(1).optional().describe('Object storage path (\/objects\/...) of an uploaded CV file (PDF\/DOCX\/TXT). Either cvText or objectPath must be provided.')
 })
 
 export const UploadCvResponse = zod.object({
@@ -239,6 +243,7 @@ export const UploadCvResponse = zod.object({
   "desiredSalaryMax": zod.number().nullish(),
   "salaryCurrency": zod.string().nullish(),
   "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
   "cvText": zod.string().nullish(),
   "status": zod.string(),
   "lastMatchedAt": zod.string().nullish(),
@@ -247,6 +252,35 @@ export const UploadCvResponse = zod.object({
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
+
+
+/**
+ * @summary Request a presigned URL for a CV file upload
+ */
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number(),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string()
+})
+
+
+/**
+ * @summary Download the original uploaded CV file
+ */
+export const DownloadCandidateCvFileParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DownloadCandidateCvFileResponse = zod.unknown()
 
 
 /**
@@ -275,6 +309,7 @@ export const GetCandidateResponse = zod.object({
   "desiredSalaryMax": zod.number().nullish(),
   "salaryCurrency": zod.string().nullish(),
   "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
   "cvText": zod.string().nullish(),
   "status": zod.string(),
   "lastMatchedAt": zod.string().nullish(),
@@ -335,6 +370,7 @@ export const UpdateCandidateResponse = zod.object({
   "desiredSalaryMax": zod.number().nullish(),
   "salaryCurrency": zod.string().nullish(),
   "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
   "cvText": zod.string().nullish(),
   "status": zod.string(),
   "lastMatchedAt": zod.string().nullish(),

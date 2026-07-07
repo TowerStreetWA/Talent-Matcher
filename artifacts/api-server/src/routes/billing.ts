@@ -18,6 +18,7 @@ import {
 import { getPlan } from "../lib/billing/plans";
 import { requireRole, tenantOf, auditActor } from "../middlewares/auth";
 import { recordAudit } from "../lib/audit";
+import { sendEmail, checkoutStartedEmailHtml } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -102,6 +103,15 @@ router.post(
       metadata: `Checkout session created for plan ${plan.key}${plan.trialDays > 0 ? ` with ${plan.trialDays}-day trial` : ""}`,
       ...auditActor(req),
     });
+
+    if (req.auth?.email) {
+      const mail = checkoutStartedEmailHtml({
+        planName: plan.label,
+        trialDays: plan.trialDays,
+      });
+      // Fire-and-forget: email must not block or fail the checkout response.
+      void sendEmail({ to: req.auth.email, ...mail });
+    }
 
     res.json(CreateBillingCheckoutResponse.parse({ url: session.url }));
   },
