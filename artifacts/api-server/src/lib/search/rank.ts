@@ -1,4 +1,11 @@
 import type { NormalizedQuery } from "./normalize";
+import {
+  classifyVacancy,
+  inferCandidateFinProfile,
+  type QueryFinIntent,
+  type FinTags,
+} from "./finClassify";
+import { EMPLOYER_TYPE_SECTOR } from "./finTaxonomy";
 
 /**
  * Explicit score composition for search relevance. Each component is computed
@@ -17,6 +24,12 @@ export const WEIGHTS = {
   companySubstringHit: 12,
   taxonomyHit: 15, // per skill/industry/known-title hit, capped at 30
   fuzzyBlobHit: 5,
+  // Financial-services boosts — applied ONLY when the query itself carries
+  // FS intent (see inferQueryFinIntent), so non-FS queries are unaffected.
+  finSectorMatch: 45,
+  finFunctionMatch: 40,
+  finEmployerTypeMatch: 20,
+  finDirectEmployer: 15,
 } as const;
 
 export interface ScoreBreakdown {
@@ -28,6 +41,16 @@ export interface ScoreBreakdown {
   company: number;
   taxonomy: number;
   fuzzy: number;
+  /** FS sector alignment boost (0 when query has no FS intent). */
+  finSector: number;
+  /** FS function alignment boost. */
+  finFunction: number;
+  /** Employer-type-to-sector alignment boost. */
+  finEmployerType: number;
+  /** Direct-employer source boost (FS queries only). */
+  finDirectEmployer: number;
+  /** Dev/internal explainability: how the document was classified. */
+  finTags: FinTags | null;
   total: number;
 }
 
@@ -68,6 +91,11 @@ function scoreFields(nq: NormalizedQuery, fields: RankableFields): ScoreBreakdow
     company: 0,
     taxonomy: 0,
     fuzzy: 0,
+    finSector: 0,
+    finFunction: 0,
+    finEmployerType: 0,
+    finDirectEmployer: 0,
+    finTags: null,
     total: 0,
   };
 
@@ -172,6 +200,45 @@ function scoreFields(nq: NormalizedQuery, fields: RankableFields): ScoreBreakdow
   return breakdown;
 }
 
+/**
+ * Apply financial-services ranking boosts to an already-computed breakdown.
+ * No-op unless the query carries FS intent — non-FS queries keep their exact
+ * previous scores. Each boost is an explicit, independent component.
+ */
+function applyFinBoosts(
+  breakdown: ScoreBreakdown,
+  intent: QueryFinIntent | null | undefined,
+  tags: FinTags,
+  opts: { isDirectEmployer?: boolean } = {},
+): void {
+  breakdown.finTags = tags;
+  if (!intent?.hasFinIntent) return;
+
+  if (intent.sector && tags.sector === intent.sector) {
+    breakdown.finSector = WEIGHTS.finSectorMatch;
+  }
+  if (intent.fn && tags.fn === intent.fn) {
+    breakdown.finFunction = WEIGHTS.finFunctionMatch;
+  }
+  if (
+    intent.sector &&
+    tags.employerType &&
+    EMPLOYER_TYPE_SECTOR[tags.employerType] === intent.sector
+  ) {
+    breakdown.finEmployerType = WEIGHTS.finEmployerTypeMatch;
+  }
+  // Direct-employer boost only for roles that themselves match the query's
+  // sector — "prefer direct-employer FS roles", not any direct-sourced job.
+  if (opts.isDirectEmployer && tags.sector !== null && tags.sector === intent.sector) {
+    breakdown.finDirectEmployer = WEIGHTS.finDirectEmployer;
+  }
+  breakdown.total +=
+    breakdown.finSector +
+    breakdown.finFunction +
+    breakdown.finEmployerType +
+    breakdown.finDirectEmployer;
+}
+
 export interface JobLike {
   title: string | null;
   companyName: string | null;
@@ -179,15 +246,26 @@ export interface JobLike {
   industry: string | null;
   skills: string[] | null;
   descriptionText: string | null;
+  /** e.g. "direct_employer" — enables the direct-employer boost on FS queries. */
+  sourceType?: string | null;
 }
 
-export function scoreJob(nq: NormalizedQuery, job: JobLike): ScoreBreakdown {
-  return scoreFields(nq, {
+export function scoreJob(
+  nq: NormalizedQuery,
+  job: JobLike,
+  finIntent?: QueryFinIntent | null,
+): ScoreBreakdown {
+  const breakdown = scoreFields(nq, {
     title: job.title ?? "",
     company: job.companyName ?? "",
     taxonomy: [...(job.skills ?? []), ...(job.industry ? [job.industry] : [])],
     blob: `${job.descriptionText ?? ""} ${job.locationText ?? ""}`,
   });
+  const tags = classifyVacancy(job);
+  applyFinBoosts(breakdown, finIntent, tags, {
+    isDirectEmployer: job.sourceType === "direct_employer",
+  });
+  return breakdown;
 }
 
 export interface CandidateLike {
@@ -204,8 +282,9 @@ export interface CandidateLike {
 export function scoreCandidate(
   nq: NormalizedQuery,
   candidate: CandidateLike,
+  finIntent?: QueryFinIntent | null,
 ): ScoreBreakdown {
-  return scoreFields(nq, {
+  const breakdown = scoreFields(nq, {
     title: candidate.currentTitle ?? "",
     name: `${candidate.firstName ?? ""} ${candidate.lastName ?? ""}`.trim(),
     company: candidate.currentCompany ?? "",
@@ -216,4 +295,7 @@ export function scoreCandidate(
     ],
     blob: candidate.locationText ?? "",
   });
+  const tags = inferCandidateFinProfile(candidate);
+  applyFinBoosts(breakdown, finIntent, tags);
+  return breakdown;
 }

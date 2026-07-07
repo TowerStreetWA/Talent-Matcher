@@ -1,0 +1,108 @@
+Implement the next search-quality phase for VacancyMatch AI focused specifically on financial services relevance.
+Goal
+Make search and matching particularly strong for:
+•	Insurance
+•	Banking
+•	Pensions
+•	Asset Management
+We already have a working explicit search normalization and scoring layer. Do not replace the search engine. Extend it with a financial-services taxonomy and ranking layer.
+Objectives
+1.	Improve relevance of vacancies returned for financial-services candidates and recruiter queries.
+2.	Recognize sector-specific terminology, abbreviations, and title variants.
+3.	Prefer direct-employer financial-services roles over generic board/agency noise.
+4.	Tag vacancies and candidates by sector and function so ranking becomes more intelligent.
+Scope
+1. Add financial-services taxonomy dictionaries
+Create extendable dictionaries/configs for:
+•	Insurance
+•	underwriter, underwriting assistant, assistant underwriter, trading underwriter
+•	claims handler, claims adjuster, claims technician
+•	broking technician, broker, account handler
+•	delegated authority, DA analyst, binder technician, bordereaux analyst
+•	actuarial, pricing actuary, reserving actuary
+•	exposure management, catastrophe modelling, wordings
+•	reinsurance, treaty, facultative
+•	Lloyd’s, MGA, syndicate
+•	Banking
+•	KYC, AML, sanctions, onboarding
+•	front office, middle office, back office
+•	treasury, liquidity, ALM
+•	credit risk, market risk, operational risk
+•	payments, settlements, reconciliations, custody
+•	Pensions
+•	pensions administrator, pensions consultant
+•	DB, DC, SIPP, SSAS
+•	trustee, governance, employee benefits
+•	implementation consultant, scheme events
+•	Asset Management
+•	fund accountant, fund controller
+•	investment operations, performance analyst, portfolio analyst
+•	client reporting, RFP, product specialist
+•	transfer agency, dealing, settlements
+•	investment risk, ESG analyst
+Make these explicit, inspectable, and easy to extend — no scattered hardcoded logic.
+2. Vacancy sector/function tagging
+Add logic to classify vacancies into:
+•	sector: insurance / banking / pensions / asset_management / other
+•	function: underwriting / claims / broking / actuarial / compliance / risk / operations / investments / pensions_admin / client_service / finance / other
+Use title + description + company/employer metadata + source hints to infer tags.
+Persist these tags on vacancies if feasible without breaking existing logic. If persistence is too heavy for this phase, compute them centrally in the search layer and explain the tradeoff.
+3. Employer-type classification
+Add a lightweight employer classifier:
+•	insurer
+•	broker
+•	MGA
+•	reinsurer
+•	bank
+•	pension_consultancy
+•	asset_manager
+•	wealth_manager
+•	other
+This can initially be rule-based using company name/domain metadata and a manually extendable mapping table/config.
+4. Ranking boosts
+Extend relevance scoring so that:
+•	exact sector match boosts heavily
+•	exact function match boosts heavily
+•	direct employer roles boost above board/agency-style roles
+•	employer type alignment boosts relevance
+•	regulated/sector-specific terminology boosts only when context supports it
+Examples:
+•	“delegated authority analyst” should strongly rank insurance DA/bordereaux jobs above generic analyst roles
+•	“fund operations” should rank asset management operations roles above generic finance operations jobs
+•	“pensions admin” should rank pensions administration roles above generic administrator roles
+5. Candidate-side sector inference
+Extend CV/profile interpretation so candidate records can infer likely:
+•	sector
+•	function
+•	employer type background
+Example:
+•	a CV mentioning Lloyd’s, syndicate, bordereaux, delegated authority should infer insurance + delegated authority / operations
+•	a CV mentioning KYC, AML, onboarding, sanctions should infer banking/compliance/operations
+Keep this deterministic and inspectable where possible.
+6. Result explainability
+Add simple explainability metadata in search or match results for dev/internal use:
+•	sector match
+•	function match
+•	employer-type match
+•	direct-employer boost
+•	notable matched terms
+This does not need to be end-user polished yet, but should help debug and tune relevance.
+Constraints
+•	Do not replace the current search stack.
+•	Do not add AI magic or opaque scoring.
+•	Keep rules explicit, testable, and extendable.
+•	Avoid breaking existing queries outside financial services.
+Acceptance criteria
+1.	Financial-services terminology is recognized much better through explicit dictionaries.
+2.	Vacancies can be classified by sector/function.
+3.	Search ranking improves for insurance, banking, pensions, and asset management queries.
+4.	Candidate-to-job matching gets better sector alignment.
+5.	Results include enough debug/explainability data to understand why something ranked highly.
+6.	Full typecheck passes and existing tests pass.
+Report back with
+•	files changed
+•	new dictionaries/taxonomy added
+•	new sector/function/employer-type classification logic
+•	ranking changes made
+•	examples of improved financial-services queries
+•	typecheck/test results

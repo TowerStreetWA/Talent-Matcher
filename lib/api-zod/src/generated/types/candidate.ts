@@ -5,6 +5,7 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SearchDebug } from './searchDebug';
 
 export interface Candidate {
   id: string;
@@ -50,4 +51,5 @@ export interface Candidate {
   matchCount?: number | null;
   createdAt: string;
   updatedAt: string;
+  searchDebug?: SearchDebug;
 }

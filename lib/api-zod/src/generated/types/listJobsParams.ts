@@ -10,4 +10,8 @@ export type ListJobsParams = {
 search?: string;
 sourceId?: string;
 status?: string;
+/**
+ * When "1", include per-result searchDebug ranking metadata (dev/internal)
+ */
+debug?: string;
 };

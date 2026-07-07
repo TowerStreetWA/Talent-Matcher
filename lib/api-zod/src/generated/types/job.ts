@@ -5,6 +5,7 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SearchDebug } from './searchDebug';
 
 export interface Job {
   id: string;
@@ -53,4 +54,5 @@ export interface Job {
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
   createdAt: string;
+  searchDebug?: SearchDebug;
 }

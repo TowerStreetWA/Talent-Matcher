@@ -378,6 +378,11 @@ paths:
           in: query
           required: false
           schema: { type: string }
+        - name: debug
+          in: query
+          required: false
+          description: When "1", include per-result searchDebug ranking metadata (dev/internal)
+          schema: { type: string }
       responses:
         "200":
           description: Candidate list
@@ -702,6 +707,11 @@ paths:
         - name: status
           in: query
           required: false
+          schema: { type: string }
+        - name: debug
+          in: query
+          required: false
+          description: When "1", include per-result searchDebug ranking metadata (dev/internal)
           schema: { type: string }
       responses:
         "200":
@@ -1396,6 +1406,8 @@ components:
         matchCount: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: string }
+        searchDebug:
+          $ref: "#/components/schemas/SearchDebug"
     CandidateInput:
       type: object
       required: [firstName, lastName]
@@ -1504,6 +1516,25 @@ components:
         sourceUrl: { type: ["string", "null"] }
         isCanonical: { type: boolean, default: true, description: "False when this row is a duplicate copy of another vacancy in the same canonical group" }
         createdAt: { type: string }
+        searchDebug:
+          $ref: "#/components/schemas/SearchDebug"
+    SearchDebug:
+      type: object
+      description: Dev/internal search ranking explainability (present only when debug=1 on a search)
+      required: [score]
+      properties:
+        score: { type: number, description: "Total relevance score used for ordering" }
+        sector: { type: ["string", "null"], description: "Classified FS sector: insurance/banking/pensions/asset_management" }
+        function: { type: ["string", "null"], description: "Classified FS function, e.g. underwriting, claims, pensions_admin" }
+        employerType: { type: ["string", "null"], description: "Rule-based employer type, e.g. insurer, broker, bank" }
+        sectorBoost: { type: number, description: "Points added for sector alignment with the query" }
+        functionBoost: { type: number, description: "Points added for function alignment with the query" }
+        employerTypeBoost: { type: number, description: "Points added for employer-type alignment with the query" }
+        directEmployerBoost: { type: number, description: "Points added for direct-employer source on FS queries" }
+        matchedTerms:
+          type: array
+          items: { type: string }
+          description: Taxonomy terms that drove the classification
     JobSource:
       type: object
       required: [id, name, sourceType, isActive, jobCount, createdAt]

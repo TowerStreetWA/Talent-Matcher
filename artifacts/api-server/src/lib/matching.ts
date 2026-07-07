@@ -1,4 +1,8 @@
 import type { Candidate, Job, ScoreBreakdown } from "@workspace/db";
+import {
+  classifyVacancy,
+  inferCandidateFinProfile,
+} from "./search/finClassify";
 
 export type MatchComputation = {
   overallScore: number;
@@ -105,6 +109,28 @@ function titleScore(candidate: Candidate, job: Job) {
 }
 
 function industryScore(candidate: Candidate, job: Job) {
+  // Financial-services sector alignment takes precedence over free-text
+  // industry comparison when both sides classify into the FS taxonomy.
+  const jobFin = classifyVacancy(job);
+  if (jobFin.sector) {
+    const candFin = inferCandidateFinProfile(candidate);
+    if (candFin.sector === jobFin.sector) {
+      const fnAligned = jobFin.fn !== null && candFin.fn === jobFin.fn;
+      const sectorLabel = jobFin.sector.replace("_", " ");
+      return {
+        score: 1,
+        line: fnAligned
+          ? `Sector match: both in ${sectorLabel} (${jobFin.fn?.replace("_", " ")} background aligns)`
+          : `Sector match: candidate has ${sectorLabel} experience`,
+      };
+    }
+    if (candFin.sector) {
+      return {
+        score: 0.2,
+        line: `Sector gap: job is ${jobFin.sector.replace("_", " ")}, candidate background is ${candFin.sector.replace("_", " ")}`,
+      };
+    }
+  }
   if (!job.industry) {
     return {
       score: 0.5,

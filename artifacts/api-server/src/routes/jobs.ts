@@ -5,7 +5,21 @@ import { ListJobsResponse, GetJobResponse } from "@workspace/api-zod";
 import { toJobDto } from "../lib/dto";
 import { tenantOf } from "../middlewares/auth";
 import { normalizeQuery } from "../lib/search/normalize";
-import { scoreJob } from "../lib/search/rank";
+import { scoreJob, type ScoreBreakdown } from "../lib/search/rank";
+import { inferQueryFinIntent } from "../lib/search/finClassify";
+import type { SearchDebugDto } from "../lib/dto";
+
+const toSearchDebug = (b: ScoreBreakdown): SearchDebugDto => ({
+  score: b.total,
+  sector: b.finTags?.sector ?? null,
+  function: b.finTags?.fn ?? null,
+  employerType: b.finTags?.employerType ?? null,
+  sectorBoost: b.finSector,
+  functionBoost: b.finFunction,
+  employerTypeBoost: b.finEmployerType,
+  directEmployerBoost: b.finDirectEmployer,
+  matchedTerms: b.finTags?.matchedTerms ?? [],
+});
 
 const router: IRouter = Router();
 
@@ -44,15 +58,23 @@ router.get("/jobs", async (req, res): Promise<void> => {
     .where(and(...conditions))
     .orderBy(desc(jobsTable.postedAt))
     .limit(200);
+  const debug = req.query["debug"] === "1";
+  let debugByJobId: Map<string, SearchDebugDto> | null = null;
   if (nq) {
-    rows = rows
-      .map((r) => ({ r, score: scoreJob(nq, r.job).total }))
+    const finIntent = inferQueryFinIntent(nq);
+    const scored = rows
+      .map((r) => ({ r, breakdown: scoreJob(nq, r.job, finIntent) }))
       .sort(
         (a, b) =>
-          b.score - a.score ||
+          b.breakdown.total - a.breakdown.total ||
           (b.r.job.postedAt?.getTime() ?? 0) - (a.r.job.postedAt?.getTime() ?? 0),
-      )
-      .map(({ r }) => r);
+      );
+    rows = scored.map(({ r }) => r);
+    if (debug) {
+      debugByJobId = new Map(
+        scored.map(({ r, breakdown }) => [r.job.id, toSearchDebug(breakdown)]),
+      );
+    }
     req.log.info(
       {
         event: "search",
@@ -60,18 +82,35 @@ router.get("/jobs", async (req, res): Promise<void> => {
         rawQuery: search.slice(0, 200),
         normalizedQuery: nq.cleaned.slice(0, 200),
         variantCount: nq.variants.length,
+        finIntent: finIntent.hasFinIntent
+          ? { sector: finIntent.sector, fn: finIntent.fn }
+          : undefined,
         filters: {
           sourceId: sourceId || undefined,
           status: status || undefined,
         },
         resultCount: rows.length,
         zeroResults: rows.length === 0,
+        topResults: scored.slice(0, 3).map(({ r, breakdown }) => ({
+          title: (r.job.title ?? "").slice(0, 80),
+          score: breakdown.total,
+          finSector: breakdown.finTags?.sector ?? undefined,
+          finBoosts:
+            breakdown.finSector +
+              breakdown.finFunction +
+              breakdown.finEmployerType +
+              breakdown.finDirectEmployer || undefined,
+        })),
       },
       "job search executed",
     );
   }
   res.json(
-    ListJobsResponse.parse(rows.map((r) => toJobDto(r.job, r.sourceName))),
+    ListJobsResponse.parse(
+      rows.map((r) =>
+        toJobDto(r.job, r.sourceName, debugByJobId?.get(r.job.id)),
+      ),
+    ),
   );
 });
 

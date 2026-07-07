@@ -30,7 +30,21 @@ import { tenantOf, auditActor } from "../middlewares/auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { extractCvText, CvExtractionError } from "../lib/extractCvText";
 import { normalizeQuery } from "../lib/search/normalize";
-import { scoreCandidate } from "../lib/search/rank";
+import { scoreCandidate, type ScoreBreakdown } from "../lib/search/rank";
+import { inferQueryFinIntent } from "../lib/search/finClassify";
+import type { SearchDebugDto } from "../lib/dto";
+
+const toSearchDebug = (b: ScoreBreakdown): SearchDebugDto => ({
+  score: b.total,
+  sector: b.finTags?.sector ?? null,
+  function: b.finTags?.fn ?? null,
+  employerType: b.finTags?.employerType ?? null,
+  sectorBoost: b.finSector,
+  functionBoost: b.finFunction,
+  employerTypeBoost: b.finEmployerType,
+  directEmployerBoost: b.finDirectEmployer,
+  matchedTerms: b.finTags?.matchedTerms ?? [],
+});
 
 const router: IRouter = Router();
 const objectStorage = new ObjectStorageService();
@@ -67,17 +81,23 @@ router.get("/candidates", async (req, res): Promise<void> => {
     .from(candidatesTable)
     .where(and(...conditions))
     .orderBy(desc(candidatesTable.createdAt));
+  const debug = req.query["debug"] === "1";
+  let debugById: Map<string, SearchDebugDto> | null = null;
   if (nq) {
-    rows = rows
-      .map((row) => ({ row, score: scoreCandidate(nq, row).total }))
+    const finIntent = inferQueryFinIntent(nq);
+    const scored = rows
+      .map((row) => ({ row, breakdown: scoreCandidate(nq, row, finIntent) }))
       .sort(
         (a, b) =>
-          b.score - a.score ||
+          b.breakdown.total - a.breakdown.total ||
           b.row.createdAt.getTime() - a.row.createdAt.getTime(),
-      )
-      .map(({ row }) => row);
-  }
-  if (nq) {
+      );
+    rows = scored.map(({ row }) => row);
+    if (debug) {
+      debugById = new Map(
+        scored.map(({ row, breakdown }) => [row.id, toSearchDebug(breakdown)]),
+      );
+    }
     req.log.info(
       {
         event: "search",
@@ -85,6 +105,9 @@ router.get("/candidates", async (req, res): Promise<void> => {
         rawQuery: search.slice(0, 200),
         normalizedQuery: nq.cleaned.slice(0, 200),
         variantCount: nq.variants.length,
+        finIntent: finIntent.hasFinIntent
+          ? { sector: finIntent.sector, fn: finIntent.fn }
+          : undefined,
         filters: { status: status || undefined },
         resultCount: rows.length,
         zeroResults: rows.length === 0,
@@ -92,7 +115,11 @@ router.get("/candidates", async (req, res): Promise<void> => {
       "candidate search executed",
     );
   }
-  res.json(ListCandidatesResponse.parse(rows.map(toCandidateDto)));
+  res.json(
+    ListCandidatesResponse.parse(
+      rows.map((row) => toCandidateDto(row, debugById?.get(row.id))),
+    ),
+  );
 });
 
 router.post("/candidates", async (req, res): Promise<void> => {

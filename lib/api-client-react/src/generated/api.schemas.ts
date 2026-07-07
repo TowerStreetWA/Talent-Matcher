@@ -289,6 +289,39 @@ export interface BillingUrl {
   url: string;
 }
 
+/**
+ * Dev/internal search ranking explainability (present only when debug=1 on a search)
+ */
+export interface SearchDebug {
+  /** Total relevance score used for ordering */
+  score: number;
+  /**
+     * Classified FS sector: insurance/banking/pensions/asset_management
+     * @nullable
+     */
+  sector?: string | null;
+  /**
+     * Classified FS function, e.g. underwriting, claims, pensions_admin
+     * @nullable
+     */
+  function?: string | null;
+  /**
+     * Rule-based employer type, e.g. insurer, broker, bank
+     * @nullable
+     */
+  employerType?: string | null;
+  /** Points added for sector alignment with the query */
+  sectorBoost?: number;
+  /** Points added for function alignment with the query */
+  functionBoost?: number;
+  /** Points added for employer-type alignment with the query */
+  employerTypeBoost?: number;
+  /** Points added for direct-employer source on FS queries */
+  directEmployerBoost?: number;
+  /** Taxonomy terms that drove the classification */
+  matchedTerms?: string[];
+}
+
 export interface Candidate {
   id: string;
   firstName: string;
@@ -333,6 +366,7 @@ export interface Candidate {
   matchCount?: number | null;
   createdAt: string;
   updatedAt: string;
+  searchDebug?: SearchDebug;
 }
 
 export interface CandidateInput {
@@ -453,6 +487,7 @@ export interface Job {
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
   createdAt: string;
+  searchDebug?: SearchDebug;
 }
 
 export interface JobSource {
@@ -631,6 +666,10 @@ token: string;
 export type ListCandidatesParams = {
 search?: string;
 status?: string;
+/**
+ * When "1", include per-result searchDebug ranking metadata (dev/internal)
+ */
+debug?: string;
 };
 
 export type ListMatchesParams = {
@@ -642,6 +681,10 @@ export type ListJobsParams = {
 search?: string;
 sourceId?: string;
 status?: string;
+/**
+ * When "1", include per-result searchDebug ranking metadata (dev/internal)
+ */
+debug?: string;
 };
 
 export type ListSearchSuggestionsParams = {

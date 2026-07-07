@@ -283,7 +283,8 @@ export const CreateBillingPortalResponse = zod.object({
  */
 export const ListCandidatesQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
-  "status": zod.coerce.string().optional()
+  "status": zod.coerce.string().optional(),
+  "debug": zod.coerce.string().optional().describe('When \"1\", include per-result searchDebug ranking metadata (dev\/internal)')
 })
 
 export const ListCandidatesResponseItem = zod.object({
@@ -312,7 +313,18 @@ export const ListCandidatesResponseItem = zod.object({
   "bestMatchScore": zod.number().nullish(),
   "matchCount": zod.number().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 export const ListCandidatesResponse = zod.array(ListCandidatesResponseItem)
 
@@ -369,7 +381,18 @@ export const CreateCandidateResponse = zod.object({
   "bestMatchScore": zod.number().nullish(),
   "matchCount": zod.number().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 
 
@@ -414,7 +437,18 @@ export const UploadCvResponse = zod.object({
   "bestMatchScore": zod.number().nullish(),
   "matchCount": zod.number().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 
 
@@ -480,7 +514,18 @@ export const GetCandidateResponse = zod.object({
   "bestMatchScore": zod.number().nullish(),
   "matchCount": zod.number().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 
 
@@ -541,7 +586,18 @@ export const UpdateCandidateResponse = zod.object({
   "bestMatchScore": zod.number().nullish(),
   "matchCount": zod.number().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 
 
@@ -615,7 +671,18 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listCandidateMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 }).optional(),
   "overallScore": zod.number(),
   "scoreBreakdown": zod.object({
@@ -697,7 +764,18 @@ export const ListMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 }).optional(),
   "overallScore": zod.number(),
   "scoreBreakdown": zod.object({
@@ -763,7 +841,18 @@ export const UpdateMatchResponse = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(updateMatchResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 }).optional(),
   "overallScore": zod.number(),
   "scoreBreakdown": zod.object({
@@ -820,7 +909,8 @@ export const PushMatchToCrmResponse = zod.object({
 export const ListJobsQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "sourceId": zod.coerce.string().optional(),
-  "status": zod.coerce.string().optional()
+  "status": zod.coerce.string().optional(),
+  "debug": zod.coerce.string().optional().describe('When \"1\", include per-result searchDebug ranking metadata (dev\/internal)')
 })
 
 export const listJobsResponseIsCanonicalDefault = true;
@@ -849,7 +939,18 @@ export const ListJobsResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listJobsResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 export const ListJobsResponse = zod.array(ListJobsResponseItem)
 
@@ -902,7 +1003,18 @@ export const GetJobResponse = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(getJobResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 })
 
 
@@ -1126,7 +1238,18 @@ export const GetTopMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(getTopMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
 }).optional(),
   "overallScore": zod.number(),
   "scoreBreakdown": zod.object({

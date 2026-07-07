@@ -12,8 +12,21 @@ import type {
 const iso = (d: Date | null | undefined): string | null =>
   d ? d.toISOString() : null;
 
-export function toCandidateDto(c: Candidate) {
+export interface SearchDebugDto {
+  score: number;
+  sector: string | null;
+  function: string | null;
+  employerType: string | null;
+  sectorBoost: number;
+  functionBoost: number;
+  employerTypeBoost: number;
+  directEmployerBoost: number;
+  matchedTerms: string[];
+}
+
+export function toCandidateDto(c: Candidate, searchDebug?: SearchDebugDto) {
   return {
+    ...(searchDebug ? { searchDebug } : {}),
     id: c.id,
     firstName: c.firstName,
     lastName: c.lastName,
@@ -43,8 +56,13 @@ export function toCandidateDto(c: Candidate) {
   };
 }
 
-export function toJobDto(j: Job, sourceName?: string | null) {
+export function toJobDto(
+  j: Job,
+  sourceName?: string | null,
+  searchDebug?: SearchDebugDto,
+) {
   return {
+    ...(searchDebug ? { searchDebug } : {}),
     id: j.id,
     sourceId: j.sourceId,
     sourceName: sourceName ?? null,

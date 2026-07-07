@@ -103,6 +103,16 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Frontend: `components/search-box.tsx` (debounced suggestions dropdown, keyboard nav), `hooks/use-debounce.ts`; candidates/jobs/matches pages have filter chips + clear-all + result counts + zero-result recovery buttons; PostHog events: search_performed, search_zero_results, suggestion_selected, search_result_clicked
 - Unit tests: `pnpm --filter @workspace/api-server run test` (vitest, search lib)
 
+## Financial-services search quality (Phase 11)
+
+- `artifacts/api-server/src/lib/search/finTaxonomy.ts` — config-only FS taxonomy: SECTOR_TERMS (insurance/banking/pensions/asset_management, strong vs contextual terms), FUNCTION_TERMS (underwriting/claims/broking/actuarial/compliance/risk/operations/pensions_admin/investment/distribution/finance), FUNCTION_SECTOR_AFFINITY, EMPLOYER_TYPE_RULES (first-match-wins: insurer/broker/mga/reinsurer/bank/pension_consultancy/asset_manager/wealth_manager), EMPLOYER_TYPE_SECTOR. Extend dictionaries here — no logic in this file
+- `finClassify.ts` — deterministic rule-based classification: `classifyVacancy` (title 3x weight vs body; strong terms qualify a sector, contextual terms only corroborate), `classifyEmployerType`, `inferCandidateFinProfile`, `inferQueryFinIntent`. Tags computed at search/match time, NOT persisted (deliberate: taxonomy tuning needs no migrations; revisit if job volume grows)
+- `rank.ts` boosts (applied ONLY when `inferQueryFinIntent` says the query has FS intent — non-FS queries are bit-identical to before): finSectorMatch 45, finFunctionMatch 40, finEmployerTypeMatch 20, finDirectEmployer 15 (direct boost requires the job's sector to match the query's sector)
+- dictionaries.ts gained FS abbreviations (kyc/aml/alm/mga/db/dc/sipp/ssas/uw/ri…) + ~22 FS synonym groups
+- `matching.ts` industryScore: FS sector alignment checked first (match 1.0 "Sector match…", cross-FS gap 0.2 "Sector gap…"), legacy free-text industry logic unchanged as fallback
+- Debug explainability: `debug=1` on GET /jobs and /candidates adds optional `searchDebug` (score, sector, function, employerType, boosts) — additive OpenAPI change; search log events include finIntent + topResults
+- Tests: finServices.test.ts (classification/intent/boost cases) + matching.test.ts (industryScore guards); `pnpm --filter @workspace/api-server run test`
+
 ## Product
 
 - Upload CV → AI-parsed profile → ranked, explainable job matches

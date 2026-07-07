@@ -9,4 +9,8 @@
 export type ListCandidatesParams = {
 search?: string;
 status?: string;
+/**
+ * When "1", include per-result searchDebug ranking metadata (dev/internal)
+ */
+debug?: string;
 };

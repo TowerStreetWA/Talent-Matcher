@@ -56,6 +56,7 @@ export * from './researchUrlInput';
 export * from './scoreBreakdown';
 export * from './scrapedPage';
 export * from './scrapedPageMetadata';
+export * from './searchDebug';
 export * from './searchResearchCompaniesParams';
 export * from './searchSuggestion';
 export * from './searchSuggestionKind';

@@ -47,6 +47,19 @@ export const ABBREVIATIONS: Record<string, string[]> = {
   bdr: ["business development representative"],
   sdr: ["sales development representative"],
   ae: ["account executive"],
+  // Financial services shorthand
+  kyc: ["know your customer"],
+  aml: ["anti money laundering"],
+  alm: ["asset liability management"],
+  mga: ["managing general agent"],
+  db: ["defined benefit"],
+  dc: ["defined contribution"],
+  sipp: ["self invested personal pension"],
+  ssas: ["small self administered scheme"],
+  rfp: ["request for proposal"],
+  esg: ["esg analyst", "environmental social governance"],
+  uw: ["underwriter", "underwriting"],
+  ri: ["reinsurance"],
 };
 
 /**
@@ -72,6 +85,28 @@ export const SYNONYM_GROUPS: string[][] = [
   ["customer success", "account management"],
   ["javascript", "js"],
   ["typescript", "ts"],
+  // Financial services title/role groups
+  ["underwriter", "underwriting"],
+  ["assistant underwriter", "underwriting assistant", "trading underwriter"],
+  ["claims handler", "claims adjuster", "claims technician"],
+  ["broking technician", "account handler"],
+  ["delegated authority", "da analyst", "binder technician"],
+  ["bordereaux", "bordereaux analyst", "bordereau"],
+  ["actuary", "actuarial"],
+  ["catastrophe modelling", "catastrophe modeling", "cat modelling", "exposure management"],
+  ["reinsurance", "treaty reinsurance", "facultative reinsurance"],
+  ["know your customer", "kyc analyst", "client onboarding"],
+  ["anti money laundering", "aml analyst", "financial crime"],
+  ["settlements", "reconciliations"],
+  ["pensions administrator", "pension administrator", "pensions admin"],
+  ["pensions consultant", "pension consultant"],
+  ["defined benefit", "final salary"],
+  ["employee benefits", "benefits consultant"],
+  ["fund accountant", "fund accounting", "fund controller"],
+  ["investment operations", "fund operations", "asset management operations"],
+  ["transfer agency", "ta operations"],
+  ["portfolio analyst", "investment analyst"],
+  ["client reporting", "investment reporting"],
 ];
 
 /** Words that carry no search intent on their own. */
