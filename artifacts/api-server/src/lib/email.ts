@@ -69,6 +69,33 @@ export function alertMatchEmailHtml(params: {
   };
 }
 
+export function inviteEmailHtml(params: {
+  tenantName: string;
+  inviterName: string;
+  role: string;
+  inviteUrl: string;
+}): { subject: string; html: string } {
+  const { tenantName, inviterName, role, inviteUrl } = params;
+  return {
+    subject: `You're invited to join ${tenantName} on VacancyMatch`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px">
+        <h2 style="color:#4f46e5">Join ${esc(tenantName)} on VacancyMatch</h2>
+        <p><strong>${esc(inviterName)}</strong> invited you to join the
+        <strong>${esc(tenantName)}</strong> workspace as a
+        <strong>${esc(role)}</strong>.</p>
+        <p style="margin:24px 0">
+          <a href="${esc(inviteUrl)}"
+             style="background:#4f46e5;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">
+            Accept invitation
+          </a>
+        </p>
+        <p style="color:#6b7280;font-size:13px">This invite expires in 7 days.
+        If the button doesn't work, copy this link:<br>${esc(inviteUrl)}</p>
+      </div>`,
+  };
+}
+
 export function checkoutStartedEmailHtml(params: {
   planName: string;
   trialDays: number;

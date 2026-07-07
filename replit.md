@@ -38,6 +38,13 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Tenant scoping is enforced on all data routes: `tenantId` on data rows is the tenant **slug** (matches legacy `"demo"` text data), while `tenant_users.tenantId` is the tenants uuid PK; `tenantOf(req)` returns the slug
 - Stripe billing (Phase 2, DONE): Replit Stripe integration (`stripe` + `stripe-replit-sync`, credentials via connector API in `src/lib/stripeClient.ts` — NOT env vars). Managed webhook at `/api/stripe/webhook` (raw body, registered in app.ts BEFORE express.json). Webhook-synced Stripe data lives in the `stripe` DB schema (read-only; never write to it). `tenant_billing` caches per-tenant state (tenantId = slug), refreshed from `stripe.subscriptions` on GET /billing/subscription — never from checkout redirects. Plans: Starter $49/mo (7-day trial, no card via `payment_method_collection: if_required`), Team $149/mo; price IDs resolved from `stripe.prices` via product `metadata.plan_key`. Access gate (`middlewares/billing.ts`): trialing/active/past_due → full access; none/canceled/etc → reads OK, writes 402; billing + auth routes always reachable. Checkout/portal are admin+ only. Billing events are audit-logged. Scripts: `pnpm --filter @workspace/scripts exec tsx src/seedStripeProducts.ts` (idempotent) and `src/devStartTrial.ts` (dev trial for demo tenant)
 
+## Signup & Team (Phase 4)
+
+- Self-serve signup: POST /auth/signup creates tenant + owner in one txn; slug auto-generated from company name (`uniqueSlug()` with `-2` suffixes + unique-violation retry); dup email 409. Pages: `/signup`, `/accept-invite` (public routes rendered by AuthGate when logged out)
+- Invites: `lib/db/src/schema/invites.ts` (sha256 tokenHash, 7-day expiry, acceptedAt/revokedAt); `/team` routes (list/PATCH members, invites CRUD) mounted admin+ only after billing gate; accept binds email to the invite row (client email ignored) with atomic UPDATE...RETURNING claim; invite emails via Resend + copyable inviteUrl shown on Team page (sandbox fallback)
+- Guards: cannot modify owners or self; disabling a member kills their sessions; new tenants hit the existing billing 402 write gate until a trial/subscription starts
+- All signup/invite/member events are audit-logged
+
 ## Integrations (Phase 3)
 
 - CV file upload: Replit App Storage presigned uploads (`routes/storage.ts`, 10MB, pdf/docx/doc/txt); text extraction in `lib/extractCvText.ts` (unpdf/mammoth); `cvFileKey` on candidates + tenant-scoped download route

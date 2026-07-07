@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   CreditCard,
   Search,
-  LogOut
+  LogOut,
+  UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/jobs", label: "Live Jobs", icon: Briefcase },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
+  { href: "/team", label: "Team", icon: UserPlus, adminOnly: true },
   { href: "/admin", label: "Compliance", icon: ShieldCheck, adminOnly: true },
   { href: "/billing", label: "Billing", icon: CreditCard },
 ];

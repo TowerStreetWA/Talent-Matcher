@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
 import { Target } from "lucide-react";
-import { useLogin, type ApiMessage } from "@workspace/api-client-react";
+import { Link, useLocation } from "wouter";
+import { useSignup, type ApiMessage } from "@workspace/api-client-react";
 import { useInvalidateMe } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
@@ -15,35 +15,45 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Login() {
+export default function Signup() {
+  const [companyName, setCompanyName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const invalidateMe = useInvalidateMe();
+  const [, navigate] = useLocation();
 
-  const loginMutation = useLogin({
+  const signupMutation = useSignup({
     mutation: {
       onSuccess: () => {
         setError(null);
-        track("login");
+        track("signup_completed");
+        navigate("/");
         invalidateMe();
       },
       onError: (err) => {
-        const message =
+        setError(
           (err as ApiMessage | undefined)?.message ??
-          "Login failed. Please try again.";
-        setError(message);
+            "Sign up failed. Please try again.",
+        );
       },
     },
   });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter your email and password");
+    if (!companyName.trim() || !fullName.trim() || !email || !password) {
+      setError("Please fill in all fields");
       return;
     }
-    loginMutation.mutate({ data: { email, password } });
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    signupMutation.mutate({
+      data: { companyName: companyName.trim(), fullName: fullName.trim(), email, password },
+    });
   };
 
   return (
@@ -60,15 +70,36 @@ export default function Login() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Sign in</CardTitle>
+            <CardTitle>Create your workspace</CardTitle>
             <CardDescription>
-              Enter your workspace credentials to continue
+              Set up a new workspace for your agency
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="companyName">Company name</Label>
+                <Input
+                  id="companyName"
+                  placeholder="Acme Talent Ltd"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  data-testid="input-company-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Your name</Label>
+                <Input
+                  id="fullName"
+                  autoComplete="name"
+                  placeholder="Jane Smith"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  data-testid="input-full-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Work email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -84,41 +115,34 @@ export default function Login() {
                 <Input
                   id="password"
                   type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   data-testid="input-password"
                 />
               </div>
               {error && (
-                <p
-                  className="text-sm text-destructive"
-                  data-testid="text-login-error"
-                >
+                <p className="text-sm text-destructive" data-testid="text-signup-error">
                   {error}
                 </p>
               )}
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loginMutation.isPending}
-                data-testid="button-login"
+                disabled={signupMutation.isPending}
+                data-testid="button-signup"
               >
-                {loginMutation.isPending ? "Signing in…" : "Sign in"}
+                {signupMutation.isPending ? "Creating workspace…" : "Create workspace"}
               </Button>
             </form>
           </CardContent>
         </Card>
         <p className="text-xs text-center text-muted-foreground">
-          New here?{" "}
-          <Link href="/signup" className="underline" data-testid="link-signup">
-            Create a workspace
+          Already have an account?{" "}
+          <Link href="/" className="underline" data-testid="link-login">
+            Sign in
           </Link>
-        </p>
-        <p className="text-xs text-center text-muted-foreground">
-          Demo accounts: owner@demo.test, admin@demo.test, recruiter@demo.test,
-          viewer@demo.test (password: demo1234)
         </p>
       </div>
     </div>

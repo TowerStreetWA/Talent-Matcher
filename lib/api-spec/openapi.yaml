@@ -26,6 +26,8 @@ tags:
     description: Dashboard summaries
   - name: admin
     description: Audit and compliance
+  - name: team
+    description: Team and invite management
 paths:
   /healthz:
     get:
@@ -90,6 +92,198 @@ paths:
                 $ref: "#/components/schemas/AuthUser"
         "401":
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create a new workspace and owner account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "200":
+          description: Workspace created and logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /auth/invite:
+    get:
+      operationId: lookupInvite
+      tags: [auth]
+      summary: Look up a pending invite by token
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invite details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitePreview"
+        "404":
+          description: Invalid, expired, or already used invite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /auth/accept-invite:
+    post:
+      operationId: acceptInvite
+      tags: [auth]
+      summary: Accept an invite and create the account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInviteInput"
+      responses:
+        "200":
+          description: Account created and logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400":
+          description: Invalid input or invite no longer valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /team:
+    get:
+      operationId: listTeamMembers
+      tags: [team]
+      summary: List members of the current workspace
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamMember"
+  /team/{userId}:
+    patch:
+      operationId: updateTeamMember
+      tags: [team]
+      summary: Change a member's role or status
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTeamMemberInput"
+      responses:
+        "200":
+          description: Updated member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMember"
+        "400":
+          description: Invalid change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /team/invites:
+    get:
+      operationId: listInvites
+      tags: [team]
+      summary: List pending invites
+      responses:
+        "200":
+          description: Pending invites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamInvite"
+    post:
+      operationId: createInvite
+      tags: [team]
+      summary: Invite a teammate by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInviteInput"
+      responses:
+        "200":
+          description: Invite created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteCreated"
+        "409":
+          description: Email already in use or already invited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /team/invites/{inviteId}:
+    delete:
+      operationId: revokeInvite
+      tags: [team]
+      summary: Revoke a pending invite
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invite revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Invite not found
           content:
             application/json:
               schema:
@@ -775,6 +969,81 @@ components:
         role:
           type: string
           enum: [owner, admin, recruiter, viewer]
+    SignupInput:
+      type: object
+      required: [companyName, fullName, email, password]
+      properties:
+        companyName: { type: string, minLength: 2, maxLength: 80 }
+        fullName: { type: string, minLength: 1, maxLength: 120 }
+        email: { type: string, format: email, minLength: 3 }
+        password: { type: string, minLength: 8, maxLength: 200 }
+    InvitePreview:
+      type: object
+      required: [email, role, tenantName, invitedByName]
+      properties:
+        email: { type: string }
+        role:
+          type: string
+          enum: [admin, recruiter, viewer]
+        tenantName: { type: string }
+        invitedByName: { type: string }
+    AcceptInviteInput:
+      type: object
+      required: [token, fullName, password]
+      properties:
+        token: { type: string, minLength: 1 }
+        fullName: { type: string, minLength: 1, maxLength: 120 }
+        password: { type: string, minLength: 8, maxLength: 200 }
+    TeamMember:
+      type: object
+      required: [id, email, fullName, role, status, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        fullName: { type: string }
+        role:
+          type: string
+          enum: [owner, admin, recruiter, viewer]
+        status: { type: string }
+        lastLoginAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+    UpdateTeamMemberInput:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [admin, recruiter, viewer]
+        status:
+          type: string
+          enum: [active, disabled]
+    TeamInvite:
+      type: object
+      required: [id, email, role, invitedByName, expiresAt, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        role:
+          type: string
+          enum: [admin, recruiter, viewer]
+        invitedByName: { type: string }
+        expiresAt: { type: string }
+        createdAt: { type: string }
+    CreateInviteInput:
+      type: object
+      required: [email, role]
+      properties:
+        email: { type: string, format: email, minLength: 3 }
+        role:
+          type: string
+          enum: [admin, recruiter, viewer]
+    InviteCreated:
+      type: object
+      required: [invite, inviteUrl, emailSent]
+      properties:
+        invite:
+          $ref: "#/components/schemas/TeamInvite"
+        inviteUrl: { type: string }
+        emailSent: { type: boolean }
     BillingPlan:
       type: object
       required: [key, label, description, trialDays, features]

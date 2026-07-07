@@ -10,3 +10,4 @@ export * from "./tenants";
 export * from "./tenantUsers";
 export * from "./userSessions";
 export * from "./tenantBilling";
+export * from "./invites";

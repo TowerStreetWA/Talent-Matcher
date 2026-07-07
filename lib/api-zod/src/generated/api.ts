@@ -61,6 +61,170 @@ export const GetMeResponse = zod.object({
 
 
 /**
+ * @summary Create a new workspace and owner account
+ */
+export const signupBodyCompanyNameMin = 2;
+export const signupBodyCompanyNameMax = 80;
+
+export const signupBodyFullNameMax = 120;
+
+export const signupBodyEmailMin = 3;
+
+export const signupBodyPasswordMin = 8;
+export const signupBodyPasswordMax = 200;
+
+
+
+export const SignupBody = zod.object({
+  "companyName": zod.string().min(signupBodyCompanyNameMin).max(signupBodyCompanyNameMax),
+  "fullName": zod.string().min(1).max(signupBodyFullNameMax),
+  "email": zod.string().email().min(signupBodyEmailMin),
+  "password": zod.string().min(signupBodyPasswordMin).max(signupBodyPasswordMax)
+})
+
+export const SignupResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "tenantName": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer'])
+})
+
+
+/**
+ * @summary Look up a pending invite by token
+ */
+export const LookupInviteQueryParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const LookupInviteResponse = zod.object({
+  "email": zod.string(),
+  "role": zod.enum(['admin', 'recruiter', 'viewer']),
+  "tenantName": zod.string(),
+  "invitedByName": zod.string()
+})
+
+
+/**
+ * @summary Accept an invite and create the account
+ */
+
+export const acceptInviteBodyFullNameMax = 120;
+
+export const acceptInviteBodyPasswordMin = 8;
+export const acceptInviteBodyPasswordMax = 200;
+
+
+
+export const AcceptInviteBody = zod.object({
+  "token": zod.string().min(1),
+  "fullName": zod.string().min(1).max(acceptInviteBodyFullNameMax),
+  "password": zod.string().min(acceptInviteBodyPasswordMin).max(acceptInviteBodyPasswordMax)
+})
+
+export const AcceptInviteResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "tenantName": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer'])
+})
+
+
+/**
+ * @summary List members of the current workspace
+ */
+export const ListTeamMembersResponseItem = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer']),
+  "status": zod.string(),
+  "lastLoginAt": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListTeamMembersResponse = zod.array(ListTeamMembersResponseItem)
+
+
+/**
+ * @summary Change a member's role or status
+ */
+export const UpdateTeamMemberParams = zod.object({
+  "userId": zod.coerce.string()
+})
+
+export const UpdateTeamMemberBody = zod.object({
+  "role": zod.enum(['admin', 'recruiter', 'viewer']).optional(),
+  "status": zod.enum(['active', 'disabled']).optional()
+})
+
+export const UpdateTeamMemberResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "fullName": zod.string(),
+  "role": zod.enum(['owner', 'admin', 'recruiter', 'viewer']),
+  "status": zod.string(),
+  "lastLoginAt": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary List pending invites
+ */
+export const ListInvitesResponseItem = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['admin', 'recruiter', 'viewer']),
+  "invitedByName": zod.string(),
+  "expiresAt": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListInvitesResponse = zod.array(ListInvitesResponseItem)
+
+
+/**
+ * @summary Invite a teammate by email
+ */
+export const createInviteBodyEmailMin = 3;
+
+
+
+export const CreateInviteBody = zod.object({
+  "email": zod.string().email().min(createInviteBodyEmailMin),
+  "role": zod.enum(['admin', 'recruiter', 'viewer'])
+})
+
+export const CreateInviteResponse = zod.object({
+  "invite": zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['admin', 'recruiter', 'viewer']),
+  "invitedByName": zod.string(),
+  "expiresAt": zod.string(),
+  "createdAt": zod.string()
+}),
+  "inviteUrl": zod.string(),
+  "emailSent": zod.boolean()
+})
+
+
+/**
+ * @summary Revoke a pending invite
+ */
+export const RevokeInviteParams = zod.object({
+  "inviteId": zod.coerce.string()
+})
+
+export const RevokeInviteResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
  * @summary List available billing plans with prices
  */
 export const ListBillingPlansResponseItem = zod.object({

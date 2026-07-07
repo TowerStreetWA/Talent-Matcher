@@ -17,6 +17,9 @@ import Sources from "@/pages/sources";
 import Alerts from "@/pages/alerts";
 import Admin from "@/pages/admin";
 import Billing from "@/pages/billing";
+import Signup from "@/pages/signup";
+import AcceptInvite from "@/pages/accept-invite";
+import Team from "@/pages/team";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,8 @@ function Router() {
         <Route path="/alerts" component={Alerts} />
         <Route path="/admin" component={Admin} />
         <Route path="/billing" component={Billing} />
+        <Route path="/team" component={Team} />
+        <Route path="/accept-invite" component={AcceptInvite} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -52,7 +57,13 @@ function AuthGate() {
   }
 
   if (!user) {
-    return <Login />;
+    return (
+      <Switch>
+        <Route path="/signup" component={Signup} />
+        <Route path="/accept-invite" component={AcceptInvite} />
+        <Route component={Login} />
+      </Switch>
+    );
   }
 
   return <Router />;

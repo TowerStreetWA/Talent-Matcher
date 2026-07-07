@@ -39,6 +39,139 @@ export interface AuthUser {
   role: AuthUserRole;
 }
 
+export interface SignupInput {
+  /**
+     * @minLength 2
+     * @maxLength 80
+     */
+  companyName: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  fullName: string;
+  /** @minLength 3 */
+  email: string;
+  /**
+     * @minLength 8
+     * @maxLength 200
+     */
+  password: string;
+}
+
+export type InvitePreviewRole = typeof InvitePreviewRole[keyof typeof InvitePreviewRole];
+
+
+export const InvitePreviewRole = {
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export interface InvitePreview {
+  email: string;
+  role: InvitePreviewRole;
+  tenantName: string;
+  invitedByName: string;
+}
+
+export interface AcceptInviteInput {
+  /** @minLength 1 */
+  token: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  fullName: string;
+  /**
+     * @minLength 8
+     * @maxLength 200
+     */
+  password: string;
+}
+
+export type TeamMemberRole = typeof TeamMemberRole[keyof typeof TeamMemberRole];
+
+
+export const TeamMemberRole = {
+  owner: 'owner',
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  fullName: string;
+  role: TeamMemberRole;
+  status: string;
+  /** @nullable */
+  lastLoginAt?: string | null;
+  createdAt: string;
+}
+
+export type UpdateTeamMemberInputRole = typeof UpdateTeamMemberInputRole[keyof typeof UpdateTeamMemberInputRole];
+
+
+export const UpdateTeamMemberInputRole = {
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export type UpdateTeamMemberInputStatus = typeof UpdateTeamMemberInputStatus[keyof typeof UpdateTeamMemberInputStatus];
+
+
+export const UpdateTeamMemberInputStatus = {
+  active: 'active',
+  disabled: 'disabled',
+} as const;
+
+export interface UpdateTeamMemberInput {
+  role?: UpdateTeamMemberInputRole;
+  status?: UpdateTeamMemberInputStatus;
+}
+
+export type TeamInviteRole = typeof TeamInviteRole[keyof typeof TeamInviteRole];
+
+
+export const TeamInviteRole = {
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export interface TeamInvite {
+  id: string;
+  email: string;
+  role: TeamInviteRole;
+  invitedByName: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export type CreateInviteInputRole = typeof CreateInviteInputRole[keyof typeof CreateInviteInputRole];
+
+
+export const CreateInviteInputRole = {
+  admin: 'admin',
+  recruiter: 'recruiter',
+  viewer: 'viewer',
+} as const;
+
+export interface CreateInviteInput {
+  /** @minLength 3 */
+  email: string;
+  role: CreateInviteInputRole;
+}
+
+export interface InviteCreated {
+  invite: TeamInvite;
+  inviteUrl: string;
+  emailSent: boolean;
+}
+
 export interface BillingPlan {
   key: string;
   label: string;
@@ -399,6 +532,10 @@ export interface AuditLog {
   metadata?: string | null;
   createdAt: string;
 }
+
+export type LookupInviteParams = {
+token: string;
+};
 
 export type ListCandidatesParams = {
 search?: string;

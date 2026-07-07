@@ -10,6 +10,7 @@ import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import billingRouter from "./billing";
 import storageRouter from "./storage";
+import teamRouter from "./team";
 import { requireAuth, blockViewerWrites, requireRole } from "../middlewares/auth";
 import { sentryContextMiddleware } from "../lib/sentry";
 import { enforceBillingForWrites } from "../middlewares/billing";
@@ -39,5 +40,7 @@ router.use(alertRulesRouter);
 router.use(dashboardRouter);
 router.use(["/crm-sync-events", "/audit-logs"], requireRole("admin"));
 router.use(adminRouter);
+router.use("/team", requireRole("admin"));
+router.use(teamRouter);
 
 export default router;
