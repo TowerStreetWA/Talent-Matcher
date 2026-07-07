@@ -27,6 +27,44 @@ export interface ApiMessage {
   message: string;
 }
 
+export interface ResearchUrlInput {
+  /**
+     * @minLength 1
+     * @maxLength 2048
+     */
+  url: string;
+}
+
+export interface ScrapedPageMetadata {
+  title?: string | null;
+  description?: string | null;
+  siteName?: string | null;
+  language?: string | null;
+  statusCode?: number | null;
+  sourceUrl: string;
+}
+
+export interface ScrapedPage {
+  success: boolean;
+  metadata: ScrapedPageMetadata;
+  markdown: string;
+  contentPreview: string;
+}
+
+export interface ExtractedJob {
+  title?: string | null;
+  company?: string | null;
+  location?: string | null;
+  salaryText?: string | null;
+  contractType?: string | null;
+  description?: string | null;
+  skills: string[];
+  experienceLevel?: string | null;
+  remoteType?: string | null;
+  sourceUrl: string;
+  confidenceNotes?: string | null;
+}
+
 export interface LoginInput {
   /** @minLength 1 */
   email: string;

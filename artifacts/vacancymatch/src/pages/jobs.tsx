@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { SearchBox } from "@/components/search-box";
+import { ResearchUrlDialog } from "@/components/research-url-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
 
@@ -65,6 +66,7 @@ export default function Jobs() {
           <h1 className="text-3xl font-bold tracking-tight">Live Jobs Market</h1>
           <p className="text-muted-foreground mt-1">Search active vacancies across connected sources.</p>
         </div>
+        <ResearchUrlDialog />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-3">

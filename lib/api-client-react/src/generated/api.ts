@@ -40,6 +40,7 @@ import type {
   CrmSyncEvent,
   CvUploadInput,
   DashboardSummary,
+  ExtractedJob,
   HealthStatus,
   InviteCreated,
   InvitePreview,
@@ -58,6 +59,8 @@ import type {
   MatchUpdate,
   RequestUploadUrlInput,
   RequestUploadUrlResult,
+  ResearchUrlInput,
+  ScrapedPage,
   SearchSuggestion,
   SignupInput,
   TeamInvite,
@@ -3444,4 +3447,144 @@ export function useListAuditLogs<TData = Awaited<ReturnType<typeof listAuditLogs
 
 
 
+
+export const getScrapeResearchUrlUrl = () => {
+
+
+
+
+  return `/api/research/scrape-url`
+}
+
+/**
+ * @summary Scrape a single external vacancy URL into clean markdown
+ */
+export const scrapeResearchUrl = async (researchUrlInput: ResearchUrlInput, options?: RequestInit): Promise<ScrapedPage> => {
+
+  return customFetch<ScrapedPage>(getScrapeResearchUrlUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(researchUrlInput)
+  }
+);}
+
+
+
+
+export const getScrapeResearchUrlMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scrapeResearchUrl>>, TError,{data: BodyType<ResearchUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof scrapeResearchUrl>>, TError,{data: BodyType<ResearchUrlInput>}, TContext> => {
+
+const mutationKey = ['scrapeResearchUrl'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof scrapeResearchUrl>>, {data: BodyType<ResearchUrlInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  scrapeResearchUrl(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ScrapeResearchUrlMutationResult = NonNullable<Awaited<ReturnType<typeof scrapeResearchUrl>>>
+    export type ScrapeResearchUrlMutationBody = BodyType<ResearchUrlInput>
+    export type ScrapeResearchUrlMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Scrape a single external vacancy URL into clean markdown
+ */
+export const useScrapeResearchUrl = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scrapeResearchUrl>>, TError,{data: BodyType<ResearchUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof scrapeResearchUrl>>,
+        TError,
+        {data: BodyType<ResearchUrlInput>},
+        TContext
+      > => {
+      return useMutation(getScrapeResearchUrlMutationOptions(options));
+    }
+
+export const getExtractResearchJobUrl = () => {
+
+
+
+
+  return `/api/research/extract-job`
+}
+
+/**
+ * @summary Extract structured job data from an external vacancy URL
+ */
+export const extractResearchJob = async (researchUrlInput: ResearchUrlInput, options?: RequestInit): Promise<ExtractedJob> => {
+
+  return customFetch<ExtractedJob>(getExtractResearchJobUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(researchUrlInput)
+  }
+);}
+
+
+
+
+export const getExtractResearchJobMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractResearchJob>>, TError,{data: BodyType<ResearchUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof extractResearchJob>>, TError,{data: BodyType<ResearchUrlInput>}, TContext> => {
+
+const mutationKey = ['extractResearchJob'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractResearchJob>>, {data: BodyType<ResearchUrlInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  extractResearchJob(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractResearchJobMutationResult = NonNullable<Awaited<ReturnType<typeof extractResearchJob>>>
+    export type ExtractResearchJobMutationBody = BodyType<ResearchUrlInput>
+    export type ExtractResearchJobMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Extract structured job data from an external vacancy URL
+ */
+export const useExtractResearchJob = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractResearchJob>>, TError,{data: BodyType<ResearchUrlInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof extractResearchJob>>,
+        TError,
+        {data: BodyType<ResearchUrlInput>},
+        TContext
+      > => {
+      return useMutation(getExtractResearchJobMutationOptions(options));
+    }
 

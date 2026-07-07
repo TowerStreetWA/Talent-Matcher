@@ -1,0 +1,79 @@
+Build a tight Phase: Firecrawl integration for VacancyMatch AI using the already-present  FIRECRAWL_API_KEY .
+Goal:
+Add a small, production-minded Firecrawl service that lets the app fetch and normalize content from external vacancy URLs so recruiters can enrich or validate roles from live web pages.
+Scope:
+1.	Add a centralized Firecrawl service wrapper in the API server.
+2.	Add one endpoint to scrape a single URL and return clean markdown/text + metadata.
+3.	Add one endpoint to extract structured job data from a vacancy URL.
+4.	Add a simple UI entry point on the relevant vacancy/job workflow page, or if there is no suitable live UI yet, expose and document the endpoints cleanly for later UI use.
+5.	Add audit logging and error handling.
+6.	Keep everything tenant-safe and type-safe.
+Do not build broad crawling, background multi-page ingestion, company-wide scraping, or a generic research workbench in this phase.
+Technical requirements:
+•	Use the existing  FIRECRAWL_API_KEY  env var.
+•	Prefer the Firecrawl Node SDK if it fits the current codebase cleanly; otherwise call the API directly.
+•	Create a wrapper like  src/lib/firecrawl.ts .
+•	Add timeouts, safe error handling, and concise logging.
+•	Do not store raw page HTML unless there is already an approved storage pattern for this kind of artifact.
+•	Do not log full scraped page content in plaintext logs.
+API endpoints to add:
+•	 POST /api/research/scrape-url 
+•	input:  { url: string } 
+•	output:  { success, metadata, markdown, contentPreview } 
+•	should scrape one page and return cleaned content plus source metadata
+•	 POST /api/research/extract-job 
+•	input:  { url: string } 
+•	output should be a normalized structured object such as:
+•	title
+•	company
+•	location
+•	salaryText
+•	contractType
+•	description
+•	skills
+•	sourceUrl
+•	confidenceNotes
+Implementation guidance:
+•	For simple scraping, use Firecrawl’s single-page scrape capability and request clean markdown/main content.
+•	For structured extraction, use Firecrawl extraction mode with an explicit schema for job fields.
+•	Validate inputs strictly.
+•	Restrict to  http  and  https  URLs only.
+•	Add SSRF-safe URL validation if the codebase already has a pattern for this; otherwise add a basic allow/block policy for localhost, internal IPs, and file URLs.
+•	Add Zod/OpenAPI contract updates and regenerate client types if that is the established pattern in this repo.
+Suggested structured extraction schema:
+•	title: string | null
+•	company: string | null
+•	location: string | null
+•	salaryText: string | null
+•	contractType: string | null
+•	description: string | null
+•	skills: string[]
+•	experienceLevel: string | null
+•	remoteType: string | null
+•	sourceUrl: string
+Product behavior:
+•	This feature should help recruiters bring live external vacancy pages into VacancyMatch AI for parsing and matching.
+•	It should be positioned as enrichment/ingestion support, not a full crawling engine yet.
+Files likely to change:
+•	 src/lib/firecrawl.ts  new
+•	relevant API route files such as  routes/research.ts  or similar
+•	 routes/index.ts 
+•	 openapi.yaml 
+•	regenerated API client types if used in this repo
+•	optional small frontend page/button if a natural place already exists
+Acceptance criteria:
+1.	A valid job URL can be scraped and returns clean content and metadata.
+2.	A valid job URL can be structurally extracted into normalized vacancy fields.
+3.	Invalid or blocked URLs fail safely with clear errors.
+4.	Logs and Sentry do not capture full sensitive scraped content by default.
+5.	Audit log records the action at a useful level.
+6.	Typecheck passes.
+7.	Existing product behavior is unchanged outside this new feature.
+Deliverables back to me:
+•	files changed
+•	routes added
+•	env vars used
+•	whether SDK or raw API was used
+•	what schema was chosen for extracted job fields
+•	any UI entry points added
+•	typecheck result

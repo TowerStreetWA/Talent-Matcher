@@ -1140,3 +1140,55 @@ export const ListAuditLogsResponseItem = zod.object({
 export const ListAuditLogsResponse = zod.array(ListAuditLogsResponseItem)
 
 
+/**
+ * @summary Scrape a single external vacancy URL into clean markdown
+ */
+export const scrapeResearchUrlBodyUrlMax = 2048;
+
+
+
+export const ScrapeResearchUrlBody = zod.object({
+  "url": zod.string().min(1).max(scrapeResearchUrlBodyUrlMax)
+})
+
+export const ScrapeResearchUrlResponse = zod.object({
+  "success": zod.boolean(),
+  "metadata": zod.object({
+  "title": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "siteName": zod.string().nullish(),
+  "language": zod.string().nullish(),
+  "statusCode": zod.number().nullish(),
+  "sourceUrl": zod.string()
+}),
+  "markdown": zod.string(),
+  "contentPreview": zod.string()
+})
+
+
+/**
+ * @summary Extract structured job data from an external vacancy URL
+ */
+export const extractResearchJobBodyUrlMax = 2048;
+
+
+
+export const ExtractResearchJobBody = zod.object({
+  "url": zod.string().min(1).max(extractResearchJobBodyUrlMax)
+})
+
+export const ExtractResearchJobResponse = zod.object({
+  "title": zod.string().nullish(),
+  "company": zod.string().nullish(),
+  "location": zod.string().nullish(),
+  "salaryText": zod.string().nullish(),
+  "contractType": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "skills": zod.array(zod.string()),
+  "experienceLevel": zod.string().nullish(),
+  "remoteType": zod.string().nullish(),
+  "sourceUrl": zod.string(),
+  "confidenceNotes": zod.string().nullish()
+})
+
+

@@ -28,6 +28,8 @@ tags:
     description: Audit and compliance
   - name: team
     description: Team and invite management
+  - name: research
+    description: External vacancy page research (Firecrawl)
 paths:
   /healthz:
     get:
@@ -960,6 +962,78 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AuditLog"
+  /research/scrape-url:
+    post:
+      operationId: scrapeResearchUrl
+      tags: [research]
+      summary: Scrape a single external vacancy URL into clean markdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchUrlInput"
+      responses:
+        "200":
+          description: Scraped page content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScrapedPage"
+        "400":
+          description: Invalid or blocked URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "502":
+          description: Upstream scrape failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "503":
+          description: Firecrawl not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /research/extract-job:
+    post:
+      operationId: extractResearchJob
+      tags: [research]
+      summary: Extract structured job data from an external vacancy URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchUrlInput"
+      responses:
+        "200":
+          description: Extracted job fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtractedJob"
+        "400":
+          description: Invalid or blocked URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "502":
+          description: Upstream extraction failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "503":
+          description: Firecrawl not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
 components:
   schemas:
     HealthStatus:
@@ -983,6 +1057,47 @@ components:
       required: [message]
       properties:
         message: { type: string }
+    ResearchUrlInput:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, minLength: 1, maxLength: 2048 }
+    ScrapedPageMetadata:
+      type: object
+      required: [sourceUrl]
+      properties:
+        title: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        siteName: { type: string, nullable: true }
+        language: { type: string, nullable: true }
+        statusCode: { type: number, nullable: true }
+        sourceUrl: { type: string }
+    ScrapedPage:
+      type: object
+      required: [success, metadata, markdown, contentPreview]
+      properties:
+        success: { type: boolean }
+        metadata:
+          $ref: "#/components/schemas/ScrapedPageMetadata"
+        markdown: { type: string }
+        contentPreview: { type: string }
+    ExtractedJob:
+      type: object
+      required: [skills, sourceUrl]
+      properties:
+        title: { type: string, nullable: true }
+        company: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        salaryText: { type: string, nullable: true }
+        contractType: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        skills:
+          type: array
+          items: { type: string }
+        experienceLevel: { type: string, nullable: true }
+        remoteType: { type: string, nullable: true }
+        sourceUrl: { type: string }
+        confidenceNotes: { type: string, nullable: true }
     LoginInput:
       type: object
       required: [email, password]
