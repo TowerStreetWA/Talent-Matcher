@@ -25,7 +25,9 @@ import {
   matchesDisplayFamily,
   type DisplayFamily,
 } from "../config/curatedTitles/displayFamilies";
-import { FIN_SECTORS } from "../lib/search/finTaxonomy";
+import { FIN_SECTORS, type FinSector } from "../lib/search/finTaxonomy";
+import type { NormalizedQuery } from "../lib/search/normalize";
+import type { JobSearchScore } from "../lib/search/jobSearchRank";
 import type { SearchDebugDto } from "../lib/dto";
 
 const toSearchDebug = (b: ScoreBreakdown): SearchDebugDto => ({
@@ -178,6 +180,86 @@ router.get("/jobs/search/families", (req, res): void => {
   );
 });
 
+export interface JobSearchPipelineArgs {
+  tenantId: string;
+  nq: NormalizedQuery | null;
+  locationVariants: string[];
+  sectorFilter: FinSector | null;
+  familyFilters: DisplayFamily[];
+  sourceFilter: string | null;
+}
+
+export interface JobSearchPipelineRow {
+  r: { job: typeof jobsTable.$inferSelect; sourceName: string | null };
+  s: JobSearchScore;
+}
+
+/**
+ * The core /jobs/search pipeline: DB broadening query (capped at TOTAL_CAP)
+ * followed by in-memory scoring, sector/family filtering, and ranking.
+ * Extracted so internal diagnostics can run the exact same search that the
+ * recruiter-facing route uses. Read-only.
+ */
+export async function runJobSearchPipeline(
+  args: JobSearchPipelineArgs,
+): Promise<JobSearchPipelineRow[]> {
+  const { tenantId, nq, locationVariants, sectorFilter, familyFilters, sourceFilter } =
+    args;
+  const conditions = [
+    eq(jobsTable.tenantId, tenantId),
+    eq(jobsTable.status, "active"),
+    eq(jobsTable.isCanonical, true),
+  ];
+  if (nq) {
+    const likeConds = [];
+    for (const variant of nq.variants.slice(0, 15)) {
+      const like = `%${variant}%`;
+      likeConds.push(
+        ilike(jobsTable.title, like),
+        ilike(jobsTable.companyName, like),
+        ilike(jobsTable.industry, like),
+        ilike(jobsTable.descriptionText, like),
+        sql`array_to_string(${jobsTable.skills}, ' ') ILIKE ${like}`,
+      );
+    }
+    const searchCond = or(...likeConds);
+    if (searchCond) conditions.push(searchCond);
+  }
+  if (locationVariants.length > 0) {
+    const locConds = locationVariants.map((v) =>
+      ilike(jobsTable.locationText, `%${v}%`),
+    );
+    const locCond = or(...locConds);
+    if (locCond) conditions.push(locCond);
+  }
+  if (sourceFilter) conditions.push(eq(jobsTable.sourceType, sourceFilter));
+
+  const rows = await db
+    .select({ job: jobsTable, sourceName: jobSourcesTable.name })
+    .from(jobsTable)
+    .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
+    .where(and(...conditions))
+    .orderBy(desc(jobsTable.postedAt))
+    .limit(TOTAL_CAP);
+
+  return rows
+    .map((r) => ({
+      r,
+      s: scoreJobSearch(nq, r.job, { sectorFilter, locationVariants }),
+    }))
+    .filter(({ s }) => (sectorFilter ? s.sector === sectorFilter : true))
+    .filter(({ s }) =>
+      familyFilters.length === 0
+        ? true
+        : familyFilters.some((df) => matchesDisplayFamily(df, s.fn, s.curatedTags)),
+    )
+    .sort(
+      (a, b) =>
+        b.s.score - a.s.score ||
+        (b.r.job.postedAt?.getTime() ?? 0) - (a.r.job.postedAt?.getTime() ?? 0),
+    );
+}
+
 // NOTE: must stay registered before /jobs/:id so "search" isn't captured as an id.
 router.get("/jobs/search", async (req, res): Promise<void> => {
   const q = typeof req.query["q"] === "string" ? req.query["q"] : "";
@@ -236,59 +318,14 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
   const locationVariants = locationRaw ? expandLocationInput(locationRaw) : [];
   const nq = q.trim() ? normalizeQuery(q) : null;
 
-  const conditions = [
-    eq(jobsTable.tenantId, tenantOf(req)),
-    eq(jobsTable.status, "active"),
-    eq(jobsTable.isCanonical, true),
-  ];
-  if (nq) {
-    const likeConds = [];
-    for (const variant of nq.variants.slice(0, 15)) {
-      const like = `%${variant}%`;
-      likeConds.push(
-        ilike(jobsTable.title, like),
-        ilike(jobsTable.companyName, like),
-        ilike(jobsTable.industry, like),
-        ilike(jobsTable.descriptionText, like),
-        sql`array_to_string(${jobsTable.skills}, ' ') ILIKE ${like}`,
-      );
-    }
-    const searchCond = or(...likeConds);
-    if (searchCond) conditions.push(searchCond);
-  }
-  if (locationVariants.length > 0) {
-    const locConds = locationVariants.map((v) =>
-      ilike(jobsTable.locationText, `%${v}%`),
-    );
-    const locCond = or(...locConds);
-    if (locCond) conditions.push(locCond);
-  }
-  if (sourceFilter) conditions.push(eq(jobsTable.sourceType, sourceFilter));
-
-  const rows = await db
-    .select({ job: jobsTable, sourceName: jobSourcesTable.name })
-    .from(jobsTable)
-    .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
-    .where(and(...conditions))
-    .orderBy(desc(jobsTable.postedAt))
-    .limit(TOTAL_CAP);
-
-  const scored = rows
-    .map((r) => ({
-      r,
-      s: scoreJobSearch(nq, r.job, { sectorFilter, locationVariants }),
-    }))
-    .filter(({ s }) => (sectorFilter ? s.sector === sectorFilter : true))
-    .filter(({ s }) =>
-      familyFilters.length === 0
-        ? true
-        : familyFilters.some((df) => matchesDisplayFamily(df, s.fn, s.curatedTags)),
-    )
-    .sort(
-      (a, b) =>
-        b.s.score - a.s.score ||
-        (b.r.job.postedAt?.getTime() ?? 0) - (a.r.job.postedAt?.getTime() ?? 0),
-    );
+  const scored = await runJobSearchPipeline({
+    tenantId: tenantOf(req),
+    nq,
+    locationVariants,
+    sectorFilter,
+    familyFilters,
+    sourceFilter,
+  });
 
   const total = scored.length;
   const start = (page - 1) * pageSize;
