@@ -1,0 +1,148 @@
+Please add an ASSET MANAGEMENT (REAL ASSETS / INFRA / BROADER BUY-SIDE) taxonomy layer to complement the fund managers taxonomy.
+
+GOAL
+
+Fund managers taxonomy covers core portfolio, research, trading, and distribution roles.
+This phase adds more real-assets / institutional / platform-oriented titles from the supplied list, which may be merged with fundManagers later.
+
+This phase should:
+1. Create an assetManagementRealAssets taxonomy file (or extend the existing asset_management taxonomy) for these titles.
+2. Structure them into families and canonical groups.
+3. Wire them into search/tagging.
+
+Do not change candidate matching, billing, or auth.
+
+========================
+STRUCTURE REQUIREMENTS
+========================
+
+Entries:
+- industry: "asset_management"
+- family: e.g. real_assets_investment, institutional_client_sales, operations_middle_back_office, risk_performance, product_marketing, finance_control
+- canonicalTitle
+- variants
+- optional seniority
+- optional tags
+
+========================
+FAMILIES TO USE
+========================
+
+Suggested families:
+
+- real_assets_investment
+- institutional_client_sales
+- operations_middle_back_office
+- risk_performance
+- product_marketing
+- finance_control
+
+========================
+ASSET MANAGEMENT TITLES TO INGEST
+========================
+
+Chief Executive Officer (Asset Management)
+Chief Operating Officer (Asset Management)
+Chief Investment Officer (Asset Management)
+Deputy CIO (Asset Management)
+Head of Real Assets
+Head of Real Estate Investments
+Head of Infrastructure Investments
+Head of Private Markets
+Head of Private Equity
+Head of Private Debt
+Head of Alternatives (Asset Management)
+Head of ESG (Asset Management)
+Head of Stewardship
+Head of Investment Risk
+Head of Distribution (Asset Management)
+Head of Product (Asset Management)
+
+Real Estate Portfolio Manager
+Infrastructure Portfolio Manager
+Private Equity Portfolio Manager
+Private Debt Portfolio Manager
+Alternatives Portfolio Manager
+Real Assets Portfolio Manager
+Senior Investment Manager (Real Assets)
+Investment Director (Asset Management)
+Associate Director (Asset Management)
+Investment Associate (Asset Management)
+Investment Analyst (Real Estate)
+Investment Analyst (Infrastructure)
+Investment Analyst (Private Equity)
+Investment Analyst (Private Debt)
+
+Asset Manager (Real Estate)
+Senior Asset Manager (Real Estate)
+Property Asset Manager
+Infrastructure Asset Manager
+Portfolio Director (Real Assets)
+
+ESG Investment Manager
+Responsible Investment Analyst
+Stewardship Analyst
+Engagement Specialist (Asset Management)
+Proxy Voting Analyst
+
+Institutional Sales Manager (Asset Management)
+Institutional Business Development Manager
+Consultant Relations Director
+Global Account Manager (Asset Management)
+Client Director (Institutional)
+Client Relationship Manager (Institutional)
+Client Service Associate (Asset Management)
+
+Operations Manager (Asset Management)
+Investment Operations Analyst
+Fund Operations Specialist
+Middle Office Manager (Asset Management)
+Collateral Management Analyst (Buy-Side)
+Derivatives Operations Analyst
+Onboarding Manager (Asset Management)
+Client Onboarding Analyst (Asset Management)
+
+Investment Risk Manager
+Portfolio Risk Manager
+Liquidity Risk Manager (Asset Management)
+Model Risk Analyst (Asset Management)
+Performance & Risk Manager
+
+Product Development Manager (Asset Management)
+Senior Product Manager (Asset Management)
+Investment Writer (Asset Management)
+RFP Writer (Institutional)
+RFP Specialist (Asset Management)
+Marketing Director (Asset Management)
+Digital Marketing Manager (Asset Management)
+CRM Manager (Asset Management)
+
+Finance Manager (Asset Management)
+Fund Controller
+Financial Controller (Asset Management)
+Management Accountant (Asset Management)
+FP&A Analyst (Asset Management)
+
+========================
+INTEGRATION
+========================
+
+- Add or extend asset management taxonomy to include these titles.
+- Ensure overlaps with fund managers taxonomy are either merged or kept consistent (no conflicting canonicalTitle definitions).
+
+========================
+ACCEPTANCE CRITERIA
+========================
+
+1. Asset management real-assets taxonomy entries exist.
+2. Titles are grouped into families and canonical/variant sets.
+3. Taxonomy is used in search/tagging.
+4. Typecheck/tests pass.
+
+REPORT BACK
+
+Please report:
+- File name/structure.
+- Families used + examples.
+- How overlaps with fundManagers are handled.
+- Typecheck/test outcomes.
