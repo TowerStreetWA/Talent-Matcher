@@ -1,0 +1,250 @@
+Please integrate the attached London Insurance Market directory as a first-class employer source in VacancyMatch / Talent Matcher.
+
+Goal
+
+Use the directory (London-Insurance-Market-Directory.md) as the canonical list of insurers, MGAs, coverholders, and brokers with careers pages, and ensure the app:
+
+- regularly fetches all live jobs from these careers sites,
+- normalizes them into the existing jobs schema,
+- runs dedupe/canonicalisation/freshness as usual,
+- exposes them as direct-employer sources in the Sources / Job Search views.
+
+The aim is: “Talent Matcher covers all careers pages in the London insurance market directory.”
+
+====================================
+1. DIRECTORY → CONFIG
+====================================
+
+Input:
+- The markdown file: London-Insurance-Market-Directory.md (already attached in the Replit project).
+
+Implementation:
+
+1) Parse the file and build a structured config, e.g.:
+   - config/londonInsuranceEmployers.ts
+
+For each table row in the directory (Lloyd’s syndicates, IUA company-market insurers, MGAs/coverholders, brokers):
+
+- Extract:
+  - name (e.g. "Hiscox", "QBE Underwriting Limited", "Marsh", "Miller Insurance Services LLP")
+  - careersUrl (e.g. Workday, Workable, Teamtailor, Recruitee, HTML careers page)
+  - segment: one of
+    - 'lloyds_syndicate'
+    - 'company_market'
+    - 'mga_coverholder'
+    - 'broker'
+  - platformHint (optional): identify known ATS/platforms from URL patterns:
+    - Workday: *.wd1.myworkdayjobs.com / *.wd3.myworkdayjobs.com
+    - Teamtailor: *.teamtailor.com
+    - Recruitee: *.recruitee.com
+    - Workable: *.workable.com / workable front-ends
+    - In-house HTML/careers pages: everything else
+  - sectorTag: 'insurance'
+  - optional notes (e.g. Lloyd’s syndicate number, IUA membership).
+
+Keep this config **data-only** (no business logic). It should be easy to add/edit rows over time.
+
+Acceptance:
+- config/londonInsuranceEmployers.ts (or similar) exists, listing all directory employers with name + careersUrl + segment + platformHint + sectorTag.
+
+====================================
+2. INGESTION STRATEGIES PER PLATFORM
+====================================
+
+Objective:
+Reuse existing ATS/career-page ingestion where possible; add a generic careers-scraper for “plain” sites.
+
+Implementation:
+
+1) For employers whose careersUrl is clearly an ATS endpoint we already support:
+
+   - Workday, Teamtailor, Recruitee, Workable, SmartRecruiters, Lever, Ashby, etc.
+
+   Use the existing ATS fetchers under lib/vacancies/ats/:
+
+   - Map platformHint → the right ATS provider module.
+   - For each employer, create an employer config entry (if needed) that references the careersUrl/token.
+   - Ensure those employers are tagged with sectorTag: 'insurance'.
+
+2) For employers with non-ATS careers pages (HTML sites):
+
+   - Implement or reuse a generic “careers page” ingestion function, e.g.:
+
+     - lib/vacancies/careersSites/fetchJobsFromCareersPage(employerConfig)
+
+   Behaviour:
+
+   - Given a careersUrl, fetch the page(s) and:
+     - identify job listing elements (cards, tables, job list pages),
+     - extract:
+       - title
+       - company (use employer name)
+       - location (if visible)
+       - description/summary (or first paragraph)
+       - applyUrl (link to the job detail or application form)
+       - posted date if available
+     - normalize into the existing jobs/vacancies schema.
+   - Keep parsing robust but conservative: prefer structured job list pages where possible (some brokers use Recruitee/Teamtailor front-ends, which you can treat as ATS).
+
+3) Routing:
+
+   - Add a small router layer which:
+     - takes each employer from londonInsuranceEmployers config,
+     - uses platformHint to decide whether to call an ATS provider or the generic careers-page fetcher,
+     - passes normalized jobs into the same canonicalisation/dedupe pipeline as other sources.
+
+Acceptance:
+- For at least a representative subset of directory employers (including Lloyd’s syndicates, company-market insurers, MGAs, and brokers), we can successfully fetch jobs from careersUrl and see them stored as jobs with source_provider reflecting the employer/segment.
+
+====================================
+3. SCHEDULED INGESTION JOB
+====================================
+
+Objective:
+Run this regularly so Talent Matcher stays in sync with live jobs on these sites.
+
+Implementation:
+
+1) Add an internal-only ingestion endpoint, e.g.:
+
+   - POST /api/internal/ingestion/london-insurance-directory
+
+   Behind the existing internal/admin guard.
+
+2) Handler behaviour:
+
+   - Loop over all entries in londonInsuranceEmployers config.
+   - For each employer:
+     - choose ATS vs generic careers ingestion as per platformHint,
+     - fetch jobs,
+     - normalize and upsert into jobs table,
+     - apply canonicalisation/dedupe,
+     - record per-employer funnel metrics:
+       - fetched
+       - stored
+       - active
+       - canonical
+       - duplicates
+   - Handle failures gracefully:
+     - log error + mark employer as warning,
+     - continue with others (one bad careers page must not sink the whole run).
+
+3) Scheduling:
+
+   - Use the existing scheduler (cron/worker/Replit Agent) to:
+     - run this ingestion job on a regular cadence, e.g. daily or several times per week.
+   - Apply freshness rules:
+     - mark jobs inactive if they haven’t been seen in e.g. 21 days, consistent with ATS logic.
+     - ensure repeated runs update lastSeenAt and keep active jobs fresh.
+
+Acceptance:
+- Running the ingestion job populates jobs from the directory employers.
+- After initial run, the demo tenant shows a significantly higher count of Insurance sector jobs, with many new direct-employer sources.
+
+====================================
+4. SOURCE + SEARCH VISIBILITY
+====================================
+
+Objective:
+Make sure these jobs show up clearly in the app.
+
+Implementation:
+
+1) Source attribution:
+
+   - For jobs from this directory, set:
+     - source_type: 'direct_employer'
+     - source_provider: something like:
+       - 'london_insurance_lloyds_syndicate'
+       - 'london_insurance_company_market'
+       - 'london_insurance_mga'
+       - 'london_insurance_broker'
+       - or a more granular scheme per employer.
+
+   - Ensure these sources appear in:
+     - Sources page,
+     - internal metrics,
+     - dedupe priority (direct_employer preferred over board copies).
+
+2) Search behaviour:
+
+   - Confirm that:
+     - Insurance sector pill pulls in these jobs (sectorTag: 'insurance'),
+     - relevant families (Underwriting, Claims, Broking & Distribution, Risk & Compliance) classify them correctly using the existing query-time classifier.
+
+3) UI:
+
+   - There is no need to expose a separate UI filter for “London Insurance Market”; just ensure jobs from these employers appear naturally as Insurance roles, with clear source badges (e.g. “Direct employer – Beazley”).
+
+Acceptance:
+- Jobs from directory employers appear in Job Search under Insurance sector and relevant families.
+- Sources view clearly lists these employers/segments, with per-source metrics.
+
+====================================
+5. DIAGNOSTICS & HEALTH
+====================================
+
+Objective:
+Keep the coverage measurable and debuggable.
+
+Implementation:
+
+1) Extend the existing underwriting debug endpoint or add a new one, e.g.:
+
+   - GET /api/internal/debug/london-insurance-coverage
+
+2) Response should include:
+
+   - total_insurance_jobs (active + canonical).
+   - counts by segment:
+     - llodys_syndicate_jobs
+     - company_market_jobs
+     - mga_coverholder_jobs
+     - broker_jobs
+   - per-segment by_source breakdown (providers + counts).
+   - any employers with 0 jobs (to highlight empty boards or broken careers links).
+
+3) Ensure the endpoint is:
+
+   - admin-only,
+   - read-only,
+   - tenant-scoped,
+   - well logged.
+
+Acceptance:
+- We can call the diagnostics endpoint and see coverage by segment and employer, and quickly identify missing/empty sites.
+
+====================================
+6. NON-REGRESSION & CONSTRAINTS
+====================================
+
+- Do not change auth, billing, matching, or taxonomy structure in this phase.
+- Keep all employer additions and ingestion routing config-driven.
+- Reuse existing ATS logic wherever possible.
+- Make generic careers-page scraping conservative and robust; if an employer site is too messy, log it as “needs manual review” rather than adding fragile logic.
+
+Tests:
+- Add targeted tests for:
+  - londonInsuranceEmployers config (basic shape, no duplicate names/URLs).
+  - ingestion routing by platformHint.
+  - one or two employer careers ingestion flows.
+  - the diagnostics endpoint response shape.
+
+Ensure:
+- Full typecheck passes.
+- All tests pass.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+
+- The new config file(s) created (and a sample of employers covered).
+- How many employers from the directory are successfully ingested (by segment).
+- Before/after counts:
+  - total_insurance_jobs
+  - underwriting/claims/broking family jobs (if available)
+- Per-segment coverage metrics from the diagnostics endpoint.
+- Any employers that could not be ingested (and why).
+- Typecheck/test outcomes.

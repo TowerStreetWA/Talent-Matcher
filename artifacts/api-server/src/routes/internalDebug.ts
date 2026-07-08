@@ -5,6 +5,11 @@ import { tenantOf } from "../middlewares/auth";
 import { normalizeQuery } from "../lib/search/normalize";
 import { classifyJobForDisplay } from "../lib/search/classification";
 import { runJobSearchPipeline } from "./jobs";
+import {
+  LONDON_INSURANCE_EMPLOYERS,
+  LONDON_DIRECTORY_UNRESOLVED,
+} from "../config/londonInsuranceEmployers";
+import { LONDON_SEGMENTS, londonProviderKey } from "../lib/vacancies/londonDirectory";
 
 /**
  * Internal-only, read-only diagnostics. Deliberately NOT part of the public
@@ -129,6 +134,136 @@ router.get("/internal/debug/underwriting-count", async (req, res) => {
   req.log.info(
     { event: "debug_underwriting_count", ...payload },
     "underwriting diagnostics computed",
+  );
+
+  res.json(payload);
+});
+
+/** Loose company-name normalization for zero-job employer matching. */
+function normalizeCompany(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\((.*?)\)/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\b(limited|ltd|llp|plc|group|holdings|company|companies|co|uk|international)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function companiesMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+}
+
+/**
+ * London Insurance Market directory coverage: how many insurance jobs the
+ * tenant has, how the directory segments contribute, and which directory
+ * employers currently yield zero jobs (empty boards / broken careers links).
+ * Tenant-scoped, read-only, admin+ only (mounted under the /internal guard).
+ */
+router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
+  const tenantId = tenantOf(req);
+  const activeCanonical = and(
+    eq(jobsTable.tenantId, tenantId),
+    eq(jobsTable.status, "active"),
+    eq(jobsTable.isCanonical, true),
+  );
+  const londonProviders = LONDON_SEGMENTS.map(londonProviderKey);
+
+  const [classifyRows, segmentRows, londonCompanies] = await Promise.all([
+    // Sector is computed at query time (taxonomy is config-only) — classify
+    // the active+canonical set in memory with the same classifier job cards use.
+    db
+      .select({
+        title: jobsTable.title,
+        companyName: jobsTable.companyName,
+        industry: jobsTable.industry,
+        descriptionText: jobsTable.descriptionText,
+        skills: jobsTable.skills,
+        sourceProvider: jobsTable.sourceProvider,
+        sourceType: jobsTable.sourceType,
+        sectorTag: jobsTable.sectorTag,
+      })
+      .from(jobsTable)
+      .where(activeCanonical),
+    db
+      .select({
+        sourceProvider: jobsTable.sourceProvider,
+        sourceType: jobsTable.sourceType,
+        value: count(),
+      })
+      .from(jobsTable)
+      .where(and(activeCanonical, inArray(jobsTable.sourceProvider, londonProviders)))
+      .groupBy(jobsTable.sourceProvider, jobsTable.sourceType)
+      .orderBy(desc(count())),
+    db
+      .select({ companyName: jobsTable.companyName, value: count() })
+      .from(jobsTable)
+      .where(
+        and(
+          eq(jobsTable.tenantId, tenantId),
+          eq(jobsTable.status, "active"),
+          inArray(jobsTable.sourceProvider, londonProviders),
+        ),
+      )
+      .groupBy(jobsTable.companyName),
+  ]);
+
+  let totalInsurance = 0;
+  const insuranceBySource = new Map<string, number>();
+  for (const row of classifyRows) {
+    const c = classifyJobForDisplay(row);
+    const isInsurance = c?.sector === "insurance" || row.sectorTag === "insurance";
+    if (!isInsurance) continue;
+    totalInsurance += 1;
+    const key = row.sourceProvider ?? "legacy_manual";
+    insuranceBySource.set(key, (insuranceBySource.get(key) ?? 0) + 1);
+  }
+
+  const segments: Record<string, number> = {};
+  for (const segment of LONDON_SEGMENTS) segments[`${segment}_jobs`] = 0;
+  for (const row of segmentRows) {
+    const segment = LONDON_SEGMENTS.find((s) => londonProviderKey(s) === row.sourceProvider);
+    if (segment) segments[`${segment}_jobs`] = row.value;
+  }
+
+  // Employers with zero active jobs: compare directory names against the
+  // company names actually stored on london_insurance_* jobs (loose match —
+  // extracted names often differ from legal directory names).
+  const normalizedJobCompanies = londonCompanies
+    .map((r) => normalizeCompany(r.companyName ?? ""))
+    .filter((n) => n.length > 0);
+  const zeroJobEmployers = LONDON_INSURANCE_EMPLOYERS.filter((e) => {
+    const n = normalizeCompany(e.name);
+    return !normalizedJobCompanies.some((jc) => companiesMatch(n, jc));
+  }).map((e) => ({ name: e.name, segment: e.segment, careersUrl: e.careersUrl }));
+
+  const payload = {
+    total_insurance_jobs: totalInsurance,
+    segments,
+    by_source: [...insuranceBySource.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([provider, value]) => ({ source_provider: provider, count: value })),
+    directory: {
+      configured_employers: LONDON_INSURANCE_EMPLOYERS.length,
+      employers_with_jobs: LONDON_INSURANCE_EMPLOYERS.length - zeroJobEmployers.length,
+      unresolved_in_directory: LONDON_DIRECTORY_UNRESOLVED.map((u) => ({
+        name: u.name,
+        segment: u.segment,
+        reason: u.reason,
+      })),
+    },
+    employers_with_zero_jobs: zeroJobEmployers,
+  };
+
+  req.log.info(
+    {
+      event: "debug_london_insurance_coverage",
+      total_insurance_jobs: payload.total_insurance_jobs,
+      segments: payload.segments,
+      zero_job_employers: zeroJobEmployers.length,
+    },
+    "London insurance coverage diagnostics computed",
   );
 
   res.json(payload);

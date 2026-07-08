@@ -21,6 +21,12 @@ import {
   resolveBoardPatternCap,
   type JobBoardProviderKey,
 } from "../config/jobBoardPatterns";
+import {
+  LONDON_SEGMENTS,
+  makeLondonEmployerProvider,
+  selectLondonEmployers,
+} from "../lib/vacancies/londonDirectory";
+import type { LondonMarketSegment } from "../config/londonInsuranceEmployers";
 
 /**
  * Internal-only ingestion entrypoints (Phase 10). Deliberately NOT part of the
@@ -415,6 +421,135 @@ function makeBoardHandler(providerKey: JobBoardProviderKey) {
 
 router.post("/internal/ingestion/reed", makeBoardHandler("reed"));
 router.post("/internal/ingestion/adzuna", makeBoardHandler("adzuna"));
+
+const londonDirectoryBodySchema = z
+  .object({
+    /** Restrict to specific market segments (default: all four). */
+    segments: z
+      .array(z.enum(LONDON_SEGMENTS as [LondonMarketSegment, ...LondonMarketSegment[]]))
+      .max(4)
+      .optional(),
+    /** Restrict to specific employer names from the directory config. */
+    employers: z.array(z.string().min(1)).max(25).optional(),
+    /** Batch paging over the (deduped) employer list. */
+    offset: z.number().int().min(0).optional(),
+    limit: z.number().int().min(1).max(25).optional(),
+  })
+  .optional();
+
+/** Default batch size — generic careers pages go through Firecrawl, so a
+ * full-directory HTTP run would exceed safe request duration. Page with
+ * offset/limit; the hourly sweep covers the rest automatically. */
+const LONDON_DEFAULT_LIMIT = 5;
+
+/**
+ * Run London Insurance Market directory ingestion for a bounded batch of
+ * employers (config/londonInsuranceEmployers.ts, generated from the
+ * canonical directory md). One runVacancyIngestion per employer so the
+ * response carries a per-employer funnel; failures are recorded per
+ * employer and never sink the batch.
+ */
+router.post("/internal/ingestion/london-insurance-directory", async (req, res) => {
+  const parsed = londonDirectoryBodySchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({
+      message: `segments must be a subset of: ${LONDON_SEGMENTS.join(", ")}; employers up to 25 names; offset >= 0; limit 1-25`,
+    });
+    return;
+  }
+  const body = parsed.data;
+  const selection = selectLondonEmployers({
+    segments: body?.segments,
+    employers: body?.employers,
+    offset: body?.offset ?? 0,
+    limit: body?.limit ?? LONDON_DEFAULT_LIMIT,
+  });
+  if (selection.employers.length === 0) {
+    res.status(400).json({
+      message: `No directory employers match the requested filter (${selection.totalMatching} total after board dedupe)`,
+    });
+    return;
+  }
+
+  const tenantId = tenantOf(req);
+  const runs: Array<{
+    employer: string;
+    segment: string;
+    platformHint: string;
+    summary?: IngestionSummary;
+    error?: string;
+  }> = [];
+
+  for (const employer of selection.employers) {
+    try {
+      const summary = await runVacancyIngestion({
+        tenantId,
+        provider: makeLondonEmployerProvider(employer),
+        input: {},
+      });
+      runs.push({
+        employer: employer.name,
+        segment: employer.segment,
+        platformHint: employer.platformHint,
+        summary,
+      });
+    } catch (err) {
+      // Per-employer failures (Firecrawl upstream errors, dead careers URLs,
+      // rotted board tokens) must never sink the rest of the batch — record
+      // and continue.
+      const message = err instanceof Error ? err.message : String(err);
+      req.log.warn(
+        {
+          event: "vacancy_ingestion_failed",
+          employer: employer.name,
+          kind: err instanceof IngestionError ? err.kind : "unexpected",
+        },
+        message,
+      );
+      runs.push({
+        employer: employer.name,
+        segment: employer.segment,
+        platformHint: employer.platformHint,
+        error: message,
+      });
+      // Config errors (e.g. missing Firecrawl key) fail every generic
+      // careers page — stop early instead of burning the whole batch.
+      if (err instanceof IngestionError && err.kind === "config") break;
+    }
+  }
+
+  const funnel = await logCanonicalFunnel(tenantId);
+
+  await recordAudit({
+    action: "ingestion.london_insurance_directory",
+    entityType: "job",
+    metadata: JSON.stringify({
+      employers: runs.map((r) => r.employer),
+      totalMatching: selection.totalMatching,
+      sharedBoardSkips: selection.sharedBoardSkips.length,
+      totals: runs.reduce(
+        (acc, r) => {
+          if (!r.summary) return acc;
+          acc.fetched += r.summary.fetched;
+          acc.insertedCanonical += r.summary.insertedCanonical;
+          acc.insertedDuplicates += r.summary.insertedDuplicates;
+          acc.refreshedExisting += r.summary.refreshedExisting;
+          return acc;
+        },
+        { fetched: 0, insertedCanonical: 0, insertedDuplicates: 0, refreshedExisting: 0 },
+      ),
+      errorCount: runs.filter((r) => r.error).length,
+    }),
+    ...auditActor(req),
+  });
+
+  res.json({
+    runs,
+    totalMatching: selection.totalMatching,
+    sharedBoardSkips: selection.sharedBoardSkips,
+    funnel,
+  });
+});
 
 /**
  * Manually trigger the stale-job expiry sweep (also runs periodically —

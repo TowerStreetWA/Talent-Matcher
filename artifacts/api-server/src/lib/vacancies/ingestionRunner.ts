@@ -30,6 +30,10 @@ const SOURCE_DISPLAY_NAMES: Record<string, string> = {
   ats_workday: "Workday boards (ATS)",
   reed_api: "Reed",
   adzuna_api: "Adzuna",
+  london_insurance_lloyds_syndicate: "London Market — Lloyd's syndicates",
+  london_insurance_company_market: "London Market — company market insurers",
+  london_insurance_mga_coverholder: "London Market — MGAs & coverholders",
+  london_insurance_broker: "London Market — brokers",
 };
 
 export interface IngestionSummary {

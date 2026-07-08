@@ -66,7 +66,12 @@ function resolveJobUrl(raw: string, base: URL): URL | null {
   }
 }
 
-async function fetchSiteVacancies(
+/**
+ * Firecrawl-based generic careers-page scrape for one employer site:
+ * discover job detail links, then extract each with bounded concurrency.
+ * Exported for reuse by the London directory router (londonDirectory.ts).
+ */
+export async function fetchSiteVacancies(
   site: EmployerSiteConfig,
   warnings: string[],
 ): Promise<NormalizedVacancy[]> {

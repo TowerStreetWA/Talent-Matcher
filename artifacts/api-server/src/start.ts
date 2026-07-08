@@ -4,6 +4,7 @@ import { logger } from "./lib/logger";
 import { seedIfEmpty, ensureAuthSeed } from "./lib/seed";
 import { startSavedSearchAlertSweep } from "./lib/savedSearchAlerts";
 import { startExpirySweep } from "./lib/vacancies/expirySweep";
+import { startLondonDirectorySweep } from "./lib/vacancies/londonDirectorySweep";
 import { getStripeSync } from "./lib/stripeClient";
 
 const rawPort = process.env["PORT"];
@@ -69,4 +70,5 @@ app.listen(port, (err) => {
   logger.info({ port }, "Server listening");
   startSavedSearchAlertSweep();
   startExpirySweep();
+  startLondonDirectorySweep();
 });
