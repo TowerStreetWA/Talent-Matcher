@@ -10,11 +10,14 @@ import {
   type AtsFetcherContext,
 } from "../vacancies/ats/fetchers";
 import { fetchSiteVacancies } from "../vacancies/employerSiteProvider";
+import { firecrawlUnavailability } from "../firecrawl";
 import type {
   NormalizedVacancy,
   ProviderFetchResult,
   VacancyProvider,
 } from "../vacancies/types";
+import { crawlBasicHtmlCareersPage } from "./basicHtmlCrawler";
+import { recordIngestionPath } from "./ingestionPathRegistry";
 import { resolveCareersBoard } from "./resolveCareersBoard";
 
 /**
@@ -223,13 +226,26 @@ export function makeDirectoryEmployerProvider(
     async fetchVacancies(): Promise<ProviderFetchResult> {
       const warnings: string[] = [];
       const atsOpts = { company: employer.name, sectorTag: employer.sectorTag };
+      const url = employer.careersUrl;
+      const done = (
+        vacancies: NormalizedVacancy[],
+        record: Parameters<typeof recordIngestionPath>[1],
+      ): ProviderFetchResult => {
+        recordIngestionPath(url, record);
+        return { vacancies: reattribute(vacancies, directory, employer), warnings };
+      };
 
       // 1. Directory says the careers URL is itself an ATS board.
       if (employer.platformHint !== "careers_page") {
-        const entry = atsEntryFromUrl(employer.careersUrl, atsOpts);
+        const entry = atsEntryFromUrl(url, atsOpts);
         if (entry && entry.platform === employer.platformHint) {
           const vacancies = await fetchViaAts(entry, warnings);
-          return { vacancies: reattribute(vacancies, directory, employer), warnings };
+          return done(vacancies, {
+            path: "ats",
+            outcome: vacancies.length > 0 ? "jobs_found" : "no_jobs",
+            jobs: vacancies.length,
+            detail: entry.platform,
+          });
         }
         warnings.push(
           `${employer.name}: careers URL did not parse as ${employer.platformHint} board — falling back`,
@@ -238,28 +254,103 @@ export function makeDirectoryEmployerProvider(
 
       // 2. Careers→board resolution: JS-heavy corporate pages often redirect
       //    to or embed a hosted ATS board the generic scraper can't read.
-      const resolution = await resolveCareersBoard(employer.careersUrl, atsOpts);
+      const resolution = await resolveCareersBoard(url, atsOpts);
       if (resolution.entry) {
         const vacancies = await fetchViaAts(resolution.entry, warnings);
         if (vacancies.length > 0) {
-          return { vacancies: reattribute(vacancies, directory, employer), warnings };
+          return done(vacancies, {
+            path: "ats",
+            outcome: "jobs_found",
+            jobs: vacancies.length,
+            detail: resolution.entry.platform,
+          });
         }
         warnings.push(
           `${employer.name}: resolved to ${resolution.entry.platform} board (${resolution.boardUrl}) but it returned 0 jobs`,
         );
-        return { vacancies: [], warnings };
+        return done([], {
+          path: "ats",
+          outcome: "no_jobs",
+          jobs: 0,
+          detail: resolution.entry.platform,
+        });
+      }
+      if (resolution.outcome === "blocked_url") {
+        warnings.push(`${employer.name}: careers URL blocked by SSRF guard`);
+        return done([], { path: null, outcome: "blocked_url", jobs: 0, detail: null });
       }
 
-      // 3. True generic careers page → Firecrawl scrape.
-      const vacancies = await fetchSiteVacancies(
-        {
-          company: employer.name,
-          careersUrl: employer.careersUrl,
-          maxJobs: DIRECTORY_SITE_MAX_JOBS,
-        },
-        warnings,
-      );
-      return { vacancies: reattribute(vacancies, directory, employer), warnings };
+      // 3. Basic self-hosted HTML crawl: simple/static careers pages are
+      //    extracted directly so Firecrawl credits are reserved for
+      //    genuinely JS-heavy sites.
+      const crawl = await crawlBasicHtmlCareersPage(url);
+      if (crawl.outcome === "blocked_url") {
+        warnings.push(`${employer.name}: careers URL blocked by SSRF guard`);
+        return done([], { path: null, outcome: "blocked_url", jobs: 0, detail: null });
+      }
+      if (crawl.outcome === "html_jobs_found") {
+        const vacancies: NormalizedVacancy[] = crawl.jobs.map((job) => ({
+          title: job.title,
+          companyName: employer.name,
+          locationText: job.locationText,
+          remoteType: null,
+          employmentType: null,
+          salaryText: null,
+          descriptionText: job.descriptionText,
+          skills: [],
+          postedAt: null,
+          applyUrl: job.applyUrl,
+          sourceType: "direct_employer",
+          sourceProvider: "basic_html",
+          sourceUrl: job.applyUrl,
+        }));
+        return done(vacancies, {
+          path: "basic_html",
+          outcome: "jobs_found",
+          jobs: vacancies.length,
+          detail: crawl.evidence.join(","),
+        });
+      }
+      if (crawl.outcome === "html_no_jobs" && !crawl.jsHeavy) {
+        // Static page parsed fine and genuinely lists no vacancies — do not
+        // burn Firecrawl credits re-reading an empty page.
+        warnings.push(`${employer.name}: static careers page lists no vacancies`);
+        return done([], { path: "basic_html", outcome: "html_no_jobs", jobs: 0, detail: null });
+      }
+
+      // 4. JS-heavy (or unfetchable) page → Firecrawl, when it is usable.
+      const unavailable = firecrawlUnavailability();
+      if (unavailable) {
+        warnings.push(
+          `${employer.name}: JS-heavy careers page needs Firecrawl but it is unavailable (${unavailable.reason}: ${unavailable.message})`,
+        );
+        return done([], {
+          path: null,
+          outcome: "needs_firecrawl",
+          jobs: 0,
+          detail: unavailable.reason,
+        });
+      }
+      try {
+        const vacancies = await fetchSiteVacancies(
+          { company: employer.name, careersUrl: url, maxJobs: DIRECTORY_SITE_MAX_JOBS },
+          warnings,
+        );
+        return done(vacancies, {
+          path: "firecrawl",
+          outcome: vacancies.length > 0 ? "jobs_found" : "no_jobs",
+          jobs: vacancies.length,
+          detail: null,
+        });
+      } catch (err) {
+        recordIngestionPath(url, {
+          path: "firecrawl",
+          outcome: firecrawlUnavailability() ? "needs_firecrawl" : "error",
+          jobs: 0,
+          detail: err instanceof Error ? err.message.slice(0, 200) : "unknown error",
+        });
+        throw err;
+      }
     },
   };
 }

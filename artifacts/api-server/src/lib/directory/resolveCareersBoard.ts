@@ -117,7 +117,7 @@ function safePublicUrl(raw: string): URL | null {
   }
 }
 
-type FetchPageResult =
+export type FetchPageResult =
   | { kind: "ok"; finalUrl: string; html: string }
   | { kind: "blocked" }
   | { kind: "failed" };
@@ -126,8 +126,10 @@ type FetchPageResult =
  * Fetch a careers page following redirects manually so every hop is
  * SSRF-validated — a public careers URL must not be able to bounce the
  * server into localhost, private ranges, or cloud metadata endpoints.
+ * Shared by the board resolver and the basic HTML crawler — the only
+ * self-hosted fetch path for external careers pages.
  */
-async function fetchPage(url: string): Promise<FetchPageResult> {
+export async function fetchPage(url: string): Promise<FetchPageResult> {
   let current = safePublicUrl(url);
   if (!current) return { kind: "blocked" };
 

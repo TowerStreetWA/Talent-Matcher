@@ -16,6 +16,66 @@ export class FirecrawlError extends Error {
   }
 }
 
+/**
+ * Firecrawl availability circuit breaker. When credits run out every call
+ * fails identically, so callers with a self-hosted fallback (the careers
+ * directory engine) can skip Firecrawl entirely and surface a clear
+ * "needs_firecrawl" diagnostic instead of hammering a dead upstream.
+ */
+export type FirecrawlUnavailableReason = "disabled" | "not_configured" | "no_credits";
+
+export interface FirecrawlUnavailability {
+  reason: FirecrawlUnavailableReason;
+  message: string;
+  /** null = permanent until config changes; otherwise re-probe after this. */
+  until: Date | null;
+}
+
+const NO_CREDITS_BACKOFF_MS = 30 * 60 * 1000; // re-probe every 30 min post top-up
+const NO_CREDITS_PATTERN = /insufficient credits|payment required|upgrade your plan/i;
+
+let noCreditsUntil: Date | null = null;
+let noCreditsMessage = "";
+
+/** Returns why Firecrawl is unavailable right now, or null when usable. */
+export function firecrawlUnavailability(): FirecrawlUnavailability | null {
+  if (process.env["FIRECRAWL_DISABLED"] === "true") {
+    return {
+      reason: "disabled",
+      message: "Firecrawl is disabled via FIRECRAWL_DISABLED",
+      until: null,
+    };
+  }
+  if (!process.env["FIRECRAWL_API_KEY"]) {
+    return {
+      reason: "not_configured",
+      message: "FIRECRAWL_API_KEY is not configured",
+      until: null,
+    };
+  }
+  if (noCreditsUntil && noCreditsUntil.getTime() > Date.now()) {
+    return { reason: "no_credits", message: noCreditsMessage, until: noCreditsUntil };
+  }
+  return null;
+}
+
+/** Test hook / manual reset after a credit top-up. */
+export function clearFirecrawlNoCreditsFlag(): void {
+  noCreditsUntil = null;
+  noCreditsMessage = "";
+}
+
+function noteFirecrawlOutcome(err: unknown): void {
+  if (
+    err instanceof FirecrawlError &&
+    err.kind === "upstream" &&
+    NO_CREDITS_PATTERN.test(err.message)
+  ) {
+    noCreditsUntil = new Date(Date.now() + NO_CREDITS_BACKOFF_MS);
+    noCreditsMessage = err.message;
+  }
+}
+
 const BLOCKED_HOSTNAMES = new Set(["localhost", "0.0.0.0", "broadcasthost"]);
 const BLOCKED_HOST_SUFFIXES = [".local", ".internal", ".localdomain", ".home.arpa"];
 
@@ -215,8 +275,12 @@ async function firecrawlScrape(body: Record<string, unknown>): Promise<
   if (!response.ok || !parsed.success || parsed.data.success === false || !parsed.data.data) {
     const upstreamMessage =
       (parsed.success ? parsed.data.error : null) ?? `Firecrawl error (HTTP ${response.status})`;
-    throw new FirecrawlError("upstream", upstreamMessage);
+    const error = new FirecrawlError("upstream", upstreamMessage);
+    noteFirecrawlOutcome(error);
+    throw error;
   }
+  // A successful call proves credits are back — clear any stale flag.
+  clearFirecrawlNoCreditsFlag();
   return parsed.data;
 }
 

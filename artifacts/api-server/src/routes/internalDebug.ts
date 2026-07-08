@@ -16,6 +16,8 @@ import {
   type CareersDirectoryConfig,
 } from "../lib/directory/engine";
 import { cachedResolution } from "../lib/directory/resolveCareersBoard";
+import { firecrawlUnavailability } from "../lib/firecrawl";
+import { ingestionPathRecord } from "../lib/directory/ingestionPathRegistry";
 
 /**
  * Internal-only, read-only diagnostics. Deliberately NOT part of the public
@@ -252,6 +254,7 @@ async function computeDirectoryCoverage(
     })
     .map((e) => {
       const resolution = cachedResolution(e.careersUrl);
+      const crawl = ingestionPathRecord(e.careersUrl);
       return {
         name: e.name,
         segment: e.segment,
@@ -266,13 +269,52 @@ async function computeDirectoryCoverage(
               checkedAt: resolution.checkedAt.toISOString(),
             }
           : null,
+        last_ingestion: crawl
+          ? {
+              path: crawl.path,
+              outcome: crawl.outcome,
+              jobs: crawl.jobs,
+              detail: crawl.detail,
+              checkedAt: crawl.checkedAt.toISOString(),
+            }
+          : null,
       };
     });
+
+  // Ingestion-path summary: how each configured employer was last handled.
+  // "not_yet_attempted" = no record in this process (registry is advisory /
+  // per-process, like the board-resolution cache).
+  const byPath: Record<string, number> = {
+    ats: 0,
+    basic_html: 0,
+    firecrawl: 0,
+    not_yet_attempted: 0,
+  };
+  const byOutcome: Record<string, number> = {};
+  for (const e of directory.employers) {
+    const rec = ingestionPathRecord(e.careersUrl);
+    if (!rec) {
+      byPath["not_yet_attempted"] = (byPath["not_yet_attempted"] ?? 0) + 1;
+      continue;
+    }
+    const pathKey = rec.path ?? "none";
+    byPath[pathKey] = (byPath[pathKey] ?? 0) + 1;
+    byOutcome[rec.outcome] = (byOutcome[rec.outcome] ?? 0) + 1;
+  }
+  const unavailable = firecrawlUnavailability();
 
   return {
     directory: directory.key,
     industry: directory.industry,
     [`total_${directory.industry}_jobs`]: totalIndustry,
+    ingestion_paths: {
+      by_path: byPath,
+      by_outcome: byOutcome,
+      firecrawl_available: unavailable === null,
+      firecrawl_unavailable_reason: unavailable
+        ? { reason: unavailable.reason, message: unavailable.message }
+        : null,
+    },
     segments,
     by_source: [...industryBySource.entries()]
       .sort((a, b) => b[1] - a[1])

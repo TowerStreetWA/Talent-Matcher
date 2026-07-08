@@ -1,0 +1,154 @@
+Please add a basic HTML careers-page crawler to the VacancyMatch / Talent Matcher directory engine, and route “easy” employers through it so Firecrawl is reserved for JS-heavy sites.
+
+GOAL
+
+Reduce dependency on Firecrawl credits by:
+
+- handling simple HTML careers pages with a lightweight, self-hosted crawler, and
+- only using Firecrawl when a page is genuinely JS-heavy or requires its advanced crawling.
+
+The behaviour should be:
+
+1) ATS-backed sites → existing ATS fetchers (as now).
+2) Simple/static HTML careers pages → new basic crawler.
+3) JS-heavy / hard sites → Firecrawl (subject to credits, with clear diagnostics when unavailable).
+
+====================================
+1. BASIC HTML CAREERS-PAGE CRAWLER
+====================================
+
+Add a new module, e.g.:
+
+- src/lib/directory/basicHtmlCrawler.ts
+
+Behaviour:
+
+Given an employer’s careers URL:
+
+- Perform a standard HTTP GET using existing SSRF-safe URL validation (same guards as resolveCareersBoard):
+  - validate initial URL,
+  - manually follow up to N redirects (e.g. 5), validating each hop,
+  - stop and return a clear outcome (blocked_url) if any redirect fails validation.
+- Parse the resulting HTML with a light library:
+  - e.g. cheerio, or a minimal HTML parser already in the project.
+- Attempt to extract job listings from common patterns:
+  - `<ul>` / `<ol>` of job links
+  - card-like `<div>` structures with titles and links
+  - simple tables with “Title / Location / Department”
+- For each job found, build a normalized job object with at least:
+  - title
+  - company (employer name from directory config)
+  - location (if present)
+  - applyUrl (link to job detail or application form)
+  - description/summary (short snippet if available)
+- Return:
+  - jobs array
+  - evidence (e.g. “html_list_cards_detected”, “html_table_detected”, etc.)
+  - activePosting boolean based on presence of jobs.
+
+Constraints:
+
+- No headless browser here; keep this crawler minimal & fast.
+- Respect existing SSRF protections; do not introduce new fetch paths.
+- If HTML parsing yields no jobs, return a clear outcome (e.g. html_no_jobs) without throwing.
+
+====================================
+2. ROUTING DECISIONS
+====================================
+
+Extend the directory engine routing (e.g. makeDirectoryEmployerProvider) so employers go down the right path:
+
+1) ATS-backed employers:
+   - If platformHint or URL/HTML clearly indicate a supported ATS:
+     - route via ATS fetchers as now.
+     - no Firecrawl/basic crawler needed.
+
+2) Simple HTML careers pages:
+   - If resolveCareersBoard returns:
+     - `careers_url_is_board` AND no ATS detected AND page is not JS-heavy by simple heuristics,
+   - then route through basicHtmlCrawler first.
+
+   Simple heuristics for “likely simple HTML” could be:
+   - content size below some threshold,
+   - presence of static `<a>` job links,
+   - absence of complex SPA markers or heavy JS frameworks in the HTML (React/Angular/Vue).
+
+3) JS-heavy / complex pages:
+   - If resolveCareersBoard detects:
+     - heavy JS, embedded ATS links, or SPA markers, and
+     - basicHtmlCrawler fails to find jobs,
+   - then use Firecrawl (when credits are available) with the existing logic.
+
+4) No Firecrawl credits / Firecrawl disabled:
+   - If Firecrawl cannot be used (e.g. out-of-credits flag or env var):
+     - record outcome as `needs_firecrawl` / `js_heavy_no_backup`,
+     - do not repeatedly attempt Firecrawl,
+     - expose this state in diagnostics so you can see which employers are blocked only by credits.
+
+Acceptance:
+
+- ATS-backed sites still use ATS fetchers.
+- Static/simple HTML careers pages are ingested via basicHtmlCrawler.
+- JS-heavy sites attempt Firecrawl when available, otherwise produce a clear “needs credits” diagnostic instead of silently failing.
+
+====================================
+3. DIAGNOSTICS & COVERAGE
+====================================
+
+Extend the existing diagnostics (e.g. careers-directory coverage and/or sector scorecards) to show:
+
+- employers handled by:
+  - ATS fetchers,
+  - basic HTML crawler,
+  - Firecrawl,
+- employers classified as:
+  - html_no_jobs,
+  - needs_firecrawl,
+  - blocked_url,
+  - unsupported_ats.
+
+This will make it obvious how much coverage you’re getting “for free” from the basic crawler, and which employers are truly dependent on Firecrawl credits.
+
+====================================
+4. TESTING & SAFETY
+====================================
+
+Add tests for:
+
+- basicHtmlCrawler:
+  - simple list/card/table patterns,
+  - no-jobs cases,
+  - SSRF-blocked URLs.
+- routing logic:
+  - ATS vs basic HTML vs Firecrawl decisions.
+- diagnostics shape:
+  - counts by ingestion path, per industry.
+
+Keep:
+
+- SSRF protections identical to resolveCareersBoard (validate each redirect hop, blocked_url outcome).
+- No changes to auth, billing, ranking, or matching.
+- Firecrawl used only via the existing, controlled path.
+
+Run:
+
+- full typecheck
+- full test suite
+- live smoke:
+  - a simple HTML careers page employer,
+  - an ATS-backed employer,
+  - a JS-heavy employer that shows up as needs_firecrawl when Firecrawl is unavailable.
+
+====================================
+5. REPORT BACK
+====================================
+
+When done, please report:
+
+- Employers now successfully ingested via the basic HTML crawler (examples).
+- How many employers per industry now route through:
+  - ATS,
+  - basic HTML,
+  - Firecrawl.
+- Any remaining “needs_firecrawl” employers and why.
+- Typecheck/test outcomes.
