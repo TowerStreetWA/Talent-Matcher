@@ -650,6 +650,12 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "matchRunId": zod.string(),
   "candidateId": zod.string(),
   "candidateName": zod.string().nullish(),
+  "candidateClassification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Candidate\'s inferred sector\/family classification; null when unavailable'),
   "jobId": zod.string(),
   "job": zod.object({
   "id": zod.string(),
@@ -675,6 +681,12 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listCandidateMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
@@ -743,6 +755,12 @@ export const ListMatchesResponseItem = zod.object({
   "matchRunId": zod.string(),
   "candidateId": zod.string(),
   "candidateName": zod.string().nullish(),
+  "candidateClassification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Candidate\'s inferred sector\/family classification; null when unavailable'),
   "jobId": zod.string(),
   "job": zod.object({
   "id": zod.string(),
@@ -768,6 +786,12 @@ export const ListMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
@@ -820,6 +844,12 @@ export const UpdateMatchResponse = zod.object({
   "matchRunId": zod.string(),
   "candidateId": zod.string(),
   "candidateName": zod.string().nullish(),
+  "candidateClassification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Candidate\'s inferred sector\/family classification; null when unavailable'),
   "jobId": zod.string(),
   "job": zod.object({
   "id": zod.string(),
@@ -845,6 +875,12 @@ export const UpdateMatchResponse = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(updateMatchResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
@@ -943,6 +979,12 @@ export const ListJobsResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(listJobsResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
@@ -998,7 +1040,10 @@ export const SearchJobsResponse = zod.object({
   "title": zod.string(),
   "companyName": zod.string().nullish(),
   "locationText": zod.string().nullish(),
-  "sector": zod.string().nullish().describe('Classified FS sector tag: insurance\/banking\/pensions\/asset_management\/accountancy_finance; null when not FS'),
+  "sector": zod.string().nullish().describe('Classified FS sector tag: insurance\/banking\/pensions\/asset_management\/accountancy_finance\/it_tech; null when not FS'),
+  "sectorLabel": zod.string().nullish().describe('Human-friendly sector label (e.g. IT & Tech); null when sector is null'),
+  "families": zod.array(zod.string()).optional().describe('Display-family keys the job falls under (usable as families filter values)'),
+  "familyLabels": zod.array(zod.string()).optional().describe('Human-friendly display-family labels, index-aligned with families'),
   "sourceType": zod.string().nullish().describe('direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceName": zod.string().nullish(),
@@ -1168,6 +1213,12 @@ export const GetJobResponse = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(getJobResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
@@ -1399,6 +1450,12 @@ export const GetTopMatchesResponseItem = zod.object({
   "matchRunId": zod.string(),
   "candidateId": zod.string(),
   "candidateName": zod.string().nullish(),
+  "candidateClassification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Candidate\'s inferred sector\/family classification; null when unavailable'),
   "jobId": zod.string(),
   "job": zod.object({
   "id": zod.string(),
@@ -1424,6 +1481,12 @@ export const GetTopMatchesResponseItem = zod.object({
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
   "isCanonical": zod.boolean().default(getTopMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
+  "classification": zod.union([zod.object({
+  "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
+  "sectorLabel": zod.string().describe('Human-friendly sector label'),
+  "families": zod.array(zod.string()).describe('Display-family keys (stable, usable as filter values)'),
+  "familyLabels": zod.array(zod.string()).describe('Human-friendly family labels, index-aligned with families')
+}).describe('Normalized sector\/family classification for card tags'),zod.null()]).optional().describe('Taxonomy classification for display tags; null when no sector is confidently classified'),
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),

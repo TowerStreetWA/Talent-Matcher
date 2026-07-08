@@ -17,6 +17,7 @@ import { SearchBox } from "@/components/search-box";
 import { ResearchUrlDialog } from "@/components/research-url-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
+import { ClassificationTags } from "@/components/classification-tags";
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
@@ -217,7 +218,7 @@ export default function Jobs() {
                 <div className="p-6 flex flex-col md:flex-row gap-6">
                   <div className="flex-1 space-y-4">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <Badge variant="outline" className="text-xs bg-muted/50 font-normal">
                           {job.sourceName || "Direct"}
                         </Badge>
@@ -247,6 +248,13 @@ export default function Jobs() {
                           >
                             Duplicate
                           </Badge>
+                        )}
+                        {job.classification && (
+                          <ClassificationTags
+                            sectorLabel={job.classification.sectorLabel}
+                            familyLabels={job.classification.familyLabels}
+                            familyKeys={job.classification.families}
+                          />
                         )}
                         {job.postedAt && (
                           <span className="text-xs flex items-center gap-1 text-muted-foreground">

@@ -8,6 +8,10 @@ import type {
   MatchRun,
   JobSource,
 } from "@workspace/db";
+import {
+  classifyJobForDisplay,
+  classifyCandidateForDisplay,
+} from "./search/classification";
 
 const iso = (d: Date | null | undefined): string | null =>
   d ? d.toISOString() : null;
@@ -86,8 +90,24 @@ export function toJobDto(
     sourceProvider: j.sourceProvider,
     sourceUrl: j.sourceUrl,
     isCanonical: j.isCanonical,
+    classification: classifyJobForDisplay({
+      title: j.title,
+      descriptionText: j.descriptionText,
+      companyName: j.companyName,
+      industry: j.industry,
+      skills: j.skills,
+    }),
     createdAt: j.createdAt.toISOString(),
   };
+}
+
+/** Candidate fields needed to infer a display classification on match cards. */
+export interface MatchCandidateLike {
+  currentTitle: string | null;
+  currentCompany: string | null;
+  titles: string[] | null;
+  skills: string[] | null;
+  industries: string[] | null;
 }
 
 export function toMatchDto(
@@ -95,12 +115,16 @@ export function toMatchDto(
   job: Job,
   sourceName?: string | null,
   candidateName?: string | null,
+  candidate?: MatchCandidateLike | null,
 ) {
   return {
     id: m.id,
     matchRunId: m.matchRunId,
     candidateId: m.candidateId,
     candidateName: candidateName ?? null,
+    candidateClassification: candidate
+      ? classifyCandidateForDisplay(candidate)
+      : null,
     jobId: m.jobId,
     job: toJobDto(job, sourceName),
     overallScore: m.overallScore,

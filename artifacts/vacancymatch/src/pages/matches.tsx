@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { ClassificationTags } from "@/components/classification-tags";
 
 export default function Matches() {
   const [recruiterStatus, setRecruiterStatus] = useState<string>("all");
@@ -164,6 +165,14 @@ export default function Matches() {
                   <div>
                     <CardTitle className="text-base line-clamp-1" title={match.job?.title}>{match.job?.title}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{match.job?.companyName} • {match.job?.locationText}</p>
+                    {match.job?.classification && (
+                      <ClassificationTags
+                        className="mt-2"
+                        sectorLabel={match.job.classification.sectorLabel}
+                        familyLabels={match.job.classification.familyLabels}
+                        familyKeys={match.job.classification.families}
+                      />
+                    )}
                   </div>
                   <Badge variant={
                     match.overallScore >= 90 ? "default" : 
@@ -174,11 +183,18 @@ export default function Matches() {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col">
-                <div className="flex items-center gap-2 mb-4 bg-muted/50 p-2 rounded-md">
+                <div className="flex flex-wrap items-center gap-2 mb-4 bg-muted/50 p-2 rounded-md">
                   <span className="text-sm font-medium">Candidate:</span>
                   <Link href={`/candidates/${match.candidateId}`} className="text-sm text-primary hover:underline font-medium">
                     {match.candidateName || "Unknown"}
                   </Link>
+                  {match.candidateClassification && (
+                    <ClassificationTags
+                      sectorLabel={match.candidateClassification.sectorLabel}
+                      familyLabels={match.candidateClassification.familyLabels}
+                      familyKeys={match.candidateClassification.families}
+                    />
+                  )}
                 </div>
                 
                 <div className="space-y-2 mb-4 flex-1">

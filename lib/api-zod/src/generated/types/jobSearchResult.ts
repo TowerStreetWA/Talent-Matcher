@@ -15,10 +15,19 @@ export interface JobSearchResult {
   /** @nullable */
   locationText?: string | null;
   /**
-     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS
+     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance/it_tech; null when not FS
      * @nullable
      */
   sector?: string | null;
+  /**
+     * Human-friendly sector label (e.g. IT & Tech); null when sector is null
+     * @nullable
+     */
+  sectorLabel?: string | null;
+  /** Display-family keys the job falls under (usable as families filter values) */
+  families?: string[];
+  /** Human-friendly display-family labels, index-aligned with families */
+  familyLabels?: string[];
   /**
      * direct_employer, google_jobs, job_board, agency; null for manual/legacy rows
      * @nullable

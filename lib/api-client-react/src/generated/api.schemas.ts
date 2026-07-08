@@ -453,6 +453,20 @@ export interface RequestUploadUrlResult {
   objectPath: string;
 }
 
+/**
+ * Normalized sector/family classification for card tags
+ */
+export interface Classification {
+  /** Sector key, e.g. insurance, it_tech */
+  sector: string;
+  /** Human-friendly sector label */
+  sectorLabel: string;
+  /** Display-family keys (stable, usable as filter values) */
+  families: string[];
+  /** Human-friendly family labels, index-aligned with families */
+  familyLabels: string[];
+}
+
 export interface Job {
   id: string;
   /** @nullable */
@@ -499,6 +513,8 @@ export interface Job {
   sourceUrl?: string | null;
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
+  /** Taxonomy classification for display tags; null when no sector is confidently classified */
+  classification?: Classification | null;
   createdAt: string;
   searchDebug?: SearchDebug;
 }
@@ -527,10 +543,19 @@ export interface JobSearchResult {
   /** @nullable */
   locationText?: string | null;
   /**
-     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS
+     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance/it_tech; null when not FS
      * @nullable
      */
   sector?: string | null;
+  /**
+     * Human-friendly sector label (e.g. IT & Tech); null when sector is null
+     * @nullable
+     */
+  sectorLabel?: string | null;
+  /** Display-family keys the job falls under (usable as families filter values) */
+  families?: string[];
+  /** Human-friendly display-family labels, index-aligned with families */
+  familyLabels?: string[];
   /**
      * direct_employer, google_jobs, job_board, agency; null for manual/legacy rows
      * @nullable
@@ -734,6 +759,8 @@ export interface Match {
   candidateId: string;
   /** @nullable */
   candidateName?: string | null;
+  /** Candidate's inferred sector/family classification; null when unavailable */
+  candidateClassification?: Classification | null;
   jobId: string;
   job?: Job;
   overallScore: number;

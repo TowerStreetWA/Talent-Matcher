@@ -17,6 +17,7 @@ import {
   expandLocationInput,
 } from "../lib/search/jobSearchFilters";
 import { scoreJobSearch } from "../lib/search/jobSearchRank";
+import { classificationFromTags } from "../lib/search/classification";
 import {
   DISPLAY_FAMILIES,
   displayFamiliesForSector,
@@ -341,12 +342,17 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
 
   res.json(
     SearchJobsResponse.parse({
-      results: pageRows.map(({ r, s }) => ({
+      results: pageRows.map(({ r, s }) => {
+        const cls = classificationFromTags(s.sector, s.fn, s.curatedTags);
+        return {
         id: r.job.id,
         title: r.job.title,
         companyName: r.job.companyName,
         locationText: r.job.locationText,
         sector: s.sector,
+        sectorLabel: cls?.sectorLabel ?? null,
+        families: cls?.families ?? [],
+        familyLabels: cls?.familyLabels ?? [],
         sourceType: r.job.sourceType,
         sourceProvider: r.job.sourceProvider,
         sourceName: r.sourceName,
@@ -359,7 +365,8 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
         applyUrl: r.job.applyUrl,
         score: s.score,
         explanation: s.explanation,
-      })),
+        };
+      }),
       page,
       pageSize,
       total,

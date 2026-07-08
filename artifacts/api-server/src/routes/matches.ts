@@ -32,6 +32,11 @@ const matchJoinQuery = () =>
       sourceName: jobSourcesTable.name,
       candFirst: candidatesTable.firstName,
       candLast: candidatesTable.lastName,
+      candTitle: candidatesTable.currentTitle,
+      candCompany: candidatesTable.currentCompany,
+      candTitles: candidatesTable.titles,
+      candSkills: candidatesTable.skills,
+      candIndustries: candidatesTable.industries,
     })
     .from(matchesTable)
     .innerJoin(jobsTable, eq(matchesTable.jobId, jobsTable.id))
@@ -61,7 +66,13 @@ router.get("/matches", async (req, res): Promise<void> => {
   res.json(
     ListMatchesResponse.parse(
       rows.map((r) =>
-        toMatchDto(r.match, r.job, r.sourceName, `${r.candFirst} ${r.candLast}`),
+        toMatchDto(r.match, r.job, r.sourceName, `${r.candFirst} ${r.candLast}`, {
+          currentTitle: r.candTitle,
+          currentCompany: r.candCompany,
+          titles: r.candTitles,
+          skills: r.candSkills,
+          industries: r.candIndustries,
+        }),
       ),
     ),
   );
@@ -105,7 +116,13 @@ router.patch("/matches/:id", async (req, res): Promise<void> => {
   }
   res.json(
     UpdateMatchResponse.parse(
-      toMatchDto(row.match, row.job, row.sourceName, `${row.candFirst} ${row.candLast}`),
+      toMatchDto(row.match, row.job, row.sourceName, `${row.candFirst} ${row.candLast}`, {
+        currentTitle: row.candTitle,
+        currentCompany: row.candCompany,
+        titles: row.candTitles,
+        skills: row.candSkills,
+        industries: row.candIndustries,
+      }),
     ),
   );
 });

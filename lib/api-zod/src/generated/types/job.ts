@@ -5,6 +5,7 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { Classification } from './classification';
 import type { SearchDebug } from './searchDebug';
 
 export interface Job {
@@ -53,6 +54,8 @@ export interface Job {
   sourceUrl?: string | null;
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
+  /** Taxonomy classification for display tags; null when no sector is confidently classified */
+  classification?: Classification | null;
   createdAt: string;
   searchDebug?: SearchDebug;
 }

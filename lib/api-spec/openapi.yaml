@@ -1691,9 +1691,29 @@ components:
         sourceProvider: { type: ["string", "null"] }
         sourceUrl: { type: ["string", "null"] }
         isCanonical: { type: boolean, default: true, description: "False when this row is a duplicate copy of another vacancy in the same canonical group" }
+        classification:
+          oneOf:
+            - $ref: "#/components/schemas/Classification"
+            - type: "null"
+          description: "Taxonomy classification for display tags; null when no sector is confidently classified"
         createdAt: { type: string }
         searchDebug:
           $ref: "#/components/schemas/SearchDebug"
+    Classification:
+      type: object
+      description: Normalized sector/family classification for card tags
+      required: [sector, sectorLabel, families, familyLabels]
+      properties:
+        sector: { type: string, description: "Sector key, e.g. insurance, it_tech" }
+        sectorLabel: { type: string, description: "Human-friendly sector label" }
+        families:
+          type: array
+          items: { type: string }
+          description: "Display-family keys (stable, usable as filter values)"
+        familyLabels:
+          type: array
+          items: { type: string }
+          description: "Human-friendly family labels, index-aligned with families"
     JobSearchResponse:
       type: object
       required: [results, page, pageSize, total]
@@ -1717,7 +1737,18 @@ components:
         locationText: { type: ["string", "null"] }
         sector:
           type: ["string", "null"]
-          description: "Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS"
+          description: "Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance/it_tech; null when not FS"
+        sectorLabel:
+          type: ["string", "null"]
+          description: "Human-friendly sector label (e.g. IT & Tech); null when sector is null"
+        families:
+          type: array
+          items: { type: string }
+          description: "Display-family keys the job falls under (usable as families filter values)"
+        familyLabels:
+          type: array
+          items: { type: string }
+          description: "Human-friendly display-family labels, index-aligned with families"
         sourceType: { type: ["string", "null"], description: "direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
         sourceProvider: { type: ["string", "null"] }
         sourceName: { type: ["string", "null"] }
@@ -1921,6 +1952,11 @@ components:
         matchRunId: { type: string }
         candidateId: { type: string }
         candidateName: { type: ["string", "null"] }
+        candidateClassification:
+          oneOf:
+            - $ref: "#/components/schemas/Classification"
+            - type: "null"
+          description: "Candidate's inferred sector/family classification; null when unavailable"
         jobId: { type: string }
         job:
           $ref: "#/components/schemas/Job"

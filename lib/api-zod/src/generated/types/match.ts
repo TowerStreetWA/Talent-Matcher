@@ -5,6 +5,7 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { Classification } from './classification';
 import type { Job } from './job';
 import type { ScoreBreakdown } from './scoreBreakdown';
 
@@ -14,6 +15,8 @@ export interface Match {
   candidateId: string;
   /** @nullable */
   candidateName?: string | null;
+  /** Candidate's inferred sector/family classification; null when unavailable */
+  candidateClassification?: Classification | null;
   jobId: string;
   job?: Job;
   overallScore: number;

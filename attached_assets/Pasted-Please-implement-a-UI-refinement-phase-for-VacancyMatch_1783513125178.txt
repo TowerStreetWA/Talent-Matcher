@@ -1,0 +1,191 @@
+Please implement a UI refinement phase for VacancyMatch AI to show sector and family tags directly on job cards and match cards.
+
+GOAL
+
+We now have:
+- curated sector taxonomy across insurance, banking, pensions, asset_management, accountancy_finance, and it_tech
+- family/function classification driven by curated titles
+- visible sector and family filters in Job Search
+- taxonomy-driven saved searches and alerts
+
+This phase should make that classification visible in the UI itself by showing sector and family tags on:
+1. Job cards
+2. Match cards
+
+The purpose is to help recruiters immediately understand what the system thinks a role/candidate belongs to, and why results are being grouped or surfaced the way they are.
+
+Do not change auth, billing, or core matching logic.
+
+====================================
+1. JOB CARD TAGS
+====================================
+
+Objective:
+Show sector and family tags clearly on job cards in Job Search and any other live-jobs list views.
+
+Implementation:
+
+- On each job card, display:
+  - Sector tag (e.g. Insurance, Banking, Pensions, Asset Management, Accountancy & Finance, IT & Tech)
+  - One or more family/function tags where available (e.g. Claims, Underwriting, Investment Banking, Portfolio Management, Audit & Assurance, Software Engineering)
+
+- Placement:
+  - Prefer the tags near the top of the card, close to title/company/location, or directly beneath metadata.
+  - Keep them readable and compact.
+  - Avoid making the cards visually noisy.
+
+- Behaviour:
+  - Tags should render from existing classification/tagging logic.
+  - If sector exists but no family is confidently available, show only sector.
+  - If neither sector nor family is available, render nothing rather than fake values.
+
+- Style:
+  - Sector tag should have slightly higher prominence than family tags.
+  - Family tags can be smaller/subtler.
+  - Keep the design consistent with the existing chip/filter visual language.
+
+- Optional enhancement:
+  - Make family tags clickable so clicking one applies that family filter in Job Search.
+  - If that’s too much for this phase, at least render them visually first.
+
+====================================
+2. MATCH CARD TAGS
+====================================
+
+Objective:
+Show the same sector/family classification on candidate-to-job match cards so recruiters can see how the system is categorising the match.
+
+Implementation:
+
+- On each match card, display:
+  - Job sector tag
+  - Job family tag(s)
+  - Optionally, candidate inferred sector/family tags too if already available in the pipeline
+
+- If both sides are available, a nice pattern would be:
+  - Job: Insurance → Claims
+  - Candidate: Insurance → Claims / Risk
+  - But keep this simple and readable.
+
+- Use existing classification results where possible.
+- Do not build a new classification engine for this phase.
+
+- If match explanations already exist, ensure the tags complement rather than duplicate the explanation text.
+
+====================================
+3. DISPLAY LABELS
+====================================
+
+Use the same human-friendly display-family labels already defined in config/curatedTitles/displayFamilies.ts or equivalent mapping.
+
+Examples:
+- underwriting → Underwriting
+- claims → Claims
+- investment_banking → Investment Banking
+- portfolio_management → Portfolio Management
+- audit_assurance → Audit & Assurance
+- software_engineering → Software Engineering
+- cyber_security → Cyber Security
+- project_delivery → Project Delivery
+
+Do not expose raw internal keys directly in the UI.
+
+Also use consistent display labels for sectors:
+- insurance → Insurance
+- banking → Banking
+- pensions → Pensions
+- asset_management → Asset Management
+- accountancy_finance → Accountancy & Finance
+- it_tech → IT & Tech
+
+Keep label formatting centralized in config/helpers rather than duplicated across components.
+
+====================================
+4. DATA WIRING
+====================================
+
+Implementation approach:
+
+- Reuse the existing classification/tagging fields already available in the API responses where possible.
+- If the frontend does not yet receive enough sector/family metadata:
+  - extend the relevant API response shape for jobs and matches to include:
+    - sector
+    - sectorLabel
+    - families (array)
+    - familyLabels (array)
+  - or a single normalized classification object
+
+For example:
+
+{
+  sector: "insurance",
+  sectorLabel: "Insurance",
+  families: ["claims", "risk_compliance"],
+  familyLabels: ["Claims", "Risk & Compliance"]
+}
+
+Keep this additive and backward-compatible.
+
+====================================
+5. UX RULES
+====================================
+
+- Tags should help explain the result, not overwhelm it.
+- Max 1 sector chip + 2 or 3 family chips visible by default on a card.
+- If there are more families, show:
+  - first 2 or 3 + “+2 more”, or similar.
+- Tags should wrap cleanly on mobile.
+- Zero awkward truncation.
+
+- If classification confidence is low or missing:
+  - do not invent labels.
+  - fall back gracefully.
+
+====================================
+6. TESTING & VALIDATION
+====================================
+
+Add or update tests for:
+
+- Job card rendering:
+  - sector only
+  - sector + families
+  - no classification
+- Match card rendering:
+  - job-side classification shown correctly
+  - candidate-side classification only if available
+- Display label mapping:
+  - internal keys render human-friendly labels
+- API response shape if extended:
+  - fields present and typed correctly
+
+Run full typecheck and existing tests.
+
+====================================
+CONSTRAINTS
+====================================
+
+- Do not change auth, billing, or core scoring logic.
+- Do not invent new sector/family values outside the curated taxonomy.
+- Keep UI clean and recruiter-friendly.
+
+====================================
+ACCEPTANCE CRITERIA
+====================================
+
+1. Job cards visibly show sector and family tags where classification exists.
+2. Match cards visibly show sector and family tags where classification exists.
+3. Labels are human-friendly and consistent with existing taxonomy mappings.
+4. UI remains clean and not overcrowded.
+5. Full typecheck passes and tests pass.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+- Files changed
+- How sector/family data is passed to job cards and match cards
+- Example screenshots of job cards and match cards with tags
+- Any API contract changes
+- Typecheck/test outcomes

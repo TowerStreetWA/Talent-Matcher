@@ -23,6 +23,7 @@ export * from './candidateInput';
 export * from './candidateUpdate';
 export * from './checkoutInput';
 export * from './checkoutInputBillingInterval';
+export * from './classification';
 export * from './companyProfile';
 export * from './companySearchResult';
 export * from './companySicCode';

@@ -52,6 +52,7 @@ import {
   Play,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ClassificationTags } from "@/components/classification-tags";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
@@ -166,6 +167,20 @@ export default function JobSearch() {
     setFamilies((prev) =>
       prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key],
     );
+  };
+  // Clicking a family tag on a result card applies that family as a filter,
+  // scoping to the card's sector first when no sector filter is active.
+  const applyFamilyFromCard = (jobSector: string | null | undefined, key: string): void => {
+    if (sector === "all") {
+      if (jobSector && isSector(jobSector)) {
+        setSector(jobSector);
+        setFamilies([key]);
+      } else {
+        setFamilies((prev) => (prev.includes(key) ? prev : [...prev, key]));
+      }
+      return;
+    }
+    setFamilies((prev) => (prev.includes(key) ? prev : [...prev, key]));
   };
 
   const { data, isLoading } = useSearchJobs({
@@ -663,11 +678,12 @@ export default function JobSearch() {
                           {job.sourceName}
                         </Badge>
                       )}
-                      {sectorLabel(job.sector) && (
-                        <Badge variant="secondary" className="text-xs font-normal">
-                          {sectorLabel(job.sector)}
-                        </Badge>
-                      )}
+                      <ClassificationTags
+                        sectorLabel={job.sectorLabel ?? sectorLabel(job.sector)}
+                        familyLabels={job.familyLabels}
+                        familyKeys={job.families}
+                        onFamilyClick={(key) => applyFamilyFromCard(job.sector, key)}
+                      />
                       {job.postedAt && (
                         <span className="text-xs flex items-center gap-1 text-muted-foreground">
                           <Clock className="w-3 h-3" />
