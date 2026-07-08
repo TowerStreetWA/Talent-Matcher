@@ -320,7 +320,7 @@ export const ListCandidatesResponseItem = zod.object({
   "updatedAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -388,7 +388,7 @@ export const CreateCandidateResponse = zod.object({
   "updatedAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -444,7 +444,7 @@ export const UploadCvResponse = zod.object({
   "updatedAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -521,7 +521,7 @@ export const GetCandidateResponse = zod.object({
   "updatedAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -593,7 +593,7 @@ export const UpdateCandidateResponse = zod.object({
   "updatedAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -678,7 +678,7 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -771,7 +771,7 @@ export const ListMatchesResponseItem = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -848,7 +848,7 @@ export const UpdateMatchResponse = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -946,7 +946,7 @@ export const ListJobsResponseItem = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -985,7 +985,7 @@ export const searchJobsQueryPageSizeMax = 50;
 export const SearchJobsQueryParams = zod.object({
   "q": zod.coerce.string().optional().describe('Job title \/ keywords free-text query'),
   "location": zod.coerce.string().optional().describe('City, region, or country filter (rule-based normalization, ILIKE match)'),
-  "sector": zod.enum(['insurance', 'banking', 'pensions', 'asset_management']).optional().describe('Industry\/sector filter mapped to internal FS sector tags'),
+  "sector": zod.enum(['insurance', 'banking', 'pensions', 'asset_management', 'accountancy_finance']).optional().describe('Industry\/sector filter mapped to internal FS sector tags'),
   "source": zod.enum(['direct_employer', 'google_jobs', 'job_board', 'agency']).optional().describe('Filter by job source type'),
   "page": zod.coerce.number().min(1).optional().describe('1-based page number (default 1)'),
   "pageSize": zod.coerce.number().min(1).max(searchJobsQueryPageSizeMax).optional().describe('Results per page (default 25, max 50)')
@@ -997,7 +997,7 @@ export const SearchJobsResponse = zod.object({
   "title": zod.string(),
   "companyName": zod.string().nullish(),
   "locationText": zod.string().nullish(),
-  "sector": zod.string().nullish().describe('Classified FS sector tag: insurance\/banking\/pensions\/asset_management; null when not FS'),
+  "sector": zod.string().nullish().describe('Classified FS sector tag: insurance\/banking\/pensions\/asset_management\/accountancy_finance; null when not FS'),
   "sourceType": zod.string().nullish().describe('direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceName": zod.string().nullish(),
@@ -1053,7 +1053,7 @@ export const CreateSavedJobSearchBody = zod.object({
   "name": zod.string().min(1).max(createSavedJobSearchBodyNameMax),
   "query": zod.string().max(createSavedJobSearchBodyQueryMax).optional(),
   "location": zod.string().max(createSavedJobSearchBodyLocationMax).optional(),
-  "sector": zod.union([zod.literal('insurance'),zod.literal('banking'),zod.literal('pensions'),zod.literal('asset_management'),zod.literal(null)]).nullish(),
+  "sector": zod.union([zod.literal('insurance'),zod.literal('banking'),zod.literal('pensions'),zod.literal('asset_management'),zod.literal('accountancy_finance'),zod.literal(null)]).nullish(),
   "sourceType": zod.union([zod.literal('direct_employer'),zod.literal('google_jobs'),zod.literal('job_board'),zod.literal('agency'),zod.literal(null)]).nullish(),
   "alertEnabled": zod.boolean().optional()
 })
@@ -1146,7 +1146,7 @@ export const GetJobResponse = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
@@ -1402,7 +1402,7 @@ export const GetTopMatchesResponseItem = zod.object({
   "createdAt": zod.string(),
   "searchDebug": zod.object({
   "score": zod.number().describe('Total relevance score used for ordering'),
-  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
   "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
   "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
   "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),

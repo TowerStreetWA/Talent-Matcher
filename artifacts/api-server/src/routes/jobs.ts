@@ -163,7 +163,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
   if (sectorRaw && !sectorFilter) {
     res.status(400).json({
       message:
-        "Unknown sector. Supported: insurance, banking, pensions, asset_management.",
+        "Unknown sector. Supported: insurance, banking, pensions, asset_management, accountancy_finance.",
     });
     return;
   }

@@ -13,7 +13,7 @@ export interface SearchDebug {
   /** Total relevance score used for ordering */
   score: number;
   /**
-     * Classified FS sector: insurance/banking/pensions/asset_management
+     * Classified FS sector: insurance/banking/pensions/asset_management/accountancy_finance
      * @nullable
      */
   sector?: string | null;

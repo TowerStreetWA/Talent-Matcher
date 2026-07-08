@@ -59,6 +59,7 @@ const SECTORS: { value: SearchJobsSector; label: string }[] = [
   { value: "banking", label: "Banking" },
   { value: "pensions", label: "Pensions" },
   { value: "asset_management", label: "Asset Management" },
+  { value: "accountancy_finance", label: "Accountancy & Finance" },
 ];
 
 const SOURCES: { value: SearchJobsSource; label: string }[] = [

@@ -15,7 +15,7 @@ export interface JobSearchResult {
   /** @nullable */
   locationText?: string | null;
   /**
-     * Classified FS sector tag: insurance/banking/pensions/asset_management; null when not FS
+     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS
      * @nullable
      */
   sector?: string | null;

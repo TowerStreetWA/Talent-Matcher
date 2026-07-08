@@ -26,6 +26,13 @@ export const SECTOR_INPUT_ALIASES: Record<string, FinSector> = {
   "investment management": "asset_management",
   "fund management": "asset_management",
   "wealth management": "asset_management",
+  accountancy_finance: "accountancy_finance",
+  accountancy: "accountancy_finance",
+  accounting: "accountancy_finance",
+  finance: "accountancy_finance",
+  "accountancy practice": "accountancy_finance",
+  audit: "accountancy_finance",
+  tax: "accountancy_finance",
 };
 
 /**

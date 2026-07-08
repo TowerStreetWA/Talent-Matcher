@@ -17,4 +17,5 @@ export const SavedJobSearchInputSector = {
   banking: 'banking',
   pensions: 'pensions',
   asset_management: 'asset_management',
+  accountancy_finance: 'accountancy_finance',
 } as const;

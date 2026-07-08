@@ -309,7 +309,7 @@ export interface SearchDebug {
   /** Total relevance score used for ordering */
   score: number;
   /**
-     * Classified FS sector: insurance/banking/pensions/asset_management
+     * Classified FS sector: insurance/banking/pensions/asset_management/accountancy_finance
      * @nullable
      */
   sector?: string | null;
@@ -527,7 +527,7 @@ export interface JobSearchResult {
   /** @nullable */
   locationText?: string | null;
   /**
-     * Classified FS sector tag: insurance/banking/pensions/asset_management; null when not FS
+     * Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS
      * @nullable
      */
   sector?: string | null;
@@ -600,6 +600,7 @@ export const SavedJobSearchInputSector = {
   banking: 'banking',
   pensions: 'pensions',
   asset_management: 'asset_management',
+  accountancy_finance: 'accountancy_finance',
 } as const;
 
 /**
@@ -909,6 +910,7 @@ export const SearchJobsSector = {
   banking: 'banking',
   pensions: 'pensions',
   asset_management: 'asset_management',
+  accountancy_finance: 'accountancy_finance',
 } as const;
 
 export type SearchJobsSource = typeof SearchJobsSource[keyof typeof SearchJobsSource];

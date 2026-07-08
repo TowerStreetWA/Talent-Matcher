@@ -767,7 +767,7 @@ paths:
           description: Industry/sector filter mapped to internal FS sector tags
           schema:
             type: string
-            enum: [insurance, banking, pensions, asset_management]
+            enum: [insurance, banking, pensions, asset_management, accountancy_finance]
         - name: source
           in: query
           required: false
@@ -1686,7 +1686,7 @@ components:
         locationText: { type: ["string", "null"] }
         sector:
           type: ["string", "null"]
-          description: "Classified FS sector tag: insurance/banking/pensions/asset_management; null when not FS"
+          description: "Classified FS sector tag: insurance/banking/pensions/asset_management/accountancy_finance; null when not FS"
         sourceType: { type: ["string", "null"], description: "direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
         sourceProvider: { type: ["string", "null"] }
         sourceName: { type: ["string", "null"] }
@@ -1738,7 +1738,7 @@ components:
         location: { type: string, maxLength: 100 }
         sector:
           type: ["string", "null"]
-          enum: [insurance, banking, pensions, asset_management, null]
+          enum: [insurance, banking, pensions, asset_management, accountancy_finance, null]
         sourceType:
           type: ["string", "null"]
           enum: [direct_employer, google_jobs, job_board, agency, null]
@@ -1754,7 +1754,7 @@ components:
       required: [score]
       properties:
         score: { type: number, description: "Total relevance score used for ordering" }
-        sector: { type: ["string", "null"], description: "Classified FS sector: insurance/banking/pensions/asset_management" }
+        sector: { type: ["string", "null"], description: "Classified FS sector: insurance/banking/pensions/asset_management/accountancy_finance" }
         function: { type: ["string", "null"], description: "Classified FS function, e.g. underwriting, claims, pensions_admin" }
         employerType: { type: ["string", "null"], description: "Rule-based employer type, e.g. insurer, broker, bank" }
         sectorBoost: { type: number, description: "Points added for sector alignment with the query" }

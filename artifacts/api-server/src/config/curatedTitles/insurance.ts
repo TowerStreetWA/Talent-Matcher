@@ -324,12 +324,7 @@ export const INSURANCE_TITLES: CuratedTitleEntry[] = [
     variants: [],
     seniority: "senior",
   },
-  {
-    industry: "pensions",
-    family: "actuarial",
-    canonicalTitle: "Pensions Actuary",
-    variants: ["pension actuary"],
-  },
+  // "Pensions Actuary" moved to pensions.ts (actuarial_risk family).
 
   // ── Claims ───────────────────────────────────────────────────────────────
   {
