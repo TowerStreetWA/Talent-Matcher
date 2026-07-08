@@ -12,6 +12,7 @@ import alertRulesRouter from "./alertRules";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import internalIngestionRouter from "./internalIngestion";
+import internalDebugRouter from "./internalDebug";
 import billingRouter, { publicBillingRouter } from "./billing";
 import storageRouter from "./storage";
 import teamRouter from "./team";
@@ -52,6 +53,7 @@ router.use(adminRouter);
 // Internal-only vacancy ingestion entrypoints (not in the public OpenAPI contract)
 router.use("/internal", requireRole("admin"));
 router.use(internalIngestionRouter);
+router.use(internalDebugRouter);
 router.use("/team", requireRole("admin"));
 router.use(teamRouter);
 
