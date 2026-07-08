@@ -6,10 +6,16 @@ import { normalizeQuery } from "../lib/search/normalize";
 import { classifyJobForDisplay } from "../lib/search/classification";
 import { runJobSearchPipeline } from "./jobs";
 import {
-  LONDON_INSURANCE_EMPLOYERS,
-  LONDON_DIRECTORY_UNRESOLVED,
-} from "../config/londonInsuranceEmployers";
-import { LONDON_SEGMENTS, londonProviderKey } from "../lib/vacancies/londonDirectory";
+  CAREERS_DIRECTORY_KEYS,
+  directoryByKey,
+  LONDON_INSURANCE_DIRECTORY,
+} from "../config/careersDirectories";
+import {
+  directoryProviderKey,
+  directoryProviderKeys,
+  type CareersDirectoryConfig,
+} from "../lib/directory/engine";
+import { cachedResolution } from "../lib/directory/resolveCareersBoard";
 
 /**
  * Internal-only, read-only diagnostics. Deliberately NOT part of the public
@@ -156,21 +162,25 @@ function companiesMatch(a: string, b: string): boolean {
 }
 
 /**
- * London Insurance Market directory coverage: how many insurance jobs the
+ * Careers-directory coverage: how many jobs of the directory's industry the
  * tenant has, how the directory segments contribute, and which directory
  * employers currently yield zero jobs (empty boards / broken careers links).
- * Tenant-scoped, read-only, admin+ only (mounted under the /internal guard).
+ * Zero-job entries carry the platform hint plus any cached careers→board
+ * resolution outcome to separate "board resolved but empty" from "no board
+ * found". Tenant-scoped, read-only, admin+ only (/internal guard).
  */
-router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
-  const tenantId = tenantOf(req);
+async function computeDirectoryCoverage(
+  tenantId: string,
+  directory: CareersDirectoryConfig,
+): Promise<Record<string, unknown>> {
   const activeCanonical = and(
     eq(jobsTable.tenantId, tenantId),
     eq(jobsTable.status, "active"),
     eq(jobsTable.isCanonical, true),
   );
-  const londonProviders = LONDON_SEGMENTS.map(londonProviderKey);
+  const providers = directoryProviderKeys(directory);
 
-  const [classifyRows, segmentRows, londonCompanies] = await Promise.all([
+  const [classifyRows, segmentRows, directoryCompanies] = await Promise.all([
     // Sector is computed at query time (taxonomy is config-only) — classify
     // the active+canonical set in memory with the same classifier job cards use.
     db
@@ -193,7 +203,7 @@ router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
         value: count(),
       })
       .from(jobsTable)
-      .where(and(activeCanonical, inArray(jobsTable.sourceProvider, londonProviders)))
+      .where(and(activeCanonical, inArray(jobsTable.sourceProvider, providers)))
       .groupBy(jobsTable.sourceProvider, jobsTable.sourceType)
       .orderBy(desc(count())),
     db
@@ -203,51 +213,74 @@ router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
         and(
           eq(jobsTable.tenantId, tenantId),
           eq(jobsTable.status, "active"),
-          inArray(jobsTable.sourceProvider, londonProviders),
+          inArray(jobsTable.sourceProvider, providers),
         ),
       )
       .groupBy(jobsTable.companyName),
   ]);
 
-  let totalInsurance = 0;
-  const insuranceBySource = new Map<string, number>();
+  let totalIndustry = 0;
+  const industryBySource = new Map<string, number>();
   for (const row of classifyRows) {
     const c = classifyJobForDisplay(row);
-    const isInsurance = c?.sector === "insurance" || row.sectorTag === "insurance";
-    if (!isInsurance) continue;
-    totalInsurance += 1;
+    const inIndustry = c?.sector === directory.industry || row.sectorTag === directory.industry;
+    if (!inIndustry) continue;
+    totalIndustry += 1;
     const key = row.sourceProvider ?? "legacy_manual";
-    insuranceBySource.set(key, (insuranceBySource.get(key) ?? 0) + 1);
+    industryBySource.set(key, (industryBySource.get(key) ?? 0) + 1);
   }
 
   const segments: Record<string, number> = {};
-  for (const segment of LONDON_SEGMENTS) segments[`${segment}_jobs`] = 0;
+  for (const segment of directory.segments) segments[`${segment}_jobs`] = 0;
   for (const row of segmentRows) {
-    const segment = LONDON_SEGMENTS.find((s) => londonProviderKey(s) === row.sourceProvider);
+    const segment = directory.segments.find(
+      (s) => directoryProviderKey(directory, s) === row.sourceProvider,
+    );
     if (segment) segments[`${segment}_jobs`] = row.value;
   }
 
   // Employers with zero active jobs: compare directory names against the
-  // company names actually stored on london_insurance_* jobs (loose match —
+  // company names actually stored on this directory's jobs (loose match —
   // extracted names often differ from legal directory names).
-  const normalizedJobCompanies = londonCompanies
+  const normalizedJobCompanies = directoryCompanies
     .map((r) => normalizeCompany(r.companyName ?? ""))
     .filter((n) => n.length > 0);
-  const zeroJobEmployers = LONDON_INSURANCE_EMPLOYERS.filter((e) => {
-    const n = normalizeCompany(e.name);
-    return !normalizedJobCompanies.some((jc) => companiesMatch(n, jc));
-  }).map((e) => ({ name: e.name, segment: e.segment, careersUrl: e.careersUrl }));
+  const zeroJobEmployers = directory.employers
+    .filter((e) => {
+      const n = normalizeCompany(e.name);
+      return !normalizedJobCompanies.some((jc) => companiesMatch(n, jc));
+    })
+    .map((e) => {
+      const resolution = cachedResolution(e.careersUrl);
+      return {
+        name: e.name,
+        segment: e.segment,
+        careersUrl: e.careersUrl,
+        platformHint: e.platformHint,
+        resolution: resolution
+          ? {
+              outcome: resolution.outcome,
+              platform: resolution.entry?.platform ?? null,
+              boardUrl: resolution.boardUrl,
+              unsupportedAts: resolution.unsupportedAts,
+              checkedAt: resolution.checkedAt.toISOString(),
+            }
+          : null,
+      };
+    });
 
-  const payload = {
-    total_insurance_jobs: totalInsurance,
+  return {
+    directory: directory.key,
+    industry: directory.industry,
+    [`total_${directory.industry}_jobs`]: totalIndustry,
     segments,
-    by_source: [...insuranceBySource.entries()]
+    by_source: [...industryBySource.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([provider, value]) => ({ source_provider: provider, count: value })),
-    directory: {
-      configured_employers: LONDON_INSURANCE_EMPLOYERS.length,
-      employers_with_jobs: LONDON_INSURANCE_EMPLOYERS.length - zeroJobEmployers.length,
-      unresolved_in_directory: LONDON_DIRECTORY_UNRESOLVED.map((u) => ({
+    directory_config: {
+      configured_employers: directory.employers.length,
+      employers_with_jobs: directory.employers.length - zeroJobEmployers.length,
+      unresolved_in_directory: directory.unresolved.map((u) => ({
         name: u.name,
         segment: u.segment,
         reason: u.reason,
@@ -255,18 +288,50 @@ router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
     },
     employers_with_zero_jobs: zeroJobEmployers,
   };
+}
 
+router.get("/internal/debug/careers-directory-coverage", async (req, res) => {
+  const key = typeof req.query.directory === "string" ? req.query.directory : "";
+  const directory = directoryByKey(key);
+  if (!directory) {
+    res.status(400).json({
+      message: `Provide ?directory= one of: ${CAREERS_DIRECTORY_KEYS.join(", ")}`,
+    });
+    return;
+  }
+  const payload = await computeDirectoryCoverage(tenantOf(req), directory);
+  req.log.info(
+    {
+      event: "debug_careers_directory_coverage",
+      directory: directory.key,
+      zero_job_employers: (payload.employers_with_zero_jobs as unknown[]).length,
+    },
+    "Careers-directory coverage diagnostics computed",
+  );
+  res.json(payload);
+});
+
+/**
+ * Legacy London Insurance Market coverage endpoint — kept as a delegate to
+ * the generic careers-directory coverage (same shape, plus the original
+ * top-level keys expected by earlier tooling).
+ */
+router.get("/internal/debug/london-insurance-coverage", async (req, res) => {
+  const payload = await computeDirectoryCoverage(tenantOf(req), LONDON_INSURANCE_DIRECTORY);
+  const compat = {
+    ...payload,
+    // Original response used `directory` for the config block.
+    directory: payload.directory_config,
+  };
   req.log.info(
     {
       event: "debug_london_insurance_coverage",
-      total_insurance_jobs: payload.total_insurance_jobs,
-      segments: payload.segments,
-      zero_job_employers: zeroJobEmployers.length,
+      total_insurance_jobs: payload["total_insurance_jobs"],
+      zero_job_employers: (payload.employers_with_zero_jobs as unknown[]).length,
     },
     "London insurance coverage diagnostics computed",
   );
-
-  res.json(payload);
+  res.json(compat);
 });
 
 export default router;

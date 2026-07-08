@@ -1,0 +1,325 @@
+Please generalise the existing London insurance directory integration into a reusable multi-sector careers-directory engine for VacancyMatch / Talent Matcher, and improve careers→board resolution for JS-heavy sites.
+
+CONTEXT (ALREADY BUILT)
+
+You have already implemented:
+
+1) London Insurance Market Directory integration
+- Source markdown: London-Insurance-Market-Directory.md
+- Generator script parses it into config/londonInsuranceEmployers.ts
+  - 189 employers across 4 segments:
+    - 51 Lloyd’s syndicates
+    - 56 company market insurers
+    - 34 MGAs/coverholders (Section 4 folded into MGA)
+    - 48 brokers
+  - Only 1 row skipped (Bernard Maitland Ltd, no careers URL) and tracked in LONDON_DIRECTORY_UNRESOLVED.
+- Regeneration: pnpm --filter @workspace/scripts run generate:london-directory
+
+2) Platform routing: lib/vacancies/londonDirectory.ts
+- ATS-hosted boards (Workday, Teamtailor, Recruitee, Workable) reuse existing ATS fetchers; tokens parsed from careers URLs.
+- Everything else uses generic Firecrawl-based careers-page scraping.
+- All jobs re-attributed as:
+  - sourceType: direct_employer
+  - sourceProvider: london_insurance_<segment>
+  - sectorTag: insurance
+- Employers sharing one group board (e.g. multiple Ardonagh trading names) are fetched once per batch.
+
+3) Ingestion endpoint + hourly sweep
+- POST /internal/ingestion/london-insurance-directory
+  - bounded batches (default 5, max 25)
+  - filters by segment/employer/offset
+  - per-employer funnel in response
+  - single-employer failure does not sink batch, is logged.
+- Hourly scheduled sweep:
+  - employers assigned to hour slots (index % 24)
+  - full directory refreshed roughly daily in small batches
+  - only for tenants that opted in by running the endpoint once
+  - guarded by pg advisory lock (bug fixed and verified: lock now held correctly).
+
+4) Coverage diagnostics
+- GET /internal/debug/london-insurance-coverage
+  - admin-only, tenant-scoped, read-only
+  - returns:
+    - total insurance jobs
+    - per-segment counts
+    - by-source breakdown
+    - zero-job employer list (ops to-do list)
+- First batches yielded:
+  - insurance jobs: 474 → 537
+  - Lloyd’s syndicate directory jobs: 0 → 29
+  - brokers: 0 → 21
+  - MGAs/coverholders: 0 → 10
+  - company market: 0 → 3
+
+Caveat noted:
+- Many careers-page URLs currently point at JS-heavy corporate sites that then redirect to hosted ATS boards; generic scraping sometimes extracts nothing.
+- These appear in the zero-job list with warnings.
+- Updating the directory to direct ATS board URLs is currently the easiest coverage fix.
+
+GOAL (THIS PHASE)
+
+Generalise the **London insurance directory pattern** into a reusable careers-directory engine across multiple sectors, and improve the “careers URL → actual ATS board URL” resolution so fewer employers land in the zero-job bucket.
+
+New engine should support at least:
+- insurance  (already live)
+- banking
+- pensions
+- asset_management
+- accountancy_finance
+- it_tech
+
+and be ready for additional sectors later.
+
+====================================
+1. ABSTRACT THE DIRECTORY PATTERN
+====================================
+
+Objective:
+Turn the existing London insurance integration into a generic, sector-agnostic pattern.
+
+Implementation:
+
+1) Extract common concepts from londonInsuranceEmployers / londonDirectory:
+
+- Employer directory config:
+  - name
+  - segment / companyType
+  - careersUrl
+  - platformHint (ATS vs generic)
+  - industryTag
+- Generator scripts that:
+  - read a canonical source (markdown / JSON / CSV)
+  - output a typed config file
+  - never require manual edits to generated config
+- Ingestion routing:
+  - ATS-specific fetchers where possible
+  - generic careers-page scraping otherwise
+  - per-employer funnel metrics
+- Scheduling:
+  - batched ingestion
+  - advisory-lock-guarded sweep
+  - per-employer slotting / cadence
+- Diagnostics:
+  - per-industry coverage
+  - per-segment coverage
+  - zero-job list
+
+2) Create shared abstractions, e.g.:
+
+- src/config/data/directorySources.ts
+- src/lib/directory/ingestDirectory.ts
+- src/lib/directory/scheduleDirectorySweep.ts
+- src/lib/directory/directoryDiagnostics.ts
+
+These should be usable by:
+- the existing London insurance directory (migrated to the shared pattern),
+- future sector-specific directories (banking, pensions, etc.).
+
+Acceptance:
+- London insurance integration now uses shared directory abstractions, not bespoke code.
+- New industries can plug in via new generator + config, reusing the same ingestion/sweep/diagnostics logic.
+
+====================================
+2. ADD MULTI-SECTOR SUPPORT
+====================================
+
+Objective:
+Extend the directory engine beyond insurance.
+
+Implementation:
+
+1) Extend the directory schema so it supports:
+
+- industries:
+  - insurance
+  - banking
+  - pensions
+  - asset_management
+  - accountancy_finance
+  - it_tech
+
+2) For each non-insurance industry:
+- Define initial `directorySource` structures (even if they start small), e.g.:
+
+  - banking: major retail/commercial banks, challenger banks, loan providers
+  - pensions: trustees, scheme administrators, providers
+  - asset_management: asset managers, hedge funds, private markets
+  - accountancy_finance: Big 4 firms, mid-tier accountancy, finance consultancies
+  - it_tech: tech/software firms with UK presence
+
+You can initially seed these from any existing seed JSON (`careers-directory-seed.json`) and extend later.
+
+3) Ensure the ingestion pipeline and diagnostics are industry-aware:
+
+- POST /internal/ingestion/<directory-name> might accept:
+  - industry filter
+  - segment filter
+- Diagnostics endpoints should:
+  - report coverage per industry
+  - support new directories without ad hoc route proliferation (e.g., /internal/debug/careers-directory-coverage with industry parameter).
+
+Acceptance:
+- The directory engine can handle multiple industries with a consistent pattern.
+- Insurance remains the most complete seed, but other industries are supported and ready to grow.
+
+====================================
+3. IMPROVE CAREERS→BOARD RESOLUTION
+====================================
+
+Objective:
+Reduce the number of employers whose “careersUrl” points at JS-heavy corporate pages that don’t yield jobs, by resolving through to their underlying ATS/board URLs.
+
+Implementation:
+
+1) Add a resolution layer, e.g.:
+
+- src/lib/directory/resolveCareersBoard.ts
+
+Behaviour:
+
+- Given a `careersUrl` (from the directory) and optional HTML snapshot:
+  - Detect if the page is primarily a shell that redirects/embeds an ATS board (Workday, Teamtailor, Recruitee, Workable, SmartRecruiters, Lever, etc.).
+  - Follow redirects and discover the real ATS board URL where jobs actually live.
+  - Store that resolved ATS board URL alongside the original careersUrl.
+  - Update platformHint accordingly (e.g. “workday” instead of “generic”).
+
+2) Use existing ATS detection & patterns:
+
+- Leverage the ATS provider detection logic you already have (hostContains, pathContains, htmlHints).
+- When a generic careers scrape finds a clear ATS pattern but no jobs because content is JS-heavy, treat that as a hint to capture the board URL and switch ingestion over to ATS mode.
+
+3) Update ingestion:
+
+- For employers where `resolvedBoardUrl` is known:
+  - route through ATS fetchers using that URL/token.
+- Only fall back to Firecrawl generic scraping when:
+  - no ATS provider can be detected,
+  - or a true custom/non-ATS careers page exists.
+
+4) Diagnostics:
+
+- Enhance the zero-job list to distinguish:
+  - “careers page resolved to ATS board, but ATS fetch yielded 0 jobs”
+  - “careers page unresolved / no board detected”
+  - “careers page resolved but content is empty / no active postings”
+
+Acceptance:
+- Fewer employers sit in the “zero jobs due to JS-heavy corporate page” bucket.
+- More of the directory employers produce jobs via ATS fetchers when boards exist.
+- Diagnostics report improved and more granular reasons for zero jobs.
+
+====================================
+4. UNIFY DISCOVERY ENGINE WITH DIRECTORY
+====================================
+
+Objective:
+Make the generic careers-directory discovery engine and the sector directories work together instead of separately.
+
+Implementation:
+
+1) Use the discovery engine (domain/homepage → careersUrl + ATS + active posting + companyType) as:
+
+- the primary way to validate and enrich directory seed entries,
+- a way to onboard new employers outside the initial markdown-seeded list.
+
+2) For seeded employers:
+
+- Run the discovery pipeline against their base domain or homepage:
+  - confirm/refresh careersUrl,
+  - detect ATS provider,
+  - detect active posting,
+  - sync `lastCheckedAt` and `sourceEvidence`.
+- If directory careersUrl differs from discovery result, record that and choose sensible precedence (e.g. prefer confirmed ATS board URL).
+
+3) For non-seeded employers:
+
+- Accept new domains via:
+  - CSV input
+  - config additions
+  - admin UI or script
+- Run through the same discovery pipeline and add to the relevant industry directory.
+
+Acceptance:
+- The directory configs and the discovery engine feed each other and stay in sync rather than diverging.
+- Insurance remains the richest seed but benefits from ongoing discovery and validation.
+
+====================================
+5. SCHEDULING & BATCH MODES
+====================================
+
+Objective:
+Keep refresh scalable for all supported industries.
+
+Implementation:
+
+1) Generalise the hourly sweep pattern currently used by London insurance:
+
+- Reuse advisory-lock protection.
+- Allow per-industry sweep configs:
+  - cadence (hourly, daily, weekly)
+  - batch size (5–25 employers per run)
+  - starting offset to avoid spikes.
+
+2) Expose batch mode for:
+
+- discovery across domains
+- refresh of existing companies
+- ingestion of directory employers
+
+Suggested outputs:
+
+- Normalised `CompanyRecord` JSON
+- Per-employer funnel metrics
+- Industry-level coverage metrics
+
+Acceptance:
+- Insurance continues to refresh in small batches daily.
+- Other industries can adopt similar sweeps without bespoke scheduling logic.
+
+====================================
+6. TESTS & SAFETY
+====================================
+
+Tests:
+- Directory generator:
+  - config invariants (no missing URLs except tracked unresolved entries; correct segments; unique employers).
+- Resolution layer:
+  - careersUrl → ATS board URL detection for a few known JS-heavy sites.
+- Multi-industry support:
+  - classification of industry and companyType for seeded entries.
+- Ingestion routing:
+  - ATS vs generic careers scraping decisions.
+- Diagnostics:
+  - response shapes for coverage endpoints.
+- Advisory-lock sweep behaviour.
+
+Constraints:
+- Do not alter auth, billing, ranking, or matching.
+- Keep existing London insurance behaviour intact; changes should be additive and refactoring, not regression.
+- If a directory entry is ambiguous (e.g. missing URL), track it in a clear unresolved list instead of silently dropping it.
+
+Run:
+- full typecheck
+- full test suite (including newly added tests)
+- at least one live smoke test per industry (insurance + one additional sector).
+
+====================================
+7. REPORT BACK
+====================================
+
+When done, please report:
+
+- What abstractions were created to generalise the directory pattern.
+- How London insurance was migrated to use the shared engine.
+- Which new industries are now supported and seeded (and with how many employers).
+- Before/after coverage metrics for insurance:
+  - total insurance jobs
+  - per-segment jobs (Lloyd’s syndicate, company market, MGA/coverholder, broker).
+- How many employers now:
+  - have resolved ATS board URLs
+  - still sit in the zero-job bucket and why.
+- Example `CompanyRecord` output for:
+  - an insurance employer
+  - a non-insurance employer.
+- Diagnostics endpoint outputs and shapes.
+- Typecheck/test outcomes.

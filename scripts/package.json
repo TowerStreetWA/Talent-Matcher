@@ -6,7 +6,8 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "generate:london-directory": "tsx ./src/generateLondonInsuranceEmployers.ts"
+    "generate:london-directory": "tsx ./src/generateLondonInsuranceEmployers.ts",
+    "generate:careers-directory": "tsx ./src/generateCareersDirectorySeed.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

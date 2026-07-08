@@ -1,0 +1,117 @@
+{
+  "$comment": "Canonical seed for the multi-sector careers-directory engine. Insurance is NOT here — it comes from London-Insurance-Market-Directory.md. Each employer: name, careersUrl (official careers page or direct ATS board), segment (per-industry key). Regenerate the typed config with: pnpm --filter @workspace/scripts run generate:careers-directory",
+  "industries": {
+    "banking": {
+      "label": "Banking & Lending",
+      "segments": ["retail_bank", "challenger_bank", "commercial_lender"],
+      "employers": [
+        { "name": "Barclays", "careersUrl": "https://search.jobs.barclays", "segment": "retail_bank" },
+        { "name": "HSBC", "careersUrl": "https://mycareer.hsbc.com/en_GB/external", "segment": "retail_bank" },
+        { "name": "Lloyds Banking Group", "careersUrl": "https://www.lloydsbankinggrouptalent.com", "segment": "retail_bank" },
+        { "name": "NatWest Group", "careersUrl": "https://jobs.natwestgroup.com", "segment": "retail_bank" },
+        { "name": "Santander UK", "careersUrl": "https://www.santanderjobs.co.uk", "segment": "retail_bank" },
+        { "name": "Standard Chartered", "careersUrl": "https://jobs.standardchartered.com", "segment": "retail_bank" },
+        { "name": "Virgin Money", "careersUrl": "https://careers.virginmoney.com", "segment": "retail_bank" },
+        { "name": "Metro Bank", "careersUrl": "https://careers.metrobankonline.co.uk", "segment": "challenger_bank" },
+        { "name": "Monzo", "careersUrl": "https://monzo.com/careers", "segment": "challenger_bank" },
+        { "name": "Starling Bank", "careersUrl": "https://www.starlingbank.com/careers/", "segment": "challenger_bank" },
+        { "name": "Revolut", "careersUrl": "https://www.revolut.com/careers/", "segment": "challenger_bank" },
+        { "name": "Zopa", "careersUrl": "https://jobs.lever.co/zopa", "segment": "challenger_bank" },
+        { "name": "Atom Bank", "careersUrl": "https://www.atombank.co.uk/careers/", "segment": "challenger_bank" },
+        { "name": "Allica Bank", "careersUrl": "https://www.allica.bank/careers", "segment": "challenger_bank" },
+        { "name": "ClearBank", "careersUrl": "https://clear.bank/careers", "segment": "challenger_bank" },
+        { "name": "OakNorth", "careersUrl": "https://www.oaknorth.co.uk/careers/", "segment": "commercial_lender" },
+        { "name": "Shawbrook Bank", "careersUrl": "https://www.shawbrook.co.uk/careers/", "segment": "commercial_lender" },
+        { "name": "Tandem Bank", "careersUrl": "https://www.tandem.co.uk/careers", "segment": "challenger_bank" }
+      ]
+    },
+    "pensions": {
+      "label": "Pensions & Retirement",
+      "segments": ["provider", "administrator", "consultancy"],
+      "employers": [
+        { "name": "Aviva", "careersUrl": "https://careers.aviva.com", "segment": "provider" },
+        { "name": "Legal & General", "careersUrl": "https://careers.legalandgeneral.com", "segment": "provider" },
+        { "name": "Royal London", "careersUrl": "https://jobs.royallondon.com", "segment": "provider" },
+        { "name": "Phoenix Group", "careersUrl": "https://www.thephoenixgroup.com/careers", "segment": "provider" },
+        { "name": "Aegon UK", "careersUrl": "https://www.aegon.co.uk/careers", "segment": "provider" },
+        { "name": "Smart Pension", "careersUrl": "https://www.smartpension.co.uk/careers", "segment": "provider" },
+        { "name": "The People's Partnership", "careersUrl": "https://peoplespartnership.co.uk/careers/", "segment": "provider" },
+        { "name": "XPS Pensions Group", "careersUrl": "https://careers.xpsgroup.com", "segment": "consultancy" },
+        { "name": "Barnett Waddingham", "careersUrl": "https://www.barnett-waddingham.co.uk/careers/", "segment": "consultancy" },
+        { "name": "Hymans Robertson", "careersUrl": "https://careers.hymans.co.uk", "segment": "consultancy" },
+        { "name": "LCP", "careersUrl": "https://www.lcp.com/en/careers", "segment": "consultancy" },
+        { "name": "WTW", "careersUrl": "https://careers.wtwco.com", "segment": "consultancy" },
+        { "name": "Marsh McLennan (Mercer)", "careersUrl": "https://careers.marshmclennan.com", "segment": "consultancy" },
+        { "name": "Isio", "careersUrl": "https://www.isio.com/careers/", "segment": "consultancy" },
+        { "name": "Broadstone", "careersUrl": "https://broadstone.co.uk/careers/", "segment": "consultancy" },
+        { "name": "Capita Pension Solutions", "careersUrl": "https://www.capita.com/careers", "segment": "administrator" }
+      ]
+    },
+    "asset_management": {
+      "label": "Asset & Wealth Management",
+      "segments": ["asset_manager", "hedge_fund", "private_markets", "wealth_manager"],
+      "employers": [
+        { "name": "Schroders", "careersUrl": "https://www.schroders.com/en/global/individual/about-us/careers/", "segment": "asset_manager" },
+        { "name": "abrdn", "careersUrl": "https://careers.abrdn.com", "segment": "asset_manager" },
+        { "name": "M&G", "careersUrl": "https://careers.mandg.com", "segment": "asset_manager" },
+        { "name": "Baillie Gifford", "careersUrl": "https://careers.bailliegifford.com", "segment": "asset_manager" },
+        { "name": "Janus Henderson", "careersUrl": "https://www.janushenderson.com/en-gb/careers/", "segment": "asset_manager" },
+        { "name": "Jupiter Asset Management", "careersUrl": "https://www.jupiteram.com/careers/", "segment": "asset_manager" },
+        { "name": "Fidelity International", "careersUrl": "https://careers.fidelityinternational.com", "segment": "asset_manager" },
+        { "name": "Man Group", "careersUrl": "https://www.man.com/careers", "segment": "hedge_fund" },
+        { "name": "Marshall Wace", "careersUrl": "https://www.mwam.com/careers/", "segment": "hedge_fund" },
+        { "name": "Brevan Howard", "careersUrl": "https://www.brevanhoward.com/careers/", "segment": "hedge_fund" },
+        { "name": "Bridgepoint", "careersUrl": "https://www.bridgepoint.eu/careers", "segment": "private_markets" },
+        { "name": "ICG", "careersUrl": "https://www.icgam.com/careers/", "segment": "private_markets" },
+        { "name": "3i Group", "careersUrl": "https://www.3i.com/careers/", "segment": "private_markets" },
+        { "name": "Rathbones", "careersUrl": "https://www.rathbones.com/careers", "segment": "wealth_manager" },
+        { "name": "Evelyn Partners", "careersUrl": "https://www.evelyn.com/careers/", "segment": "wealth_manager" },
+        { "name": "St. James's Place", "careersUrl": "https://careers.sjp.co.uk", "segment": "wealth_manager" }
+      ]
+    },
+    "accountancy_finance": {
+      "label": "Accountancy & Finance",
+      "segments": ["big4", "mid_tier", "consultancy"],
+      "employers": [
+        { "name": "Deloitte UK", "careersUrl": "https://www.deloitte.com/uk/en/careers.html", "segment": "big4" },
+        { "name": "PwC UK", "careersUrl": "https://www.pwc.co.uk/careers.html", "segment": "big4" },
+        { "name": "KPMG UK", "careersUrl": "https://www.kpmgcareers.co.uk", "segment": "big4" },
+        { "name": "EY UK", "careersUrl": "https://www.ey.com/en_uk/careers", "segment": "big4" },
+        { "name": "BDO UK", "careersUrl": "https://careers.bdo.co.uk", "segment": "mid_tier" },
+        { "name": "Grant Thornton UK", "careersUrl": "https://www.grantthornton.co.uk/careers/", "segment": "mid_tier" },
+        { "name": "RSM UK", "careersUrl": "https://www.rsmuk.com/careers", "segment": "mid_tier" },
+        { "name": "Forvis Mazars", "careersUrl": "https://www.forvismazars.com/uk/en/careers", "segment": "mid_tier" },
+        { "name": "Crowe UK", "careersUrl": "https://www.crowe.com/uk/careers", "segment": "mid_tier" },
+        { "name": "Saffery", "careersUrl": "https://www.saffery.com/careers/", "segment": "mid_tier" },
+        { "name": "Moore Kingston Smith", "careersUrl": "https://mks.co.uk/careers/", "segment": "mid_tier" },
+        { "name": "Menzies", "careersUrl": "https://www.menzies.co.uk/careers/", "segment": "mid_tier" },
+        { "name": "Azets", "careersUrl": "https://www.azets.co.uk/careers/", "segment": "mid_tier" },
+        { "name": "Buzzacott", "careersUrl": "https://www.buzzacott.co.uk/careers", "segment": "mid_tier" },
+        { "name": "Price Bailey", "careersUrl": "https://www.pricebailey.co.uk/careers/", "segment": "mid_tier" },
+        { "name": "Bishop Fleming", "careersUrl": "https://www.bishopfleming.co.uk/careers", "segment": "mid_tier" }
+      ]
+    },
+    "it_tech": {
+      "label": "IT & Technology",
+      "segments": ["fintech", "software", "consultancy"],
+      "employers": [
+        { "name": "Wise", "careersUrl": "https://www.wise.jobs", "segment": "fintech" },
+        { "name": "Checkout.com", "careersUrl": "https://www.checkout.com/careers", "segment": "fintech" },
+        { "name": "GoCardless", "careersUrl": "https://gocardless.com/about/jobs/", "segment": "fintech" },
+        { "name": "Thought Machine", "careersUrl": "https://www.thoughtmachine.net/careers", "segment": "fintech" },
+        { "name": "ClearScore", "careersUrl": "https://www.clearscore.com/careers", "segment": "fintech" },
+        { "name": "Tide", "careersUrl": "https://www.tide.co/careers/", "segment": "fintech" },
+        { "name": "Zilch", "careersUrl": "https://www.zilch.com/uk/careers/", "segment": "fintech" },
+        { "name": "Multiverse", "careersUrl": "https://jobs.ashbyhq.com/multiverse", "segment": "software" },
+        { "name": "Octopus Energy Group", "careersUrl": "https://jobs.lever.co/octoenergy", "segment": "software" },
+        { "name": "Snyk", "careersUrl": "https://snyk.io/careers/", "segment": "software" },
+        { "name": "Darktrace", "careersUrl": "https://careers.darktrace.com", "segment": "software" },
+        { "name": "Sage", "careersUrl": "https://www.sage.com/en-gb/company/careers/", "segment": "software" },
+        { "name": "Kainos", "careersUrl": "https://careers.kainos.com", "segment": "consultancy" },
+        { "name": "Endava", "careersUrl": "https://careers.endava.com", "segment": "consultancy" },
+        { "name": "FDM Group", "careersUrl": "https://www.fdmgroup.com/careers/", "segment": "consultancy" },
+        { "name": "Softcat", "careersUrl": "https://www.softcat.com/careers", "segment": "consultancy" }
+      ]
+    }
+  }
+}

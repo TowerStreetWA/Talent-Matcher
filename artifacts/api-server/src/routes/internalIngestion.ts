@@ -21,11 +21,18 @@ import {
   resolveBoardPatternCap,
   type JobBoardProviderKey,
 } from "../config/jobBoardPatterns";
+import { LONDON_SEGMENTS } from "../lib/vacancies/londonDirectory";
 import {
-  LONDON_SEGMENTS,
-  makeLondonEmployerProvider,
-  selectLondonEmployers,
-} from "../lib/vacancies/londonDirectory";
+  CAREERS_DIRECTORY_KEYS,
+  directoryByKey,
+  LONDON_INSURANCE_DIRECTORY,
+} from "../config/careersDirectories";
+import {
+  makeDirectoryEmployerProvider,
+  selectDirectoryEmployers,
+  type CareersDirectoryConfig,
+} from "../lib/directory/engine";
+import { resolveCareersBoard } from "../lib/directory/resolveCareersBoard";
 import type { LondonMarketSegment } from "../config/londonInsuranceEmployers";
 
 /**
@@ -422,13 +429,10 @@ function makeBoardHandler(providerKey: JobBoardProviderKey) {
 router.post("/internal/ingestion/reed", makeBoardHandler("reed"));
 router.post("/internal/ingestion/adzuna", makeBoardHandler("adzuna"));
 
-const londonDirectoryBodySchema = z
+const directoryFilterSchema = z
   .object({
-    /** Restrict to specific market segments (default: all four). */
-    segments: z
-      .array(z.enum(LONDON_SEGMENTS as [LondonMarketSegment, ...LondonMarketSegment[]]))
-      .max(4)
-      .optional(),
+    /** Restrict to specific directory segments (default: all). */
+    segments: z.array(z.string().min(1)).max(10).optional(),
     /** Restrict to specific employer names from the directory config. */
     employers: z.array(z.string().min(1)).max(25).optional(),
     /** Batch paging over the (deduped) employer list. */
@@ -437,32 +441,52 @@ const londonDirectoryBodySchema = z
   })
   .optional();
 
+const careersDirectoryBodySchema = z.object({
+  /** Directory key from config/careersDirectories.ts. */
+  directory: z.string().min(1),
+  segments: z.array(z.string().min(1)).max(10).optional(),
+  employers: z.array(z.string().min(1)).max(25).optional(),
+  offset: z.number().int().min(0).optional(),
+  limit: z.number().int().min(1).max(25).optional(),
+});
+
 /** Default batch size — generic careers pages go through Firecrawl, so a
  * full-directory HTTP run would exceed safe request duration. Page with
  * offset/limit; the hourly sweep covers the rest automatically. */
-const LONDON_DEFAULT_LIMIT = 5;
+const DIRECTORY_DEFAULT_LIMIT = 5;
+
+interface DirectoryRunFilters {
+  segments?: string[];
+  employers?: string[];
+  offset?: number;
+  limit?: number;
+}
 
 /**
- * Run London Insurance Market directory ingestion for a bounded batch of
- * employers (config/londonInsuranceEmployers.ts, generated from the
- * canonical directory md). One runVacancyIngestion per employer so the
+ * Shared careers-directory batch ingestion: bounded batch of employers from
+ * one registered directory, one runVacancyIngestion per employer so the
  * response carries a per-employer funnel; failures are recorded per
  * employer and never sink the batch.
  */
-router.post("/internal/ingestion/london-insurance-directory", async (req, res) => {
-  const parsed = londonDirectoryBodySchema.safeParse(req.body ?? {});
-  if (!parsed.success) {
+async function runCareersDirectoryBatch(
+  req: Request,
+  res: Response,
+  directory: CareersDirectoryConfig,
+  filters: DirectoryRunFilters,
+  auditAction: string,
+): Promise<void> {
+  const invalidSegments = filters.segments?.filter((s) => !directory.segments.includes(s));
+  if (invalidSegments?.length) {
     res.status(400).json({
-      message: `segments must be a subset of: ${LONDON_SEGMENTS.join(", ")}; employers up to 25 names; offset >= 0; limit 1-25`,
+      message: `Unknown segment(s) ${invalidSegments.join(", ")} for directory ${directory.key}. Valid: ${directory.segments.join(", ")}`,
     });
     return;
   }
-  const body = parsed.data;
-  const selection = selectLondonEmployers({
-    segments: body?.segments,
-    employers: body?.employers,
-    offset: body?.offset ?? 0,
-    limit: body?.limit ?? LONDON_DEFAULT_LIMIT,
+  const selection = selectDirectoryEmployers(directory, {
+    segments: filters.segments,
+    employers: filters.employers,
+    offset: filters.offset ?? 0,
+    limit: filters.limit ?? DIRECTORY_DEFAULT_LIMIT,
   });
   if (selection.employers.length === 0) {
     res.status(400).json({
@@ -484,7 +508,7 @@ router.post("/internal/ingestion/london-insurance-directory", async (req, res) =
     try {
       const summary = await runVacancyIngestion({
         tenantId,
-        provider: makeLondonEmployerProvider(employer),
+        provider: makeDirectoryEmployerProvider(directory, employer),
         input: {},
       });
       runs.push({
@@ -501,6 +525,7 @@ router.post("/internal/ingestion/london-insurance-directory", async (req, res) =
       req.log.warn(
         {
           event: "vacancy_ingestion_failed",
+          directory: directory.key,
           employer: employer.name,
           kind: err instanceof IngestionError ? err.kind : "unexpected",
         },
@@ -521,9 +546,10 @@ router.post("/internal/ingestion/london-insurance-directory", async (req, res) =
   const funnel = await logCanonicalFunnel(tenantId);
 
   await recordAudit({
-    action: "ingestion.london_insurance_directory",
+    action: auditAction,
     entityType: "job",
     metadata: JSON.stringify({
+      directory: directory.key,
       employers: runs.map((r) => r.employer),
       totalMatching: selection.totalMatching,
       sharedBoardSkips: selection.sharedBoardSkips.length,
@@ -544,11 +570,188 @@ router.post("/internal/ingestion/london-insurance-directory", async (req, res) =
   });
 
   res.json({
+    directory: directory.key,
     runs,
     totalMatching: selection.totalMatching,
     sharedBoardSkips: selection.sharedBoardSkips,
     funnel,
   });
+}
+
+/**
+ * Generic careers-directory ingestion for any registered directory
+ * (config/careersDirectories.ts): insurance, banking, pensions,
+ * asset_management, accountancy_finance, it_tech.
+ */
+router.post("/internal/ingestion/careers-directory", async (req, res) => {
+  const parsed = careersDirectoryBodySchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({
+      message: `Provide directory (one of: ${CAREERS_DIRECTORY_KEYS.join(", ")}); optional segments, employers (<=25), offset, limit 1-25`,
+    });
+    return;
+  }
+  const directory = directoryByKey(parsed.data.directory);
+  if (!directory) {
+    res.status(400).json({
+      message: `Unknown directory "${parsed.data.directory}". Registered: ${CAREERS_DIRECTORY_KEYS.join(", ")}`,
+    });
+    return;
+  }
+  await runCareersDirectoryBatch(req, res, directory, parsed.data, "ingestion.careers_directory");
+});
+
+/**
+ * Legacy London Insurance Market endpoint — kept as a delegate to the
+ * generic careers-directory handler (same behavior, provider keys, and
+ * audit action as before the generalisation).
+ */
+router.post("/internal/ingestion/london-insurance-directory", async (req, res) => {
+  const parsed = directoryFilterSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({
+      message: `segments must be a subset of: ${LONDON_SEGMENTS.join(", ")}; employers up to 25 names; offset >= 0; limit 1-25`,
+    });
+    return;
+  }
+  await runCareersDirectoryBatch(
+    req,
+    res,
+    LONDON_INSURANCE_DIRECTORY,
+    parsed.data ?? {},
+    "ingestion.london_insurance_directory",
+  );
+});
+
+const resolveBodySchema = z.union([
+  z.object({
+    /** Probe employers from a registered directory. */
+    directory: z.string().min(1),
+    segments: z.array(z.string().min(1)).max(10).optional(),
+    employers: z.array(z.string().min(1)).max(10).optional(),
+    offset: z.number().int().min(0).optional(),
+    limit: z.number().int().min(1).max(10).optional(),
+  }),
+  z.object({
+    /** Ad-hoc discovery: probe arbitrary careers URLs (not persisted). */
+    urls: z.array(z.string().url()).min(1).max(10),
+  }),
+]);
+
+const RESOLVE_DEFAULT_LIMIT = 5;
+
+/** Normalized company record returned by the resolution/discovery endpoint. */
+interface CompanyRecord {
+  name: string;
+  industry: string | null;
+  segment: string | null;
+  careersUrl: string;
+  platformHint: string | null;
+  outcome: string;
+  platform: string | null;
+  resolvedBoardUrl: string | null;
+  finalUrl: string | null;
+  unsupportedAts: string | null;
+  lastCheckedAt: string;
+}
+
+/**
+ * Careers→board resolution probe (no ingestion): reports, per employer or
+ * ad-hoc URL, whether the careers page is/leads to a structured ATS board
+ * the engine can fetch. Use it to diagnose zero-job directory employers and
+ * to vet new employers before adding them to the seed.
+ */
+router.post("/internal/ingestion/careers-directory/resolve", async (req, res) => {
+  const parsed = resolveBodySchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({
+      message: `Provide {directory (one of: ${CAREERS_DIRECTORY_KEYS.join(", ")}), segments?, employers?, offset?, limit 1-10} or {urls: [up to 10 URLs]}`,
+    });
+    return;
+  }
+
+  const targets: Array<{
+    name: string;
+    careersUrl: string;
+    industry: string | null;
+    segment: string | null;
+    platformHint: string | null;
+    sectorTag: string | null;
+  }> = [];
+
+  if ("urls" in parsed.data) {
+    for (const url of parsed.data.urls) {
+      targets.push({
+        name: new URL(url).hostname,
+        careersUrl: url,
+        industry: null,
+        segment: null,
+        platformHint: null,
+        sectorTag: null,
+      });
+    }
+  } else {
+    const directory = directoryByKey(parsed.data.directory);
+    if (!directory) {
+      res.status(400).json({
+        message: `Unknown directory "${parsed.data.directory}". Registered: ${CAREERS_DIRECTORY_KEYS.join(", ")}`,
+      });
+      return;
+    }
+    const invalidSegments = parsed.data.segments?.filter(
+      (s) => !directory.segments.includes(s),
+    );
+    if (invalidSegments?.length) {
+      res.status(400).json({
+        message: `Unknown segment(s) ${invalidSegments.join(", ")} for directory ${directory.key}. Valid: ${directory.segments.join(", ")}`,
+      });
+      return;
+    }
+    const selection = selectDirectoryEmployers(directory, {
+      segments: parsed.data.segments,
+      employers: parsed.data.employers,
+      offset: parsed.data.offset ?? 0,
+      limit: parsed.data.limit ?? RESOLVE_DEFAULT_LIMIT,
+    });
+    for (const e of selection.employers) {
+      targets.push({
+        name: e.name,
+        careersUrl: e.careersUrl,
+        industry: directory.industry,
+        segment: e.segment,
+        platformHint: e.platformHint,
+        sectorTag: e.sectorTag,
+      });
+    }
+  }
+
+  if (targets.length === 0) {
+    res.status(400).json({ message: "No employers match the requested filter" });
+    return;
+  }
+
+  const records: CompanyRecord[] = [];
+  for (const target of targets) {
+    const resolution = await resolveCareersBoard(target.careersUrl, {
+      company: target.name,
+      sectorTag: target.sectorTag,
+    });
+    records.push({
+      name: target.name,
+      industry: target.industry,
+      segment: target.segment,
+      careersUrl: target.careersUrl,
+      platformHint: target.platformHint,
+      outcome: resolution.outcome,
+      platform: resolution.entry?.platform ?? null,
+      resolvedBoardUrl: resolution.boardUrl,
+      finalUrl: resolution.finalUrl,
+      unsupportedAts: resolution.unsupportedAts,
+      lastCheckedAt: resolution.checkedAt.toISOString(),
+    });
+  }
+
+  res.json({ records });
 });
 
 /**
