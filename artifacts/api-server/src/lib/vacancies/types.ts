@@ -42,7 +42,9 @@ export class IngestionError extends Error {
 export interface VacancyProvider {
   readonly sourceType: VacancySourceType;
   readonly sourceProvider: string;
-  fetchVacancies(input: GoogleJobsQuery | EmployerSiteFetchInput): Promise<ProviderFetchResult>;
+  fetchVacancies(
+    input: GoogleJobsQuery | EmployerSiteFetchInput | AtsFetchInput | JobBoardQuery,
+  ): Promise<ProviderFetchResult>;
 }
 
 export interface GoogleJobsQuery {
@@ -58,6 +60,21 @@ export interface GoogleJobsQuery {
 export interface EmployerSiteFetchInput {
   /** Restrict to specific configured companies (default: all configured). */
   companies?: string[];
+}
+
+export interface AtsFetchInput {
+  /** Restrict to specific configured companies (default: all for the platform). */
+  companies?: string[];
+}
+
+/** Keyword/location query for job-board APIs (Reed, Adzuna). */
+export interface JobBoardQuery {
+  query: string;
+  location?: string | null;
+  /** Fetch up to this many results via pagination. */
+  maxResults?: number | null;
+  /** Sector tag stamped onto every vacancy from this query (nullable). */
+  sectorTag?: string | null;
 }
 
 export interface ProviderFetchResult {

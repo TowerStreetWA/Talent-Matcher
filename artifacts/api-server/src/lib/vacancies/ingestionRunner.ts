@@ -21,6 +21,15 @@ const SOURCE_DISPLAY_NAMES: Record<string, string> = {
   company_site: "Company career sites",
   google_jobs_serpapi: "Google Jobs",
   linkedin_via_google_jobs: "LinkedIn Jobs (via Google)",
+  ats_lever: "Lever boards (ATS)",
+  ats_ashby: "Ashby boards (ATS)",
+  ats_workable: "Workable boards (ATS)",
+  ats_smartrecruiters: "SmartRecruiters boards (ATS)",
+  ats_recruitee: "Recruitee boards (ATS)",
+  ats_teamtailor: "Teamtailor boards (ATS)",
+  ats_workday: "Workday boards (ATS)",
+  reed_api: "Reed",
+  adzuna_api: "Adzuna",
 };
 
 export interface IngestionSummary {

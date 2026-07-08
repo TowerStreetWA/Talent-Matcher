@@ -21,12 +21,25 @@ export const STALE_AFTER_DAYS_BY_PROVIDER: Record<string, number> = {
   linkedin_via_google_jobs: 14,
   // Direct employer career pages are re-scraped less often and stay live longer.
   company_site: 21,
+  // ATS-hosted employer boards behave like career sites (structured feeds,
+  // postings stay live until filled).
+  ats_lever: 21,
+  ats_ashby: 21,
+  ats_workable: 21,
+  ats_smartrecruiters: 21,
+  ats_recruitee: 21,
+  ats_teamtailor: 21,
+  ats_workday: 21,
+  // Job boards churn like Google-discovered listings.
+  reed_api: 14,
+  adzuna_api: 14,
 };
 
 /** Per-sourceType fallbacks when no provider override exists. */
 export const STALE_AFTER_DAYS_BY_SOURCE_TYPE: Record<string, number> = {
   google_jobs: 14,
   direct_employer: 21,
+  job_board: 14,
 };
 
 export function resolveStaleAfterDays(job: {

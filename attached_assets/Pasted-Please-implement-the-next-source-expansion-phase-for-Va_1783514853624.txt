@@ -1,0 +1,262 @@
+Please implement the next source-expansion phase for VacancyMatch AI to materially increase live vacancy coverage.
+
+GOAL
+
+We want to improve vacancy/job numbers by adding more structured, scalable job sources rather than relying too heavily on any single source.
+
+Current situation:
+- Google Jobs ingestion is in place and expanded.
+- LinkedIn-hosted jobs are only discovered via Google Jobs.
+- Company career sites exist but coverage is still limited.
+- We now want the next highest-value source expansion phase.
+
+This phase should focus on adding structured, scalable sources in this order of priority:
+
+1. Additional ATS-hosted employer career pages / feeds:
+   - Lever
+   - Ashby
+   - Workable
+   - SmartRecruiters
+   - Workday
+   - iCIMS
+   - Recruitee
+   - Teamtailor
+2. Reed
+3. Adzuna
+
+Do not change auth, billing, candidate matching, or curated taxonomy logic.
+
+====================================
+1. ATS SOURCE EXPANSION
+====================================
+
+Objective:
+Add broader direct-employer job coverage through common ATS platforms.
+
+Implementation:
+
+- Review the existing company career-site / ATS ingestion architecture.
+- Add support for the following ATS/job-hosting platforms where feasible:
+  - Lever
+  - Ashby
+  - Workable
+  - SmartRecruiters
+  - Workday
+  - iCIMS
+  - Recruitee
+  - Teamtailor
+
+Approach:
+- Prefer public JSON/job-board endpoints or stable structured feeds where available.
+- Avoid unnecessary brittle scraping if a public endpoint/feed exists.
+- Keep source integrations config-driven where possible.
+
+For each provider:
+- create or extend provider modules,
+- normalize jobs into the existing vacancy schema,
+- populate:
+  - source_type
+  - source_provider
+  - title
+  - company
+  - location
+  - description/summary
+  - apply URL
+  - discoveredAt
+  - lastSeenAt
+  - sectorTag if inferable
+- route through the existing canonicalisation / freshness / funnel metrics pipeline.
+
+Add per-provider configs where useful, e.g.:
+- provider key
+- base URL pattern
+- pagination rules
+- caps
+- recency assumptions
+
+Acceptance:
+The ingestion layer can pull jobs from a materially wider set of ATS-backed employer career pages and expose them in the existing job search pipeline.
+
+====================================
+2. REED SOURCE
+====================================
+
+Objective:
+Increase UK vacancy coverage with a dedicated Reed integration.
+
+Implementation:
+
+- Add a Reed provider/integration using the most reliable structured access path available in the codebase environment.
+- Keep it compliant and maintainable.
+- Normalize Reed jobs into the same vacancy schema as other sources.
+- Ensure:
+  - source_type and source_provider clearly identify Reed,
+  - jobs flow through dedupe, canonicalisation, active/inactive logic, and source funnel metrics.
+
+Add query/config support for:
+- target sectors and locations where appropriate,
+- sensible caps,
+- pagination.
+
+Acceptance:
+Reed jobs are ingested, normalized, deduped, searchable, and visible in the Sources funnel.
+
+====================================
+3. ADZUNA SOURCE
+====================================
+
+Objective:
+Add another broad UK vacancy source with structured metadata.
+
+Implementation:
+
+- Add an Adzuna integration/provider.
+- Normalize jobs into the common vacancy schema.
+- Ensure salary/location/metadata are preserved where available and useful.
+- Route through:
+  - canonicalisation,
+  - freshness logic,
+  - source truthfulness labels,
+  - source funnel metrics.
+
+Add query/config support for:
+- sectors / categories where relevant,
+- UK locations,
+- caps and pagination.
+
+Acceptance:
+Adzuna jobs are ingested and visible as a distinct source with proper funnel metrics.
+
+====================================
+4. SOURCE HEALTH + METRICS
+====================================
+
+Objective:
+Make new sources measurable from day one.
+
+For all new ATS providers, Reed, and Adzuna:
+
+- ensure each run logs:
+  - fetched
+  - stored
+  - active
+  - canonical
+  - duplicates
+  - refreshed
+- ensure each source shows up cleanly in the Sources page/API with:
+  - source name
+  - provider
+  - last successful run
+  - fetched / active / canonical counts
+  - demo/live status
+  - health/status
+
+If necessary, extend the existing source metrics response shape.
+
+Acceptance:
+Each new source is not just ingested, but operationally visible.
+
+====================================
+5. CONFIG-DRIVEN QUERY STRATEGY
+====================================
+
+Objective:
+Keep source expansion maintainable.
+
+Implementation:
+
+- Add or extend config files for source query patterns and provider configs.
+- For Reed and Adzuna, support sector/location-targeted ingestion patterns similar to current Google Jobs patterns.
+- For ATS providers, support a config-driven list of employer career endpoints or discoverable patterns rather than hardcoded logic everywhere.
+
+Examples:
+- provider configs in something like:
+  - config/sourceProviders.ts
+  - config/ingestionPatterns.ts
+  - config/employerSources.ts
+
+Design principle:
+- future expansion should mainly mean adding config, not rewriting ingestion code.
+
+====================================
+6. DEDUPE / CANONICAL BEHAVIOUR
+====================================
+
+Objective:
+Prevent higher volume from becoming lower quality.
+
+Implementation:
+
+- Make sure new sources flow through the existing dedupe/canonical pipeline.
+- Watch for increased overlap between:
+  - Google Jobs
+  - direct ATS sources
+  - Reed
+  - Adzuna
+
+If needed:
+- improve duplicate detection using source URL, company, title, location, and date heuristics.
+- do not massively rewrite dedupe in this phase unless necessary — just tighten obvious gaps.
+
+Acceptance:
+More sources increase useful canonical jobs, not just duplicate clutter.
+
+====================================
+7. TESTING & VALIDATION
+====================================
+
+Add/update tests for:
+
+- provider normalization for each newly added source type,
+- pagination and cap handling,
+- source attribution (provider/source_type correctness),
+- canonical funnel metrics for new sources,
+- at least basic happy-path coverage for Reed and Adzuna,
+- no regressions in existing search/source functionality.
+
+Run:
+- full typecheck
+- full unit/integration tests
+
+Also perform a live/demo smoke test and report:
+- before/after source counts,
+- before/after total canonical active jobs,
+- fetched/stored/active/canonical metrics by source.
+
+====================================
+CONSTRAINTS
+====================================
+
+- Do not change auth, billing, candidate matching, or curated title taxonomy logic.
+- Keep source integrations as structured and compliant as possible.
+- Prefer stable/public endpoints or feeds over brittle scraping.
+- Keep everything additive.
+
+====================================
+ACCEPTANCE CRITERIA
+====================================
+
+1. ATS coverage expands to include several new providers (Lever, Ashby, Workable, SmartRecruiters, Workday, iCIMS, Recruitee, Teamtailor where feasible).
+2. Reed integration is added and visible in ingestion/search/source metrics.
+3. Adzuna integration is added and visible in ingestion/search/source metrics.
+4. New jobs flow through canonicalisation, freshness, and source-truthfulness systems.
+5. Sources page/API reflects the new providers with clear metrics and health.
+6. Full typecheck passes and tests pass.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+- Files changed
+- Which ATS providers were added successfully
+- Reed + Adzuna integration details
+- Before/after counts by source:
+  - fetched
+  - stored
+  - active
+  - canonical
+  - duplicates
+- Any dedupe/canonical issues observed
+- Typecheck/test outcomes
+- Screenshots of the updated Sources page if possible
