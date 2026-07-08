@@ -1,0 +1,247 @@
+Please expose the curated sector/family taxonomy in the Job Search UI so recruiters can filter by industry and function using the taxonomy you’ve just implemented.
+
+GOAL
+
+We now have:
+
+- Unified curatedTitles schema and per-industry files for:
+  - insurance
+  - banking
+  - pensions
+  - asset_management (fund managers + real assets)
+  - accountancy_finance
+- Sector-aware tagging and ?sector= filters (including accountancy_finance).
+- Families encoded via tags (e.g. underwriting, claims, investment_banking, portfolio_management, audit_assurance).
+
+This phase should:
+
+1) Make **sector filters** visibly selectable in Job Search (chips/dropdowns).
+2) Surface **family/function filters** (e.g. Underwriting, Claims, Investment Banking, Portfolio Management) based on the taxonomy.
+3) Wire these filters cleanly through:
+   - the search API,
+   - URL/query params,
+   - saved searches,
+   - and the curated taxonomy.
+
+Do not change auth, billing, or candidate matching flows.
+
+====================================
+1. SECTOR FILTERS IN JOB SEARCH
+====================================
+
+Implementation:
+
+- In the Job Search page (/job-search):
+  - Add a visible sector selector:
+    - Examples (non-exhaustive — use existing enum):
+      - Insurance
+      - Banking
+      - Pensions
+      - Asset Management
+      - Accountancy & Finance
+      - (Any other existing sectors you have)
+  - Likely UI patterns:
+    - sector chips (toggleable, single-select),
+    - or a sector dropdown with clear labels.
+
+- Wire sector selection to:
+  - the existing `sector` query parameter used by GET /api/jobs/search (?sector=insurance, ?sector=accountancy_finance, etc.),
+  - the URL (so sector filters are shareable/bookmarkable),
+  - saved job searches (sector stored and restored correctly).
+
+- Ensure that:
+  - Unknown sectors still produce a 400 at the API level (as now),
+  - The frontend does not allow selection of unknown sectors (options should match OpenAPI enum).
+
+Acceptance:
+
+- Recruiters can easily filter Job Search by sector using chips/dropdowns.
+- Sector choice is reflected in the URL and saved searches.
+- API calls match the selected sector, and sector-specific tagging is honoured.
+
+====================================
+2. FAMILY/FUNCTION FILTERS (TAXONOMY-DRIVEN)
+====================================
+
+Objective:
+Expose key job families/functions as filters so recruiters can quickly narrow results to “Underwriting”, “Claims”, “Investment Banking”, “Portfolio Management”, “Audit & Assurance”, etc.
+
+Implementation:
+
+- Define a curated set of **display families** based on the taxonomy. For example:
+
+  - Insurance:
+    - Underwriting
+    - Claims
+    - Broking & Distribution
+    - Risk & Compliance
+    - Product & Marketing
+    - Operations & Admin
+    - Finance & Investment
+    - Tech & Change
+  - Banking:
+    - Relationship Management
+    - Branch Network
+    - Credit & Lending
+    - Investment Banking
+    - Treasury & Balance Sheet
+    - Risk
+    - Compliance & Financial Crime
+    - Payments & Transaction Banking
+    - Ops & Middle/Back Office
+    - Digital & Change
+    - Contact Centre & Collections
+  - Pensions:
+    - Administration & Operations
+    - Consulting & Advice
+    - Actuarial & Risk
+    - Investment & LDI
+    - Policy/Regulation/Compliance
+    - Member Services & Comms
+    - Reporting & Systems
+  - Asset Management:
+    - Portfolio Management
+    - Research & Analysis
+    - Trading & Dealing
+    - Client Sales & Distribution
+    - Risk & Performance
+    - Compliance & Operations
+    - Real Assets & Infrastructure
+    - Institutional Client Sales
+    - Finance & Control
+  - Accountancy & Finance:
+    - Audit & Assurance
+    - Tax
+    - Accounts/Bookkeeping/Payroll
+    - Financial Reporting
+    - FP&A & Commercial Finance
+    - Treasury & Corporate Finance
+    - Credit/Billing/AR/AP
+    - Finance Systems & Change
+
+- Map these display families to the underlying taxonomy `family` values and/or tags.
+
+- UI:
+
+  - On Job Search:
+    - When a sector is selected, show a row/list of relevant families as chips (multi-select is useful here).
+    - Example: sector = Insurance ⇒ show Underwriting / Claims / Broking & Distribution / Risk & Compliance / etc.
+
+  - Families:
+    - Should be filterable (click to include/exclude).
+    - Should visually reflect their active state.
+
+- API:
+
+  - Add a new optional query parameter to GET /api/jobs/search, e.g.:
+
+    - `family` or `families` (multi-select) conveying taxonomy families/tags.
+
+  - Implement server-side filtering:
+    - If families are provided, restrict results to jobs whose classification/tags include one of those families.
+
+- Saved Searches:
+
+  - Extend saved job search schema to store `families` (array of strings) along with sector.
+  - When re-running a saved search, restore both sector and families.
+
+Acceptance:
+
+- For a given sector, recruiters can narrow Job Search by function (e.g. “Underwriting” within Insurance, or “Investment Banking” within Banking).
+- Family choices are reflected in the API params, URL, and saved searches.
+- Results respect both sector and family filters.
+
+====================================
+3. USING CURATED TITLES IN FILTERS
+====================================
+
+Tie filters to the taxonomy:
+
+- Use the curatedTitles schema (curatedTaxonomies / helpers) to:
+
+  - determine which families are present for a given sector,
+  - ensure only families that actually have titles for that sector are offered as filters.
+
+- Do not hardcode random families that don’t exist in the taxonomy.
+
+For example:
+
+- For `industry: "insurance"`, derive family set from insurance entries (e.g. underwriting, claims, broking_distribution, risk_compliance, etc.).
+- Use a display mapping to convert internal family keys to human-friendly labels:
+
+  - `"underwriting"` → "Underwriting"
+  - `"broking_distribution"` → "Broking & Distribution"
+  - `"fpna_commercial"` → "FP&A & Commercial Finance"
+
+Maintain a mapping in a config file (e.g. config/curatedTitles/displayFamilies.ts) so labels can be changed without touching core logic.
+
+====================================
+4. UX DETAILS
+====================================
+
+- Sector and family filters should:
+
+  - be clearly visible but not overwhelming,
+  - play nicely with existing keyword/location filters,
+  - be easy to clear (Clear All button, or per-chip removal).
+
+- Zero-result states:
+
+  - When sector + families + keywords produce zero jobs:
+    - Show a constructive message referencing filters:
+      - e.g. “No jobs found for Insurance → Underwriting in London. Try removing some filters or broadening your search.”
+
+- Ensure:
+
+  - Filters don’t reset unexpectedly when navigating or saving searches.
+  - URL reflects current filters so links/bookmarks preserve context.
+
+====================================
+5. TESTING & VALIDATION
+====================================
+
+Add or extend tests for:
+
+- Sector filter round-trip:
+  - Selecting sector in UI → URL → API → results tagged correctly.
+  - Saved search with sector restores correctly.
+
+- Family filter behaviour:
+  - `family`/`families` query parameter filters jobs based on taxonomy tags/classification.
+  - At least one test per sector verifying that a family filter actually restricts results as expected.
+
+- Aliases / display mapping:
+  - Display labels map correctly to underlying family keys.
+  - Unknown family keys are not exposed in the UI.
+
+Run full typecheck and unit tests.
+
+====================================
+CONSTRAINTS
+====================================
+
+- Keep filter logic additive; do not modify existing relevance scoring in ways that break current behaviour.
+- Do not change auth, billing, or candidate matching flows.
+- Keep taxonomy-driven logic deterministic and inspectable.
+
+====================================
+ACCEPTANCE CRITERIA
+====================================
+
+1. Sector filters (Insurance, Banking, Pensions, Asset Management, Accountancy & Finance, etc.) are visible and usable in Job Search.
+2. Family/function filters per sector are visible, driven by the curated taxonomy, and wired into the API, URL, and saved searches.
+3. CuratedTitles taxonomy determines which families are available for each sector.
+4. Zero-result UX references filters and suggests recovery.
+5. Full typecheck passes; tests cover sector and family filters.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+
+- The sector/family filter UI changes (screenshots if possible).
+- The API contract updates (new params for family/families, example requests).
+- The config/mapping used to derive display families from taxonomy.
+- Examples showing sector + family filters restricting results.
+- Typecheck/test outcomes.

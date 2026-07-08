@@ -1,0 +1,509 @@
+Please add an IT/TECH job-title taxonomy to VacancyMatch AI, using the supplied titles and the existing curatedTitles schema, in the same way as insurance, banking, pensions, asset management, and accountancy/finance.
+
+GOAL
+
+We now have:
+- A unified CuratedTitleEntry schema in config/curatedTitles.
+- Per-industry files for insurance, banking, pensions, asset management, and accountancy_finance.
+- Sector-aware tagging and search synonym expansion based on these taxonomies.
+
+This phase should:
+1. Create an IT/Tech taxonomy file (e.g. config/curatedTitles/itTech.ts).
+2. Structure the supplied IT/Tech titles into sensible families and canonical groups.
+3. Wire the IT/Tech taxonomy into search synonym expansion and tagging/classification.
+
+Do not change auth, billing, or candidate matching flows.
+
+====================================
+1. INDUSTRY & FAMILIES
+====================================
+
+Use:
+
+- industry: "it_tech"   (or "technology" if you prefer, but pick one and keep it consistent)
+
+Define families using the existing CuratedTitleFamily type where possible, and add new keys only if needed. Suggested families:
+
+- executive_leadership_tech
+- software_engineering
+- cloud_infrastructure
+- devops_sre
+- data_engineering
+- data_science_ml_ai
+- cyber_security
+- it_operations_service
+- systems_network_admin
+- end_user_support
+- business_systems_analysis
+- product_management_tech
+- project_delivery_agile
+- ux_ui_design
+- solutions_presales_cs
+- quality_assurance_test
+- enterprise_apps_crm_erp
+- hardware_iot_robotics
+- games_interactive_media
+- innovation_rnd_tech
+
+If you prefer to reuse existing keys (e.g. `data_change_technology`), that’s fine — just keep the mapping consistent. The important part is that each CuratedTitleEntry has:
+
+- industry: "it_tech"
+- family: one of the above (or an existing CuratedTitleFamily)
+- canonicalTitle
+- variants
+- optional seniority, tags
+
+====================================
+2. IT/TECH TITLES TO INGEST
+====================================
+
+Structure the following titles into canonical groups and variants under the IT/Tech industry:
+
+Executive / heads / leadership:
+Chief Information Officer (CIO)
+Chief Technology Officer (CTO)
+Chief Digital Officer
+Chief Data Officer
+Chief Information Security Officer (CISO)
+Chief Product Officer (Technology)
+Chief Analytics Officer
+VP Engineering
+VP Technology
+VP IT
+VP Product (Technology)
+VP Data Science
+Head of Engineering
+Head of Technology
+Head of IT
+Head of Software Development
+Head of Data
+Head of Cyber Security
+Head of Infrastructure
+Head of DevOps
+Head of Architecture
+Head of Product (Tech)
+Head of UX
+Head of Engineering (Platform)
+Head of Engineering (Product)
+Head of Infrastructure (Cloud)
+Head of Data Science
+Head of AI
+Head of Cyber Defence
+Head of Architecture (Technology)
+
+Directors:
+IT Director
+Technology Director
+Director of Software Engineering
+Director of Platform Engineering
+Director of Infrastructure
+Director of Cloud Engineering
+Director of Data Engineering
+Director of Information Security
+Director of Cyber Security
+Director of Enterprise Architecture
+Director of Product Management (Tech)
+Director of IT Operations
+Director of IT Service Delivery
+
+Software engineering / development:
+Software Engineer
+Software Developer
+Application Developer
+Applications Engineer
+Backend Engineer
+Backend Developer
+Frontend Engineer
+Frontend Developer
+Full Stack Engineer
+Full Stack Developer
+Web Developer
+Web Engineer
+UI Engineer
+UX Engineer
+Mobile Developer
+iOS Developer
+Android Developer
+Desktop Application Developer
+Systems Software Engineer
+Embedded Software Engineer
+Firmware Engineer
+Game Developer
+Graphics Engineer
+Platform Engineer
+Senior Software Engineer
+Lead Software Engineer
+Principal Software Engineer
+Staff Software Engineer
+Software Architect
+Solution Architect
+Enterprise Architect
+System Architect
+Technical Lead
+Tech Lead
+Engineering Lead
+Engineering Manager
+Software Development Manager
+Agile Development Manager
+
+Junior / graduate:
+Junior Software Engineer
+Graduate Software Engineer
+Associate Developer
+Junior Developer
+Trainee Developer
+
+Cloud / infrastructure:
+Cloud Engineer
+Cloud Architect
+Cloud Consultant
+Cloud Solutions Architect
+Cloud Infrastructure Engineer
+Cloud Platform Engineer
+Cloud DevOps Engineer
+Cloud Operations Engineer
+Cloud Systems Administrator
+
+DevOps / SRE:
+DevOps Engineer
+Senior DevOps Engineer
+Lead DevOps Engineer
+DevOps Manager
+Site Reliability Engineer
+SRE
+Senior Site Reliability Engineer
+Platform Reliability Engineer
+Build Engineer
+Release Engineer
+Configuration Engineer
+Automation Engineer (DevOps)
+CI/CD Engineer
+
+Data engineering:
+Data Engineer
+Senior Data Engineer
+Lead Data Engineer
+Big Data Engineer
+ETL Engineer
+Data Pipeline Engineer
+Analytics Engineer
+BI Engineer
+Data Warehouse Engineer
+Database Engineer
+
+Database administration / data governance:
+Database Administrator
+DBA
+Senior Database Administrator
+Database Architect
+Data Quality Manager
+Data Steward
+
+Data analysis:
+Data Analyst
+Senior Data Analyst
+Business Intelligence Analyst
+BI Analyst
+Reporting Analyst
+MI Analyst (IT)
+Product Data Analyst
+Marketing Data Analyst
+
+Data science / ML / AI:
+Data Scientist
+Senior Data Scientist
+Lead Data Scientist
+Machine Learning Engineer
+ML Engineer
+AI Engineer
+NLP Engineer
+Computer Vision Engineer
+Research Scientist (Machine Learning)
+Quantitative Developer (Tech)
+Algorithm Engineer
+
+Security / cyber / InfoSec:
+Information Security Analyst
+Cyber Security Analyst
+Security Analyst
+Security Engineer
+Senior Security Engineer
+Lead Security Engineer
+Security Architect
+Application Security Engineer
+Product Security Engineer
+Cloud Security Engineer
+Network Security Engineer
+Security Operations Engineer
+SOC Analyst
+SOC Engineer
+Incident Response Analyst
+Incident Response Engineer
+Threat Intelligence Analyst
+Security Operations Center Manager
+Security Specialist
+Senior Security Specialist
+Information Assurance Analyst
+Information Assurance Engineer
+Information Assurance Manager
+Information Systems Security Officer (ISSO)
+Penetration Tester
+Ethical Hacker
+Red Team Engineer
+Blue Team Engineer
+
+IT ops / IT management:
+IT Manager
+IT Operations Manager
+IT Service Delivery Manager
+IT Support Manager
+IT Infrastructure Manager
+IT Systems Manager
+IT Project Manager
+IT Programme Manager
+IT Business Partner
+IT Coordinator
+IT Analyst
+IT Specialist
+
+Systems / infrastructure admin:
+IT Systems Administrator
+Systems Administrator
+Senior Systems Administrator
+Linux Systems Administrator
+Windows Systems Administrator
+Unix Systems Administrator
+Server Administrator
+Cloud Systems Administrator
+Virtualization Engineer
+VMware Engineer
+Citrix Engineer
+
+Networks / telecoms:
+Network Engineer
+Senior Network Engineer
+Lead Network Engineer
+Network Architect
+Network Administrator
+Network and Systems Administrator
+Network Operations Engineer
+NOC Engineer
+Telecommunications Engineer
+Telecoms Specialist
+Voice Engineer
+
+Support / helpdesk:
+Help Desk Technician
+Help Desk Specialist
+Service Desk Analyst
+Service Desk Technician
+IT Support Technician
+IT Support Analyst
+Technical Support Engineer
+Technical Support Specialist
+Desktop Support Specialist
+Desktop Support Engineer
+Field Support Engineer
+Field Service Engineer
+Customer Support Specialist (IT)
+Application Support Analyst
+Application Support Engineer
+Production Support Engineer
+Senior Support Specialist
+
+Analysis / business systems:
+Systems Analyst
+Senior Systems Analyst
+System Designer
+Business Systems Analyst
+Technical Business Analyst
+IT Business Analyst
+Digital Business Analyst
+
+Product management / ownership:
+Product Manager (Technology)
+Digital Product Manager
+Technical Product Manager
+Platform Product Manager
+Data Product Manager
+API Product Manager
+Product Owner
+Senior Product Owner
+Technical Product Owner
+
+Project / delivery / agile:
+Project Manager (IT)
+Technology Project Manager
+Software Project Manager
+Digital Project Manager
+Agile Project Manager
+Scrum Master
+Delivery Manager
+Release Manager
+Implementation Manager
+Implementation Consultant
+Implementation Specialist
+
+Design / UX / UI:
+UX Designer
+UI Designer
+Product Designer
+Interaction Designer
+Experience Designer
+Service Designer
+UX Researcher
+Design Researcher
+Visual Designer
+User Interface Designer
+User Experience Designer
+
+Solutions / pre-sales / CS:
+Solution Consultant (Technology)
+Pre-Sales Engineer
+Sales Engineer (Tech)
+Solutions Engineer
+Customer Success Engineer
+Implementation Engineer (SaaS)
+Integration Engineer
+API Integration Engineer
+Professional Services Consultant (Tech)
+
+QA / testing:
+Quality Assurance Engineer
+QA Engineer
+QA Analyst
+Test Engineer
+Software Tester
+Automation Test Engineer
+Automation QA Engineer
+SDET
+Test Lead
+Test Manager
+
+Enterprise applications / CRM / ERP:
+Enterprise Applications Manager
+ERP Consultant
+SAP Consultant
+Oracle E-Business Consultant
+CRM Consultant
+Salesforce Developer
+Salesforce Administrator
+Salesforce Architect
+Dynamics 365 Consultant
+HR Systems Analyst (Tech)
+Finance Systems Analyst (Tech)
+
+Training / documentation:
+IT Trainer
+Technical Trainer
+Technical Author
+Technical Writer
+Documentation Specialist (Tech)
+
+Hardware / IoT / robotics:
+Hardware Engineer
+Computer Hardware Engineer
+Embedded Systems Engineer
+IoT Engineer
+IoT Developer
+Robotics Engineer
+
+Games / interactive:
+Game Designer
+Game Programmer
+Level Designer
+Technical Artist
+
+Innovation / R&D:
+Digital Transformation Manager
+Digital Solutions Architect
+Innovation Manager (Technology)
+R&D Engineer (Tech)
+Research Engineer (Software)
+
+====================================
+3. CANONICAL / VARIANT MAPPING
+====================================
+
+For this taxonomy:
+
+- Use **canonicalTitle** for the most generic/common name.
+  - Example: canonicalTitle "Site Reliability Engineer" with variants ["SRE", "Senior Site Reliability Engineer", "Platform Reliability Engineer"].
+- Use **variants** for:
+  - abbreviations (CIO, CTO, CISO, SRE, DBA),
+  - minor spelling variations,
+  - level variations (Junior/Senior/Lead) when they are obviously the same function.
+
+Add **seniority** when clear:
+- “Junior Software Engineer” → seniority: "junior"
+- “Senior DevOps Engineer” → "senior"
+- “Head of Engineering” → "exec"
+
+Add **tags** for technical domains where useful:
+- ["cloud", "aws", "azure"] if you have domain tags later,
+- ["security", "infosec", "soc"] etc.
+
+====================================
+4. INTEGRATION INTO SEARCH/TAGGING
+====================================
+
+Wire this taxonomy into the same pipeline as other industries:
+
+- Search synonym expansion:
+  - Normalise queries like "SRE" to "Site Reliability Engineer".
+  - Map "CISO" to "Chief Information Security Officer".
+  - Map "ML Engineer" and "Machine Learning Engineer" to a shared canonical ML role.
+
+- Tagging/classification:
+  - When a job or candidate title matches an IT/Tech canonicalTitle/variant, apply:
+    - `industry: "it_tech"`
+    - relevant family
+    - tags where appropriate
+
+Ensure IT/Tech taxonomies **do not steal** generic titles from other sectors:
+- e.g. "Business Analyst" should stay ambiguous unless clearly IT-qualified ("IT Business Analyst", "Digital Business Analyst").
+- Keep tests similar to the banking/fund-manager collision guards.
+
+====================================
+5. TESTING & VALIDATION
+====================================
+
+Add tests to confirm:
+
+- `industry: "it_tech"` taxonomy is loaded via the unified curatedTitles schema.
+- Abbreviation and synonym behaviour:
+  - "CISO" → canonical Chief Information Security Officer.
+  - "SRE" → canonical Site Reliability Engineer.
+  - "DBA" → canonical Database Administrator.
+- Family filters work for IT/Tech when sector is set to IT/Tech (once you add this sector).
+- Ambiguous titles like “Business Analyst” don’t match IT unless qualified (e.g. "IT Business Analyst").
+
+Run full typecheck and unit tests.
+
+====================================
+CONSTRAINTS
+====================================
+
+- Do not change auth, billing, or candidate matching flows.
+- Keep taxonomy file/config-driven (no UI needed for editing).
+- Keep logic deterministic and inspectable.
+
+====================================
+ACCEPTANCE CRITERIA
+====================================
+
+1. IT/Tech taxonomy file exists under config/curatedTitles/ and uses CuratedTitleEntry.
+2. Supplied IT/Tech titles are grouped into sensible families with canonical/variant sets.
+3. IT/Tech taxonomy is used by search synonym expansion and tagging/classification.
+4. Typecheck and tests pass, including new IT/Tech coverage.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+
+- The IT/Tech taxonomy file name and example entries (canonicalTitle + variants).
+- Families defined for IT/Tech and how they map to titles.
+- Where in the pipeline the IT/Tech taxonomy is used (search + tagging).
+- Typecheck/test outcomes.
