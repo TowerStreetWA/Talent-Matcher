@@ -1,0 +1,176 @@
+Please add an ACCOUNTANCY / IN-HOUSE FINANCE job-title taxonomy to VacancyMatch AI, using the supplied titles and the existing curatedTitles config layer.
+
+GOAL
+
+This phase adds a cross-industry taxonomy for accountancy practice and in-house finance teams — useful across insurance, banking, asset management and other sectors.
+
+This phase should:
+1. Create an accountancyFinance taxonomy file (e.g. config/curatedTitles/accountancyFinance.ts).
+2. Structure the supplied titles into families and canonical groups.
+3. Wire the taxonomy into search/tagging.
+
+Do not change candidate matching, billing, or auth.
+
+========================
+STRUCTURE REQUIREMENTS
+========================
+
+Entries:
+- industry: "accountancy_finance"
+- family: e.g. executive_leadership, audit_assurance, tax, accounts_bookkeeping_payroll, financial_reporting, fp&a_commercial, treasury_corporate_finance, credit_billing_ar_ap, finance_systems_change
+- canonicalTitle
+- variants
+- optional seniority
+- optional tags
+
+========================
+FAMILIES TO USE
+========================
+
+Suggested families:
+
+- executive_leadership
+- audit_assurance
+- tax
+- accounts_bookkeeping_payroll
+- financial_reporting
+- fp&a_commercial
+- treasury_corporate_finance
+- credit_billing_ar_ap
+- finance_systems_change
+
+========================
+ACCOUNTANCY / FINANCE TITLES TO INGEST
+========================
+
+Chief Financial Officer
+Finance Director
+Group Financial Controller
+Financial Controller
+Head of Finance
+Head of Management Reporting
+Head of Financial Reporting
+Head of Tax
+Head of Internal Audit
+Head of Treasury
+Head of FP&A
+
+Partner (Accountancy Practice)
+Equity Partner (Accountancy)
+Salaried Partner (Accountancy)
+Director (Accountancy Practice)
+Senior Manager (Accountancy Practice)
+Manager (Accountancy Practice)
+Assistant Manager (Accountancy Practice)
+
+Audit Partner
+Audit Director
+Audit Senior Manager
+Audit Manager
+Assistant Audit Manager
+Audit Senior
+Senior Auditor
+Auditor
+Junior Auditor
+Internal Auditor
+Senior Internal Auditor
+Internal Audit Manager
+
+Tax Partner
+Tax Director
+Senior Tax Manager
+Tax Manager
+Assistant Tax Manager
+Tax Senior
+Tax Consultant
+Corporate Tax Manager
+Personal Tax Manager
+VAT Manager
+VAT Consultant
+Indirect Tax Specialist
+Transfer Pricing Specialist
+Tax Compliance Manager
+Tax Reporting Manager
+
+Accounts Senior
+Accounts Assistant
+Semi-Senior Accountant
+Practice Accountant
+Client Manager (Accountancy Practice)
+Outsourcing Manager (Accountancy)
+Bookkeeper
+Senior Bookkeeper
+Payroll Administrator
+Payroll Manager
+Payroll Officer
+
+Financial Accountant
+Senior Financial Accountant
+Management Accountant
+Senior Management Accountant
+Group Accountant
+Reporting Accountant
+Statutory Reporting Accountant
+Consolidations Accountant
+Technical Accountant
+
+FP&A Analyst
+Senior FP&A Analyst
+FP&A Manager
+Commercial Finance Analyst
+Business Partner
+Finance Business Partner
+Senior Finance Business Partner
+Commercial Finance Manager
+
+Treasury Analyst
+Treasury Manager
+Cash Management Analyst
+Corporate Finance Analyst
+Corporate Finance Manager
+Transaction Services Manager
+M&A Tax Manager
+Forensic Accountant
+Forensic Services Manager
+
+Credit Controller
+Senior Credit Controller
+Credit Manager
+Billing Specialist
+Accounts Payable Clerk
+Accounts Receivable Clerk
+AP Manager
+AR Manager
+
+Finance Systems Analyst
+Finance Systems Manager
+Business Analyst (Finance)
+Project Accountant
+Cost Accountant
+Financial Modeller
+
+========================
+INTEGRATION
+========================
+
+- Add accountancyFinance taxonomy file and entries.
+- Use curated titles to improve:
+  - search synonym expansion (e.g. “FP&A Analyst” vs “Financial Planning & Analysis Analyst”),
+  - tagging/classification for finance roles across all sectors.
+
+========================
+ACCEPTANCE CRITERIA
+========================
+
+1. Accountancy/finance taxonomy file exists.
+2. Titles are grouped into families and canonical/variant sets.
+3. Taxonomy is used in search/tagging.
+4. Typecheck/tests pass.
+
+REPORT BACK
+
+Please report:
+- File name/structure.
+- Families used + examples.
+- Where the taxonomy is used.
+- Typecheck/test outcomes.
