@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, and, ilike, or, sql } from "drizzle-orm";
+import { desc, eq, and, ilike, or, sql, isNull } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable, searchEventsTable } from "@workspace/db";
 import {
   ListJobsResponse,
@@ -233,6 +233,17 @@ export async function runJobSearchPipeline(
     if (locCond) conditions.push(locCond);
   }
   if (sourceFilter) conditions.push(eq(jobsTable.sourceType, sourceFilter));
+  if (sectorFilter) {
+    // SQL pre-filter so the TOTAL_CAP window isn't consumed by other
+    // sectors' rows. sector_tag is the ingestion pattern's sector; NULL-tagged
+    // rows (manual/legacy) are kept and resolved by the in-memory
+    // classification filter below, which remains authoritative.
+    const sectorCond = or(
+      eq(jobsTable.sectorTag, sectorFilter),
+      isNull(jobsTable.sectorTag),
+    );
+    if (sectorCond) conditions.push(sectorCond);
+  }
 
   const rows = await db
     .select({ job: jobsTable, sourceName: jobSourcesTable.name })

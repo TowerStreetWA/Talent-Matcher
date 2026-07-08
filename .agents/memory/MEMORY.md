@@ -16,4 +16,5 @@
 - [Background sweep jobs](background-sweeps.md) — "new since last run" sweeps need a bounded (since, windowEnd] window + pg advisory xact lock; process-local flags don't survive autoscale.
 - [Typed errors in transport try blocks](typed-errors-in-transport-try.md) — config checks inside a fetch try/catch get remapped to generic upstream errors; hoist them before the I/O.
 - [Internal endpoint tenancy](internal-endpoint-tenancy.md) — /internal admin routes are reachable by every tenant's admin; HTTP-triggered mutations must be tenant-scoped, global ops belong in schedulers only.
+- [Prod data population](prod-data-population.md) — prod DB is separate; ingestion must run against the published domain; deployment secrets can lag workspace secrets; "newest-N then filter" pipelines lose recall as volume grows.
 - [SSRF guards for server fetches](ssrf-server-fetches.md) — redirect:"follow" bypasses URL validation; validate the initial URL AND every redirect hop manually before fetching config/admin-supplied URLs.

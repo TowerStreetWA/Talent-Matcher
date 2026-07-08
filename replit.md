@@ -43,7 +43,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 
 ## Recruiter job search
 
-- GET /jobs/search (q, location, sector, source, families CSV, page ≤50/page) — tenant-scoped active+canonical jobs; registered BEFORE /jobs/:id; 400 on unknown sector/source/family key. GET /jobs/search/families (?sector=) returns the display-family catalog for chips. Config dictionaries in `lib/search/jobSearchFilters.ts` (SECTOR_INPUT_ALIASES incl. technology/IT → it_tech, LOCATION_GROUPS); boosts in `jobSearchRank.ts` (also returns fn+curatedTags for family filtering); sector tags computed at query time; fetch cap 200
+- GET /jobs/search (q, location, sector, source, families CSV, page ≤50/page) — tenant-scoped active+canonical jobs; registered BEFORE /jobs/:id; 400 on unknown sector/source/family key. Fetch window is TOTAL_CAP=200 newest rows; when `sector` is set a SQL pre-filter (`sector_tag = sector OR sector_tag IS NULL`) keeps the window from being consumed by other sectors (in-memory classification stays authoritative; regression tests in `jobsSearchCap.integration.test.ts`). Sector inferred from `q` alone gets no pre-filter (known cap). GET /jobs/search/families (?sector=) returns the display-family catalog for chips. Config dictionaries in `lib/search/jobSearchFilters.ts` (SECTOR_INPUT_ALIASES incl. technology/IT → it_tech, LOCATION_GROUPS); boosts in `jobSearchRank.ts` (also returns fn+curatedTags for family filtering); sector tags computed at query time; fetch cap 200
 - UI `pages/job-search.tsx` at `/job-search`: sector chips (+ IT & Tech), family chips per selected sector (sector change clears families), filter chips, badges, pagination, URL-param init (q/location/sector/source/families)
 - Saved searches: `saved_job_searches` per-user CRUD at `/job-searches` (incl. `families` jsonb, validated on create, default []); data-level alerts via `lib/savedSearchAlerts.ts` 15-min sweep → `saved_search_alert_events` (families honored; unknown keys silently dropped); search analytics in `search_events` (page-1 only, insert failures never break search). Integration test `routes/jobsSearch.integration.test.ts` (real dev DB)
 
@@ -83,6 +83,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - CORS is dev-only; prod serves the SPA same-origin behind the shared proxy. Cookie secure in prod
 - Autoscale deploy: api-server esbuild → `node dist/index.mjs` with /api/healthz check; vacancymatch static from dist/public with SPA rewrite. Prod DB schema applied by Replit Publish (schema diff) — never hand-migrate prod
 - Go-live externals (user actions): Stripe connector in TEST mode → switch to live keys + rerun seedStripeProducts.ts (webhook re-registers on boot); Resend sandbox → verify a domain and update FROM in lib/email.ts
+- Prod job data is populated by calling the /internal/ingestion endpoints against the published domain with an admin session (prod DB is separate from dev; dev ingestion never reaches prod). Directory sweeps are opt-in per tenant — the first successful directory batch creates the source that opts the tenant in. Deployment env can lag workspace secrets (Reed/Adzuna keys were missing in prod while SerpApi/Firecrawl were present) — verify provider keys in prod via a small probe call after publishing
 
 ## User preferences
 
