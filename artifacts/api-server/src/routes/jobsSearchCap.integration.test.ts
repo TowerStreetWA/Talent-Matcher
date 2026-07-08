@@ -42,6 +42,24 @@ beforeAll(async () => {
       postedAt: daysAgo(20 + i),
     });
   }
+  // 3 insurance-tagged jobs whose titles classify to another (or no) sector —
+  // the ingestion tag is authoritative for the market sector, so these must
+  // still appear under sector=insurance (e.g. finance/tech roles at insurers).
+  for (const title of [
+    "Finance Manager (Group Reporting)",
+    "Software Engineer - Platform",
+    "Office Coordinator",
+  ]) {
+    rows.push({
+      tenantId: TENANT,
+      title,
+      companyName: "Insurer Ltd",
+      sectorTag: "insurance",
+      status: "active",
+      isCanonical: true,
+      postedAt: daysAgo(25),
+    });
+  }
   // 2 old NULL-tagged (manual/legacy) rows whose titles classify as insurance —
   // must still be reachable via query-time classification.
   for (let i = 0; i < 2; i++) {
@@ -82,6 +100,21 @@ describe("runJobSearchPipeline sector pre-filter (TOTAL_CAP regression)", () => 
     }
     // No banking rows leak through the in-memory classification filter.
     expect(titles.some((t) => t.startsWith("Relationship Manager"))).toBe(false);
+  });
+
+  it("treats the ingestion sector_tag as authoritative over title classification", async () => {
+    const scored = await runJobSearchPipeline({
+      tenantId: TENANT,
+      nq: null,
+      locationVariants: [],
+      sectorFilter: "insurance",
+      familyFilters: [],
+      sourceFilter: null,
+    });
+    const titles = scored.map(({ r }) => r.job.title);
+    expect(titles).toContain("Finance Manager (Group Reporting)");
+    expect(titles).toContain("Software Engineer - Platform");
+    expect(titles).toContain("Office Coordinator");
   });
 
   it("still includes NULL sector_tag rows that classify to the wanted sector", async () => {

@@ -2,7 +2,7 @@ import type { NormalizedQuery } from "./normalize";
 import { scoreJob, type JobLike } from "./rank";
 import { classifyVacancy, inferQueryFinIntent } from "./finClassify";
 import { lookupCuratedTitle } from "./curatedTitles";
-import type { FinSector, FinFunction } from "./finTaxonomy";
+import { FIN_SECTORS, type FinSector, type FinFunction } from "./finTaxonomy";
 
 /**
  * Explicit boost weights for the recruiter-facing /jobs/search ranking,
@@ -45,7 +45,18 @@ export interface JobSearchScore {
 
 export interface JobSearchRankable extends JobLike {
   postedAt?: Date | null;
+  /**
+   * Sector tag stamped by the ingestion pattern/provider (e.g. "insurance").
+   * When present and valid it is authoritative for the job's market sector —
+   * a "Finance Manager" at an insurance employer belongs to the insurance
+   * sector even though its title classifies elsewhere. Title classification
+   * remains the fallback for untagged (manual/legacy) rows.
+   */
+  sectorTag?: string | null;
 }
+
+const isFinSector = (value: string | null | undefined): value is FinSector =>
+  value != null && (FIN_SECTORS as readonly string[]).includes(value);
 
 const normLoc = (value: string | null | undefined): string =>
   (value ?? "").toLowerCase().replace(/[-_/,]/g, " ").replace(/\s+/g, " ").trim();
@@ -77,6 +88,7 @@ export function scoreJobSearch(
   },
 ): JobSearchScore {
   const tags = classifyVacancy(job);
+  const effectiveSector = isFinSector(job.sectorTag) ? job.sectorTag : tags.sector;
   const now = opts.now ?? new Date();
 
   let base = 0;
@@ -95,7 +107,7 @@ export function scoreJobSearch(
 
   const wantedSector =
     opts.sectorFilter ?? (nq ? inferQueryFinIntent(nq).sector : null);
-  const sectorMatch = wantedSector !== null && tags.sector === wantedSector;
+  const sectorMatch = wantedSector !== null && effectiveSector === wantedSector;
   const locMatch = locationMatches(job.locationText, opts.locationVariants);
   const directEmployer = job.sourceType === "direct_employer";
 
@@ -115,7 +127,7 @@ export function scoreJobSearch(
 
   return {
     score,
-    sector: tags.sector,
+    sector: effectiveSector,
     fn: tags.fn,
     curatedTags: lookupCuratedTitle(job.title)?.entry.tags ?? [],
     explanation: {
