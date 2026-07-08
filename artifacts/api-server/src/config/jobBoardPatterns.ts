@@ -47,6 +47,28 @@ export const REED_PATTERNS: JobBoardPatternConfig[] = [
     location: "London",
     sectorTag: "accountancy_finance",
   },
+  // Underwriting-focused Insurance patterns (deepen coverage beyond the
+  // sector-level "insurance" query; family classification stays query-time).
+  { name: "reed_underwriter_london", keywords: "underwriter", location: "London", sectorTag: "insurance" },
+  { name: "reed_underwriter_uk", keywords: "underwriter", location: "United Kingdom", sectorTag: "insurance" },
+  {
+    name: "reed_motor_underwriter_uk",
+    keywords: "motor underwriter",
+    location: "United Kingdom",
+    sectorTag: "insurance",
+  },
+  {
+    name: "reed_property_underwriter_uk",
+    keywords: "property underwriter",
+    location: "United Kingdom",
+    sectorTag: "insurance",
+  },
+  {
+    name: "reed_liability_underwriter_uk",
+    keywords: "liability underwriter",
+    location: "United Kingdom",
+    sectorTag: "insurance",
+  },
 ];
 
 export const ADZUNA_PATTERNS: JobBoardPatternConfig[] = [
@@ -64,6 +86,27 @@ export const ADZUNA_PATTERNS: JobBoardPatternConfig[] = [
     keywords: "fintech engineer",
     location: "London",
     sectorTag: "it_tech",
+  },
+  // Underwriting-focused Insurance patterns (mirror the Reed set).
+  { name: "adzuna_underwriter_london", keywords: "underwriter", location: "London", sectorTag: "insurance" },
+  { name: "adzuna_underwriter_uk", keywords: "underwriter", location: "UK", sectorTag: "insurance" },
+  {
+    name: "adzuna_motor_underwriter_uk",
+    keywords: "motor underwriter",
+    location: "UK",
+    sectorTag: "insurance",
+  },
+  {
+    name: "adzuna_property_underwriter_uk",
+    keywords: "property underwriter",
+    location: "UK",
+    sectorTag: "insurance",
+  },
+  {
+    name: "adzuna_liability_underwriter_uk",
+    keywords: "liability underwriter",
+    location: "UK",
+    sectorTag: "insurance",
   },
 ];
 

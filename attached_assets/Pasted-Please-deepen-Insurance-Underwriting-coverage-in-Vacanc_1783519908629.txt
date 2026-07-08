@@ -1,0 +1,180 @@
+Please deepen Insurance → Underwriting coverage in VacancyMatch AI.
+
+Context (from diagnostics)
+- We currently have 15 active, canonical jobs with titles matching '%underwrit%' for the demo tenant.
+- Source breakdown:
+  - 14 from google_jobs_serpapi (source_type: google_jobs)
+  - 1 from ats_ashby (source_type: direct_employer)
+- Reed and Adzuna currently contribute zero underwriting-titled jobs; their ingestion patterns are sector-level (e.g. “insurance jobs London”), not underwriting-specific.
+- /jobs/search?q=underwriter returns 41 results (title + company + description + skills matches), so search is behaving correctly; the main gap is source coverage for underwriting roles.
+
+GOAL
+
+Increase real underwriting coverage so that:
+
+- Reed + Adzuna explicitly pull underwriting roles (not just generic insurance),
+- ATS employer configs include more underwriting-heavy firms,
+- Insurance → Underwriting sector/family searches show materially more jobs.
+
+====================================
+1. BOARD PATTERNS FOR UNDERWRITER
+====================================
+
+Target:
+- Extend Reed + Adzuna patterns to include underwriter-specific queries for Insurance.
+
+Implementation:
+
+1) Update the job board pattern config (e.g. config/jobBoardPatterns.ts) to add underwriting-focused patterns, alongside existing sector-level ones.
+
+Examples (adjust to actual structure):
+
+- For Reed:
+  - sector: "Insurance", q: "underwriter", location: "London"
+  - sector: "Insurance", q: "underwriter", location: "United Kingdom"
+  - sector: "Insurance", q: "motor underwriter", location: "United Kingdom"
+  - sector: "Insurance", q: "property underwriter", location: "United Kingdom"
+  - sector: "Insurance", q: "liability underwriter", location: "United Kingdom"
+
+- For Adzuna:
+  - category: "insurance", what: "underwriter", where: "London"
+  - category: "insurance", what: "underwriter", where: "UK"
+  - category: "insurance", what: "motor underwriter", where: "UK"
+  - category: "insurance", what: "property underwriter", where: "UK"
+  - category: "insurance", what: "liability underwriter", where: "UK"
+
+Config principles:
+- Make the patterns config-only (no hardcoded logic in code), matching the existing pattern structure.
+- Use sensible caps per pattern (e.g. 50 per query, respecting the existing overall 200 cap ceiling).
+- Tag these patterns with:
+  - sectorTag: Insurance
+  - familyTag: Underwriting (where appropriate)
+  - optional location bias (London vs UK-wide).
+
+Acceptance:
+- Reed and Adzuna ingestions now include underwriting-titled roles, not just generic insurance jobs.
+- Source metrics show non-zero underwriting jobs from Reed and Adzuna (confirmed via the diagnostics endpoint below).
+
+====================================
+2. ATS EMPLOYER COVERAGE FOR UNDERWRITING
+====================================
+
+Target:
+- Extend ATS employer coverage to include more underwriting-heavy insurers/MGAs/brokers.
+
+Implementation:
+
+1) In config/atsEmployers.ts (or equivalent), add employers whose career pages are known to host underwriting roles, especially in the UK.
+
+Examples:
+- UK insurance carriers
+- MGAs
+- Lloyd’s market syndicates
+- Large brokers with underwriting units
+
+Implementation details:
+- For each new employer:
+  - provider: one of the existing ATS platforms (Ashby, SmartRecruiters, Workday, Lever, etc.)
+  - token / base URL as needed
+  - optional locationFilter for United Kingdom / London (consistent with existing patterns)
+  - sectorTag: "Insurance"
+  - optional familyHint: "Underwriting" if the employer is predominantly underwriting-heavy
+  - per-employer cap (consistent with current ATS caps)
+
+2) Make sure these employers flow through the same:
+  - ATS ingestion,
+  - canonicalisation,
+  - freshness sweeps (21 days),
+  - source metrics pipeline.
+
+Acceptance:
+- ATS ingestion picks up more underwriting roles (new employers show non-zero counts).
+- Underwriting diagnostics show non-zero ATS underwriting jobs from more than just Ashby.
+
+====================================
+3. DIAGNOSTICS EXTENSION (INSURANCE + UNDERWRITING)
+====================================
+
+Target:
+- Keep the coverage improvements measurable.
+
+Implementation:
+
+Extend the existing GET /api/internal/debug/underwriting-count endpoint (artifacts/api-server/src/routes/internalDebug.ts) or add a sibling endpoint to provide:
+
+1) Insurance sector totals:
+   - total_insurance_jobs: COUNT(*) WHERE sector = 'insurance' AND status = 'active' AND is_canonical = true (tenant-scoped).
+
+2) Underwriting family totals:
+   - total_underwriting_family_jobs: COUNT(*) WHERE family = 'underwriting' AND status = 'active' AND is_canonical = true.
+
+3) Underwriting by source (already implemented, just keep it updated):
+   - by_source for title ILIKE '%underwrit%' (as now).
+
+4) Optional: underwriting from Reed/Adzuna patterns specifically:
+   - counts where source_provider IN ('reed', 'adzuna') AND title ILIKE '%underwrit%' AND status = 'active' AND is_canonical = true.
+
+Return shape (additive to the existing response):
+
+{
+  "total_underwriting": 15,
+  "active_canonical_underwriting": 15,
+  "by_source": [...],
+  "search": {
+    "query": "underwriter",
+    "db_title_match_count": 15,
+    "search_results_count": 41
+  },
+  "sector": {
+    "total_insurance_jobs": <number>
+  },
+  "family": {
+    "total_underwriting_family_jobs": <number>
+  },
+  "boards_underwriting": {
+    "reed": <number>,
+    "adzuna": <number>
+  }
+}
+
+Constraints:
+- Same as before:
+  - Admin-only, behind the internal guard.
+  - Tenant-scoped.
+  - Read-only, no schema changes.
+  - Well logged via req.log.
+
+Acceptance:
+- After pattern/employer changes, diagnostics show:
+  - increased underwriting coverage overall,
+  - non-zero underwriting counts from Reed and Adzuna,
+  - more ATS providers contributing underwriting roles.
+
+====================================
+4. SAFETY & NON-REGRESSION
+====================================
+
+- Do not change search ranking or general matching logic in this phase.
+- Do not change auth, billing, or taxonomy structure.
+- Keep all new patterns and employer additions config-only.
+- Ensure:
+  - full typecheck passes,
+  - tests pass (add focused tests where needed for pattern config and basic ingestion behaviour),
+  - /jobs/search?q=underwriter behaviour remains consistent, except for new jobs now being available to rank.
+
+====================================
+REPORT BACK
+====================================
+
+When done, please report:
+
+- Changes made in config/jobBoardPatterns.ts (or equivalent) for Reed/Adzuna.
+- Employers added in config/atsEmployers.ts for Insurance → Underwriting.
+- Before/after numbers from GET /api/internal/debug/underwriting-count:
+  - total_underwriting
+  - by_source breakdown (especially Reed, Adzuna, ATS)
+  - search_results_count for q=underwriter
+- New sector/family diagnostics values:
+  - total_insurance_jobs
+  - total_underwriting_family_jobs
+- Typecheck/test outcomes.
