@@ -11,6 +11,11 @@ import { normalizeQuery } from "./search/normalize";
 import { expandLocationInput } from "./search/jobSearchFilters";
 import { scoreJobSearch } from "./search/jobSearchRank";
 import { resolveSectorInput } from "./search/jobSearchFilters";
+import {
+  resolveDisplayFamilies,
+  matchesDisplayFamily,
+  type DisplayFamily,
+} from "../config/curatedTitles/displayFamilies";
 
 /** Max job ids stored per alert event (keeps rows small). */
 const MAX_JOB_IDS = 25;
@@ -37,6 +42,11 @@ async function findNewJobsFor(
     ? expandLocationInput(saved.location)
     : [];
   const sectorFilter = saved.sector ? resolveSectorInput(saved.sector) : null;
+  // Family keys are validated at save time; unknown keys (e.g. after a
+  // taxonomy rename) are silently dropped rather than failing the sweep.
+  const familyFilters: DisplayFamily[] = (saved.families ?? []).flatMap((key) =>
+    resolveDisplayFamilies(key, sectorFilter),
+  );
 
   const conditions = [
     eq(jobsTable.tenantId, saved.tenantId),
@@ -82,6 +92,11 @@ async function findNewJobsFor(
       s: scoreJobSearch(nq, job, { sectorFilter, locationVariants }),
     }))
     .filter(({ s }) => (sectorFilter ? s.sector === sectorFilter : true))
+    .filter(({ s }) =>
+      familyFilters.length === 0
+        ? true
+        : familyFilters.some((df) => matchesDisplayFamily(df, s.fn, s.curatedTags)),
+    )
     .slice(0, MAX_JOB_IDS)
     .map(({ job }) => job.id);
 }

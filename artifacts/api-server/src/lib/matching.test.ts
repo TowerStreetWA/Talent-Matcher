@@ -104,15 +104,15 @@ describe("computeMatch FS sector alignment (industry factor)", () => {
 
   it("falls back to legacy industry logic for non-FS jobs", () => {
     const candidate = baseCandidate({
-      currentTitle: "Software Engineer",
-      skills: ["react", "typescript"],
-      industries: ["Software"],
+      currentTitle: "Marketing Manager",
+      skills: ["seo", "campaign management"],
+      industries: ["Media"],
     });
     const job = baseJob({
-      title: "Frontend Engineer",
-      companyName: "Tech Startup",
-      descriptionText: "React and TypeScript product work",
-      industry: "Software",
+      title: "Marketing Manager",
+      companyName: "Acme Media",
+      descriptionText: "Brand campaigns and content marketing",
+      industry: "Media",
     });
     const result = computeMatch(candidate, job);
     expect(result.scoreBreakdown.industry).toBe(1);

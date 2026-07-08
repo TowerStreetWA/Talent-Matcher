@@ -565,16 +565,35 @@ export interface JobSearchResponse {
   total: number;
 }
 
+export interface JobSearchFamilyOption {
+  /** Stable family key used in the families query param */
+  key: string;
+  /** Human-friendly label for the UI */
+  label: string;
+}
+
+export interface JobSearchSectorFamilies {
+  /** Sector key, e.g. insurance, it_tech */
+  sector: string;
+  families: JobSearchFamilyOption[];
+}
+
+export interface JobSearchFamiliesResponse {
+  sectors: JobSearchSectorFamilies[];
+}
+
 export interface SavedJobSearch {
   id: string;
   name: string;
   query: string;
   location: string;
   /**
-     * insurance/banking/pensions/asset_management or null
+     * insurance/banking/pensions/asset_management/accountancy_finance/it_tech or null
      * @nullable
      */
   sector?: string | null;
+  /** Display-family keys stored with the search */
+  families: string[];
   /**
      * direct_employer/google_jobs/job_board/agency or null
      * @nullable
@@ -601,6 +620,7 @@ export const SavedJobSearchInputSector = {
   pensions: 'pensions',
   asset_management: 'asset_management',
   accountancy_finance: 'accountancy_finance',
+  it_tech: 'it_tech',
 } as const;
 
 /**
@@ -628,6 +648,11 @@ export interface SavedJobSearchInput {
   location?: string;
   /** @nullable */
   sector?: SavedJobSearchInputSector;
+  /**
+     * Display-family keys (validated against the taxonomy for the sector)
+     * @maxItems 20
+     */
+  families?: string[];
   /** @nullable */
   sourceType?: SavedJobSearchInputSourceType;
   alertEnabled?: boolean;
@@ -882,9 +907,13 @@ q?: string;
  */
 location?: string;
 /**
- * Industry/sector filter mapped to internal FS sector tags
+ * Industry/sector filter mapped to internal sector tags
  */
 sector?: SearchJobsSector;
+/**
+ * Comma-separated display-family keys (taxonomy-driven; see GET /jobs/search/families). Results are restricted to jobs classified under any of them.
+ */
+families?: string;
 /**
  * Filter by job source type
  */
@@ -911,6 +940,7 @@ export const SearchJobsSector = {
   pensions: 'pensions',
   asset_management: 'asset_management',
   accountancy_finance: 'accountancy_finance',
+  it_tech: 'it_tech',
 } as const;
 
 export type SearchJobsSource = typeof SearchJobsSource[keyof typeof SearchJobsSource];
@@ -921,6 +951,25 @@ export const SearchJobsSource = {
   google_jobs: 'google_jobs',
   job_board: 'job_board',
   agency: 'agency',
+} as const;
+
+export type ListJobSearchFamiliesParams = {
+/**
+ * Restrict the catalog to one sector
+ */
+sector?: ListJobSearchFamiliesSector;
+};
+
+export type ListJobSearchFamiliesSector = typeof ListJobSearchFamiliesSector[keyof typeof ListJobSearchFamiliesSector];
+
+
+export const ListJobSearchFamiliesSector = {
+  insurance: 'insurance',
+  banking: 'banking',
+  pensions: 'pensions',
+  asset_management: 'asset_management',
+  accountancy_finance: 'accountancy_finance',
+  it_tech: 'it_tech',
 } as const;
 
 export type SearchResearchCompaniesParams = {

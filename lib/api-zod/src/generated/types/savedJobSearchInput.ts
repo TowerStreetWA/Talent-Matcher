@@ -20,6 +20,11 @@ export interface SavedJobSearchInput {
   location?: string;
   /** @nullable */
   sector?: SavedJobSearchInputSector;
+  /**
+     * Display-family keys (validated against the taxonomy for the sector)
+     * @maxItems 20
+     */
+  families?: string[];
   /** @nullable */
   sourceType?: SavedJobSearchInputSourceType;
   alertEnabled?: boolean;

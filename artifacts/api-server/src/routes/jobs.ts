@@ -5,6 +5,7 @@ import {
   ListJobsResponse,
   GetJobResponse,
   SearchJobsResponse,
+  ListJobSearchFamiliesResponse,
 } from "@workspace/api-zod";
 import { toJobDto } from "../lib/dto";
 import { tenantOf } from "../middlewares/auth";
@@ -16,6 +17,14 @@ import {
   expandLocationInput,
 } from "../lib/search/jobSearchFilters";
 import { scoreJobSearch } from "../lib/search/jobSearchRank";
+import {
+  DISPLAY_FAMILIES,
+  displayFamiliesForSector,
+  resolveDisplayFamilies,
+  matchesDisplayFamily,
+  type DisplayFamily,
+} from "../config/curatedTitles/displayFamilies";
+import { FIN_SECTORS } from "../lib/search/finTaxonomy";
 import type { SearchDebugDto } from "../lib/dto";
 
 const toSearchDebug = (b: ScoreBreakdown): SearchDebugDto => ({
@@ -142,6 +151,32 @@ const SOURCE_TYPES = new Set([
   "agency",
 ]);
 
+// Taxonomy-driven family filter catalog: which display families exist per
+// sector. Pure config read — no DB access. Registered before /jobs/:id.
+router.get("/jobs/search/families", (req, res): void => {
+  const sectorRaw =
+    typeof req.query["sector"] === "string" ? req.query["sector"] : "";
+  const sectorFilter = resolveSectorInput(sectorRaw);
+  if (sectorRaw && !sectorFilter) {
+    res.status(400).json({
+      message: `Unknown sector. Supported: ${FIN_SECTORS.join(", ")}.`,
+    });
+    return;
+  }
+  const sectors = sectorFilter ? [sectorFilter] : FIN_SECTORS;
+  res.json(
+    ListJobSearchFamiliesResponse.parse({
+      sectors: sectors.map((sector) => ({
+        sector,
+        families: displayFamiliesForSector(sector).map(({ key, label }) => ({
+          key,
+          label,
+        })),
+      })),
+    }),
+  );
+});
+
 // NOTE: must stay registered before /jobs/:id so "search" isn't captured as an id.
 router.get("/jobs/search", async (req, res): Promise<void> => {
   const q = typeof req.query["q"] === "string" ? req.query["q"] : "";
@@ -159,13 +194,35 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     MAX_PAGE_SIZE,
   );
 
+  const familiesRaw =
+    typeof req.query["families"] === "string" ? req.query["families"] : "";
+
   const sectorFilter = resolveSectorInput(sectorRaw);
   if (sectorRaw && !sectorFilter) {
     res.status(400).json({
-      message:
-        "Unknown sector. Supported: insurance, banking, pensions, asset_management, accountancy_finance.",
+      message: `Unknown sector. Supported: ${FIN_SECTORS.join(", ")}.`,
     });
     return;
+  }
+  const familyKeys = familiesRaw
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+  const familyFilters: DisplayFamily[] = [];
+  for (const key of familyKeys) {
+    const dfs = resolveDisplayFamilies(key, sectorFilter);
+    if (dfs.length === 0) {
+      const supported = (
+        sectorFilter
+          ? displayFamiliesForSector(sectorFilter)
+          : Object.values(DISPLAY_FAMILIES).flat()
+      ).map((d) => d.key);
+      res.status(400).json({
+        message: `Unknown family "${key}"${sectorFilter ? ` for sector ${sectorFilter}` : ""}. Supported: ${[...new Set(supported)].join(", ")}.`,
+      });
+      return;
+    }
+    familyFilters.push(...dfs);
   }
   if (sourceRaw && !SOURCE_TYPES.has(sourceRaw)) {
     res.status(400).json({
@@ -221,6 +278,11 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
       s: scoreJobSearch(nq, r.job, { sectorFilter, locationVariants }),
     }))
     .filter(({ s }) => (sectorFilter ? s.sector === sectorFilter : true))
+    .filter(({ s }) =>
+      familyFilters.length === 0
+        ? true
+        : familyFilters.some((df) => matchesDisplayFamily(df, s.fn, s.curatedTags)),
+    )
     .sort(
       (a, b) =>
         b.s.score - a.s.score ||
@@ -241,6 +303,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
       filters: {
         location: locationRaw ? locationRaw.slice(0, 100) : undefined,
         sector: sectorFilter ?? undefined,
+        families: familyFilters.length > 0 ? familyFilters.map((f) => f.key) : undefined,
         source: sourceFilter ?? undefined,
       },
       page,

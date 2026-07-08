@@ -1,7 +1,8 @@
 import type { NormalizedQuery } from "./normalize";
 import { scoreJob, type JobLike } from "./rank";
 import { classifyVacancy, inferQueryFinIntent } from "./finClassify";
-import type { FinSector } from "./finTaxonomy";
+import { lookupCuratedTitle } from "./curatedTitles";
+import type { FinSector, FinFunction } from "./finTaxonomy";
 
 /**
  * Explicit boost weights for the recruiter-facing /jobs/search ranking,
@@ -35,6 +36,10 @@ export interface JobSearchExplanationFlags {
 export interface JobSearchScore {
   score: number;
   sector: FinSector | null;
+  /** Classified function/family of the job (curated override or term scoring). */
+  fn: FinFunction | null;
+  /** Tags carried by the job's curated-title entry (empty if not curated). */
+  curatedTags: readonly string[];
   explanation: JobSearchExplanationFlags;
 }
 
@@ -111,6 +116,8 @@ export function scoreJobSearch(
   return {
     score,
     sector: tags.sector,
+    fn: tags.fn,
+    curatedTags: lookupCuratedTitle(job.title)?.entry.tags ?? [],
     explanation: {
       titleMatch,
       sectorMatch,

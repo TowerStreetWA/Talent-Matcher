@@ -32,12 +32,13 @@ describe("lookupCuratedTitle", () => {
 
   it("single-word abbreviations only match exactly", () => {
     expect(lookupCuratedTitle("uw")?.entry.canonicalTitle).toBe("Underwriter");
-    // "uw" inside a longer, unrelated title must not fire the contains path
-    expect(lookupCuratedTitle("software engineer uw team")).toBeNull();
+    // "uw" inside a longer, unrelated title must not fire the contains path —
+    // "warehouse operative uw team" contains no curated multi-word phrase.
+    expect(lookupCuratedTitle("warehouse operative uw team")).toBeNull();
   });
 
   it("returns null for unrelated titles", () => {
-    expect(lookupCuratedTitle("Software Engineer")).toBeNull();
+    expect(lookupCuratedTitle("Landscape Gardener")).toBeNull();
     expect(lookupCuratedTitle(null)).toBeNull();
     expect(lookupCuratedTitle("")).toBeNull();
   });
@@ -87,7 +88,14 @@ describe("curated taxonomy integrity (all industries)", () => {
   it("covers every expected industry", () => {
     const industries = new Set(CURATED_TITLES.map((e) => e.industry));
     expect(industries).toEqual(
-      new Set(["insurance", "banking", "pensions", "asset_management", "accountancy_finance"]),
+      new Set([
+        "insurance",
+        "banking",
+        "pensions",
+        "asset_management",
+        "accountancy_finance",
+        "it_tech",
+      ]),
     );
   });
 });
@@ -186,6 +194,69 @@ describe("accountancy/finance curated lookups", () => {
     expect(lookupCuratedTitle("Business Partner")).toBeNull();
     expect(lookupCuratedTitle("HR Business Partner")).toBeNull();
     expect(lookupCuratedTitle("Finance Business Partner")?.entry.industry).toBe("accountancy_finance");
+  });
+});
+
+describe("it_tech curated lookups", () => {
+  it("matches core IT/Tech titles and abbreviations", () => {
+    expect(lookupCuratedTitle("Software Engineer")?.entry.industry).toBe("it_tech");
+    expect(lookupCuratedTitle("Software Engineer")?.entry.family).toBe("software_engineering");
+    expect(lookupCuratedTitle("CISO")?.entry.canonicalTitle).toBe(
+      "Chief Information Security Officer",
+    );
+    expect(lookupCuratedTitle("SRE")?.entry.canonicalTitle).toBe("Site Reliability Engineer");
+    expect(lookupCuratedTitle("DBA")?.entry.canonicalTitle).toBe("Database Administrator");
+    expect(lookupCuratedTitle("ML Engineer")?.entry.canonicalTitle).toBe(
+      "Machine Learning Engineer",
+    );
+    expect(lookupCuratedTitle("full stack developer")?.entry.canonicalTitle).toBe(
+      "Full Stack Engineer",
+    );
+    expect(lookupCuratedTitle("helpdesk technician")?.entry.family).toBe("end_user_support");
+    expect(lookupCuratedTitle("Penetration Tester")?.entry.family).toBe("cyber_security");
+  });
+
+  it("carries finer-family tags", () => {
+    expect(lookupCuratedTitle("VMware Engineer")?.entry.tags).toContain("systems_network_admin");
+    expect(lookupCuratedTitle("NOC Engineer")?.entry.tags).toContain("networks_telecoms");
+    expect(lookupCuratedTitle("SAP Consultant")?.entry.tags).toContain("enterprise_apps_crm_erp");
+    expect(lookupCuratedTitle("IoT Engineer")?.entry.tags).toContain("hardware_iot_robotics");
+    expect(lookupCuratedTitle("IT Director")?.entry.tags).toContain("executive_leadership_tech");
+  });
+
+  it("does not steal ambiguous titles from other sectors", () => {
+    // Bare "Business Analyst" stays unclaimed; qualified forms resolve.
+    expect(lookupCuratedTitle("Business Analyst")).toBeNull();
+    expect(lookupCuratedTitle("IT Business Analyst")?.entry.industry).toBe("it_tech");
+    expect(lookupCuratedTitle("Business Analyst (Banking)")?.entry.industry).toBe("banking");
+    // Bare project/programme/product management stays unclaimed.
+    expect(lookupCuratedTitle("Project Manager")).toBeNull();
+    expect(lookupCuratedTitle("Programme Manager")).toBeNull();
+    expect(lookupCuratedTitle("Product Manager")).toBeNull();
+    expect(lookupCuratedTitle("Product Manager (Insurance)")?.entry.industry).toBe("insurance");
+    expect(lookupCuratedTitle("Technical Product Manager")?.entry.industry).toBe("it_tech");
+    // Bare implementation roles stay unclaimed (pensions vocabulary).
+    expect(lookupCuratedTitle("Implementation Consultant")).toBeNull();
+    // Bare "Business Partner" still unclaimed; IT-qualified resolves to it_tech.
+    expect(lookupCuratedTitle("Business Partner")).toBeNull();
+    expect(lookupCuratedTitle("IT Business Partner")?.entry.industry).toBe("it_tech");
+    // Finance systems analyst stays with accountancy_finance unless tech-qualified.
+    expect(lookupCuratedTitle("Finance Systems Analyst")?.entry.industry).toBe(
+      "accountancy_finance",
+    );
+    expect(lookupCuratedTitle("Finance Systems Analyst (Tech)")?.entry.industry).toBe("it_tech");
+  });
+
+  it("classifies IT/Tech vacancies via the curated override", () => {
+    const tags = classifyVacancy({ title: "Senior DevOps Engineer" });
+    expect(tags.sector).toBe("it_tech");
+    expect(tags.fn).toBe("devops_sre");
+  });
+
+  it("expands IT/Tech synonyms in query variants", () => {
+    expect(normalizeQuery("sre").variants).toContain("site reliability engineer");
+    expect(normalizeQuery("ciso").variants).toContain("chief information security officer");
+    expect(normalizeQuery("ml engineer").variants).toContain("machine learning engineer");
   });
 });
 

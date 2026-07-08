@@ -18,9 +18,13 @@ q?: string;
  */
 location?: string;
 /**
- * Industry/sector filter mapped to internal FS sector tags
+ * Industry/sector filter mapped to internal sector tags
  */
 sector?: SearchJobsSector;
+/**
+ * Comma-separated display-family keys (taxonomy-driven; see GET /jobs/search/families). Results are restricted to jobs classified under any of them.
+ */
+families?: string;
 /**
  * Filter by job source type
  */

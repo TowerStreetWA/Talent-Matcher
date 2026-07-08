@@ -33,6 +33,18 @@ export const SECTOR_INPUT_ALIASES: Record<string, FinSector> = {
   "accountancy practice": "accountancy_finance",
   audit: "accountancy_finance",
   tax: "accountancy_finance",
+  it_tech: "it_tech",
+  it: "it_tech",
+  tech: "it_tech",
+  technology: "it_tech",
+  "information technology": "it_tech",
+  "it tech": "it_tech",
+  software: "it_tech",
+  "software engineering": "it_tech",
+  digital: "it_tech",
+  cyber: "it_tech",
+  "cyber security": "it_tech",
+  cybersecurity: "it_tech",
 };
 
 /**

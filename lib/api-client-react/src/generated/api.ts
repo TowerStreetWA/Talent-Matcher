@@ -47,11 +47,13 @@ import type {
   InviteCreated,
   InvitePreview,
   Job,
+  JobSearchFamiliesResponse,
   JobSearchResponse,
   JobSource,
   JobSourceInput,
   JobSourceUpdate,
   ListCandidatesParams,
+  ListJobSearchFamiliesParams,
   ListJobsParams,
   ListMatchesParams,
   ListSearchSuggestionsParams,
@@ -2560,6 +2562,90 @@ export function useSearchJobs<TData = Awaited<ReturnType<typeof searchJobs>>, TE
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getSearchJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListJobSearchFamiliesUrl = (params?: ListJobSearchFamiliesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/jobs/search/families?${stringifiedParams}` : `/api/jobs/search/families`
+}
+
+/**
+ * @summary Taxonomy-driven display-family filter catalog per sector
+ */
+export const listJobSearchFamilies = async (params?: ListJobSearchFamiliesParams, options?: RequestInit): Promise<JobSearchFamiliesResponse> => {
+
+  return customFetch<JobSearchFamiliesResponse>(getListJobSearchFamiliesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListJobSearchFamiliesQueryKey = (params?: ListJobSearchFamiliesParams,) => {
+    return [
+    `/api/jobs/search/families`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListJobSearchFamiliesQueryOptions = <TData = Awaited<ReturnType<typeof listJobSearchFamilies>>, TError = ErrorType<ApiMessage>>(params?: ListJobSearchFamiliesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobSearchFamilies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListJobSearchFamiliesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobSearchFamilies>>> = ({ signal }) => listJobSearchFamilies(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listJobSearchFamilies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListJobSearchFamiliesQueryResult = NonNullable<Awaited<ReturnType<typeof listJobSearchFamilies>>>
+export type ListJobSearchFamiliesQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Taxonomy-driven display-family filter catalog per sector
+ */
+
+export function useListJobSearchFamilies<TData = Awaited<ReturnType<typeof listJobSearchFamilies>>, TError = ErrorType<ApiMessage>>(
+ params?: ListJobSearchFamiliesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobSearchFamilies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListJobSearchFamiliesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

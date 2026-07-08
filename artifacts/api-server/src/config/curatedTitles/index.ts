@@ -5,6 +5,7 @@ import { PENSIONS_TITLES } from "./pensions";
 import { FUND_MANAGER_TITLES } from "./fundManagers";
 import { ASSET_MANAGEMENT_REAL_ASSETS_TITLES } from "./assetManagementRealAssets";
 import { ACCOUNTANCY_FINANCE_TITLES } from "./accountancyFinance";
+import { IT_TECH_TITLES } from "./itTech";
 
 export type { CuratedTitleEntry } from "./types";
 
@@ -19,4 +20,5 @@ export const CURATED_TITLES: CuratedTitleEntry[] = [
   ...FUND_MANAGER_TITLES,
   ...ASSET_MANAGEMENT_REAL_ASSETS_TITLES,
   ...ACCOUNTANCY_FINANCE_TITLES,
+  ...IT_TECH_TITLES,
 ];

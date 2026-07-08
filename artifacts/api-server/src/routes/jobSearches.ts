@@ -10,6 +10,33 @@ import {
 } from "@workspace/api-zod";
 import { recordAudit } from "../lib/audit";
 import { tenantOf, auditActor } from "../middlewares/auth";
+import { resolveDisplayFamily } from "../config/curatedTitles/displayFamilies";
+import type { FinSector } from "../lib/search/finTaxonomy";
+
+/**
+ * Validate saved-search family keys against the display-family taxonomy.
+ * Returns the normalized (deduped) keys, or an error message on unknown keys.
+ */
+const validateFamilies = (
+  families: string[] | undefined,
+  sector: string | null,
+): { ok: true; families: string[] } | { ok: false; message: string } => {
+  if (!families || families.length === 0) return { ok: true, families: [] };
+  const sectorFilter = (sector as FinSector | null) ?? null;
+  const out: string[] = [];
+  for (const raw of families) {
+    const key = raw.trim();
+    if (!key) continue;
+    if (!resolveDisplayFamily(key, sectorFilter)) {
+      return {
+        ok: false,
+        message: `Unknown family "${key}"${sector ? ` for sector ${sector}` : ""}.`,
+      };
+    }
+    if (!out.includes(key)) out.push(key);
+  }
+  return { ok: true, families: out };
+};
 
 const router: IRouter = Router();
 
@@ -22,6 +49,7 @@ const toDto = (row: SavedJobSearch): Record<string, unknown> => ({
   query: row.query,
   location: row.location,
   sector: row.sector,
+  families: row.families ?? [],
   sourceType: row.sourceType,
   alertEnabled: row.alertEnabled,
   lastRunAt: row.lastRunAt?.toISOString() ?? null,
@@ -59,6 +87,11 @@ router.post("/job-searches", async (req, res): Promise<void> => {
     return;
   }
   const body = parsed.data;
+  const familiesCheck = validateFamilies(body.families, body.sector ?? null);
+  if (!familiesCheck.ok) {
+    res.status(400).json({ message: familiesCheck.message });
+    return;
+  }
   const [row] = await db
     .insert(savedJobSearchesTable)
     .values({
@@ -68,6 +101,7 @@ router.post("/job-searches", async (req, res): Promise<void> => {
       query: body.query?.trim() ?? "",
       location: body.location?.trim() ?? "",
       sector: body.sector ?? null,
+      families: familiesCheck.families,
       sourceType: body.sourceType ?? null,
       alertEnabled: body.alertEnabled ?? false,
     })

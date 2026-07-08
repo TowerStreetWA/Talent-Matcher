@@ -78,10 +78,18 @@ describe("classifyVacancy", () => {
 
   it("leaves non-FS roles untagged", () => {
     expect(classifyVacancy({ title: "Registered Nurse", companyName: "NHS" }).sector).toBeNull();
-    expect(classifyVacancy({ title: "Frontend Engineer", companyName: "Monzo" }).sector).toBeNull();
+    expect(
+      classifyVacancy({ title: "Warehouse Operative", companyName: "Logistics Co" }).sector,
+    ).toBeNull();
     expect(
       classifyVacancy({ title: "Marketing Manager", companyName: "Acme Media" }).sector,
     ).toBeNull();
+  });
+
+  it("classifies IT/tech roles under the it_tech sector", () => {
+    const tags = classifyVacancy({ title: "Frontend Engineer", companyName: "Monzo" });
+    expect(tags.sector).toBe("it_tech");
+    expect(tags.fn).toBe("software_engineering");
   });
 
   it("does not tag a generic analyst just because of the word analyst", () => {
@@ -142,10 +150,16 @@ describe("inferQueryFinIntent", () => {
   });
 
   it("has no FS intent for generic queries", () => {
-    expect(inferQueryFinIntent(normalizeQuery("frontend engineer")).hasFinIntent).toBe(false);
+    expect(inferQueryFinIntent(normalizeQuery("warehouse operative")).hasFinIntent).toBe(false);
     expect(inferQueryFinIntent(normalizeQuery("marketing manager")).hasFinIntent).toBe(false);
     expect(inferQueryFinIntent(normalizeQuery("registered nurse")).hasFinIntent).toBe(false);
     expect(inferQueryFinIntent(normalizeQuery("analyst")).hasFinIntent).toBe(false);
+  });
+
+  it("detects it_tech intent for tech queries", () => {
+    const intent = inferQueryFinIntent(normalizeQuery("frontend engineer"));
+    expect(intent.hasFinIntent).toBe(true);
+    expect(intent.sector).toBe("it_tech");
   });
 });
 
@@ -268,15 +282,15 @@ describe("FS ranking boosts", () => {
   });
 
   it("does not change scores for non-FS queries", () => {
-    const nq = normalizeQuery("frontend engineer");
+    const nq = normalizeQuery("marketing manager");
     const intent = inferQueryFinIntent(nq);
-    const feJob = job({
-      title: "Frontend Engineer",
-      companyName: "Monzo",
+    const mmJob = job({
+      title: "Marketing Manager",
+      companyName: "Acme Media",
       sourceType: "direct_employer",
     });
-    const withIntent = scoreJob(nq, feJob, intent);
-    const without = scoreJob(nq, feJob, null);
+    const withIntent = scoreJob(nq, mmJob, intent);
+    const without = scoreJob(nq, mmJob, null);
     expect(withIntent.total).toBe(without.total);
     expect(withIntent.finSector).toBe(0);
     expect(withIntent.finDirectEmployer).toBe(0);

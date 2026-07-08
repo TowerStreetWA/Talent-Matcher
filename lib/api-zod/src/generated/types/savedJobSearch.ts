@@ -12,10 +12,12 @@ export interface SavedJobSearch {
   query: string;
   location: string;
   /**
-     * insurance/banking/pensions/asset_management or null
+     * insurance/banking/pensions/asset_management/accountancy_finance/it_tech or null
      * @nullable
      */
   sector?: string | null;
+  /** Display-family keys stored with the search */
+  families: string[];
   /**
      * direct_employer/google_jobs/job_board/agency or null
      * @nullable

@@ -15,4 +15,5 @@ export const SearchJobsSector = {
   pensions: 'pensions',
   asset_management: 'asset_management',
   accountancy_finance: 'accountancy_finance',
+  it_tech: 'it_tech',
 } as const;

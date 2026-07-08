@@ -6,13 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-/**
- * @nullable
- */
-export type SavedJobSearchInputSector = typeof SavedJobSearchInputSector[keyof typeof SavedJobSearchInputSector] | null;
+export type ListJobSearchFamiliesSector = typeof ListJobSearchFamiliesSector[keyof typeof ListJobSearchFamiliesSector];
 
 
-export const SavedJobSearchInputSector = {
+export const ListJobSearchFamiliesSector = {
   insurance: 'insurance',
   banking: 'banking',
   pensions: 'pensions',

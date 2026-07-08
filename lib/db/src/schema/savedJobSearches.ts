@@ -21,8 +21,11 @@ export const savedJobSearchesTable = pgTable("saved_job_searches", {
   name: text("name").notNull(),
   query: text("query").notNull().default(""),
   location: text("location").notNull().default(""),
-  // FS sector tag (insurance | banking | pensions | asset_management) or null.
+  // FS sector tag (insurance | banking | pensions | asset_management |
+  // accountancy_finance | it_tech) or null.
   sector: text("sector"),
+  // Display-family keys (config/curatedTitles/displayFamilies.ts) or empty.
+  families: jsonb("families").$type<string[]>().notNull().default([]),
   // Source-type filter (direct_employer | google_jobs | job_board | agency) or null.
   sourceType: text("source_type"),
   alertEnabled: boolean("alert_enabled").notNull().default(false),

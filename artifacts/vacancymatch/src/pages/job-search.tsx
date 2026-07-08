@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useSearchJobs,
+  useListJobSearchFamilies,
+  getListJobSearchFamiliesQueryKey,
   useListSavedJobSearches,
   useCreateSavedJobSearch,
   useUpdateSavedJobSearch,
@@ -60,6 +62,7 @@ const SECTORS: { value: SearchJobsSector; label: string }[] = [
   { value: "pensions", label: "Pensions" },
   { value: "asset_management", label: "Asset Management" },
   { value: "accountancy_finance", label: "Accountancy & Finance" },
+  { value: "it_tech", label: "IT & Tech" },
 ];
 
 const SOURCES: { value: SearchJobsSource; label: string }[] = [
@@ -88,17 +91,23 @@ interface FilterState {
   location: string;
   sector: SearchJobsSector | "all";
   source: SearchJobsSource | "all";
+  families: string[];
 }
 
 const initialParams = (): FilterState => {
   const params = new URLSearchParams(window.location.search);
   const sectorParam = params.get("sector") ?? "";
   const sourceParam = params.get("source") ?? "";
+  const familiesParam = params.get("families") ?? "";
   return {
     q: params.get("q") ?? "",
     location: params.get("location") ?? "",
     sector: isSector(sectorParam) ? sectorParam : "all",
     source: isSource(sourceParam) ? sourceParam : "all",
+    families: familiesParam
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean),
   };
 };
 
@@ -108,6 +117,12 @@ const savedSearchSummary = (s: SavedJobSearchDto): string => {
   if (s.location) parts.push(s.location);
   const sec = sectorLabel(s.sector);
   if (sec) parts.push(sec);
+  if (s.families.length > 0)
+    parts.push(
+      s.families.length === 1
+        ? "1 family"
+        : `${s.families.length} families`,
+    );
   const src = sourceLabel(s.sourceType);
   if (src) parts.push(src);
   return parts.length > 0 ? parts.join(" · ") : "All jobs";
@@ -119,18 +134,45 @@ export default function JobSearch() {
   const [location, setLocation] = useState(initial.location);
   const [sector, setSector] = useState<SearchJobsSector | "all">(initial.sector);
   const [source, setSource] = useState<SearchJobsSource | "all">(initial.source);
+  const [families, setFamilies] = useState<string[]>(initial.families);
   const [page, setPage] = useState(1);
   const debouncedQ = useDebounce(q, 300);
   const debouncedLocation = useDebounce(location, 300);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedQ, debouncedLocation, sector, source]);
+  }, [debouncedQ, debouncedLocation, sector, source, families]);
+
+  const familyParams = sector !== "all" ? { sector } : undefined;
+  const { data: familyCatalog } = useListJobSearchFamilies(familyParams, {
+    query: {
+      enabled: sector !== "all",
+      queryKey: getListJobSearchFamiliesQueryKey(familyParams),
+    },
+  });
+  const sectorFamilies =
+    sector !== "all"
+      ? (familyCatalog?.sectors.find((s) => s.sector === sector)?.families ?? [])
+      : [];
+  const familyLabel = (key: string): string =>
+    sectorFamilies.find((f) => f.key === key)?.label ?? key;
+
+  const changeSector = (next: SearchJobsSector | "all"): void => {
+    setSector(next);
+    // Family keys are sector-scoped; clear them whenever the sector changes.
+    setFamilies([]);
+  };
+  const toggleFamily = (key: string): void => {
+    setFamilies((prev) =>
+      prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key],
+    );
+  };
 
   const { data, isLoading } = useSearchJobs({
     ...(debouncedQ.trim() ? { q: debouncedQ.trim() } : {}),
     ...(debouncedLocation.trim() ? { location: debouncedLocation.trim() } : {}),
     ...(sector !== "all" ? { sector } : {}),
+    ...(families.length > 0 ? { families: families.join(",") } : {}),
     ...(source !== "all" ? { source } : {}),
     page,
     pageSize: PAGE_SIZE,
@@ -179,6 +221,7 @@ export default function JobSearch() {
           query: debouncedQ.trim(),
           location: debouncedLocation.trim(),
           sector: sector !== "all" ? sector : null,
+          families,
           sourceType: source !== "all" ? source : null,
           alertEnabled: saveAlerts,
         },
@@ -191,6 +234,7 @@ export default function JobSearch() {
           track("job_search_saved", {
             query: debouncedQ.trim(),
             ...(sector !== "all" ? { sector } : {}),
+            ...(families.length > 0 ? { families: families.join(",") } : {}),
             alertsEnabled: saveAlerts,
           });
         },
@@ -205,6 +249,7 @@ export default function JobSearch() {
     setQ(s.query);
     setLocation(s.location);
     setSector(s.sector && isSector(s.sector) ? s.sector : "all");
+    setFamilies(s.families ?? []);
     setSource(s.sourceType && isSource(s.sourceType) ? s.sourceType : "all");
     setPage(1);
     track("job_search_saved_run", { savedSearchId: s.id });
@@ -245,12 +290,14 @@ export default function JobSearch() {
       Boolean(debouncedQ.trim()) ||
       Boolean(debouncedLocation.trim()) ||
       sector !== "all" ||
+      families.length > 0 ||
       source !== "all";
     if (!hasQuery) return;
     track("job_search_performed", {
       query: debouncedQ.trim(),
       location: debouncedLocation.trim(),
       ...(sector !== "all" ? { sector } : {}),
+      ...(families.length > 0 ? { families: families.join(",") } : {}),
       ...(source !== "all" ? { source } : {}),
       page,
       resultCount: data.total,
@@ -260,20 +307,23 @@ export default function JobSearch() {
         query: debouncedQ.trim(),
         location: debouncedLocation.trim(),
         ...(sector !== "all" ? { sector } : {}),
+        ...(families.length > 0 ? { families: families.join(",") } : {}),
         ...(source !== "all" ? { source } : {}),
       });
     }
-  }, [data, isLoading, debouncedQ, debouncedLocation, sector, source, page]);
+  }, [data, isLoading, debouncedQ, debouncedLocation, sector, families, source, page]);
 
   const hasActiveFilters =
     Boolean(debouncedQ.trim()) ||
     Boolean(debouncedLocation.trim()) ||
     sector !== "all" ||
+    families.length > 0 ||
     source !== "all";
   const clearAll = (): void => {
     setQ("");
     setLocation("");
     setSector("all");
+    setFamilies([]);
     setSource("all");
   };
 
@@ -310,7 +360,7 @@ export default function JobSearch() {
           </div>
           <Select
             value={sector}
-            onValueChange={(v) => setSector(v as SearchJobsSector | "all")}
+            onValueChange={(v) => changeSector(v as SearchJobsSector | "all")}
           >
             <SelectTrigger className="h-11 w-full sm:w-48 bg-card" data-testid="select-job-search-sector">
               <SelectValue placeholder="Sector" />
@@ -425,13 +475,44 @@ export default function JobSearch() {
             variant={sector === s.value ? "default" : "outline"}
             size="sm"
             className="h-7 rounded-full text-xs"
-            onClick={() => setSector(sector === s.value ? "all" : s.value)}
+            onClick={() => changeSector(sector === s.value ? "all" : s.value)}
             data-testid={`chip-sector-${s.value}`}
           >
             {s.label}
           </Button>
         ))}
       </div>
+
+      {sector !== "all" && sectorFamilies.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2" data-testid="row-family-chips">
+          <span className="text-xs text-muted-foreground mr-1">
+            {sectorLabel(sector)} families:
+          </span>
+          {sectorFamilies.map((f) => (
+            <Button
+              key={f.key}
+              variant={families.includes(f.key) ? "default" : "outline"}
+              size="sm"
+              className="h-7 rounded-full text-xs"
+              onClick={() => toggleFamily(f.key)}
+              data-testid={`chip-family-${f.key}`}
+            >
+              {f.label}
+            </Button>
+          ))}
+          {families.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={() => setFamilies([])}
+              data-testid="button-clear-families"
+            >
+              Clear families
+            </Button>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 text-sm min-h-6">
         {debouncedQ.trim() && (
@@ -453,11 +534,23 @@ export default function JobSearch() {
         {sector !== "all" && (
           <Badge variant="secondary" className="gap-1 font-normal">
             Sector: {sectorLabel(sector)}
-            <button aria-label="Clear sector filter" onClick={() => setSector("all")} className="ml-0.5 hover:text-foreground">
+            <button aria-label="Clear sector filter" onClick={() => changeSector("all")} className="ml-0.5 hover:text-foreground">
               <X className="h-3 w-3" />
             </button>
           </Badge>
         )}
+        {families.map((key) => (
+          <Badge key={key} variant="secondary" className="gap-1 font-normal">
+            Family: {familyLabel(key)}
+            <button
+              aria-label={`Clear family filter ${familyLabel(key)}`}
+              onClick={() => toggleFamily(key)}
+              className="ml-0.5 hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
         {source !== "all" && (
           <Badge variant="secondary" className="gap-1 font-normal">
             Source: {sourceLabel(source)}
@@ -499,18 +592,24 @@ export default function JobSearch() {
             <Briefcase className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-medium">No jobs found</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-md text-center">
-              No jobs found for this combination. Try broadening the title,
-              removing some filters, or switching sector.
+              {families.length > 0
+                ? "No jobs match the selected families. Try removing a family filter, broadening the title, or switching sector."
+                : "No jobs found for this combination. Try broadening the title, removing some filters, or switching sector."}
             </p>
             {hasActiveFilters && (
               <div className="flex gap-2 mt-4">
+                {families.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFamilies([])}>
+                    Clear families
+                  </Button>
+                )}
                 {debouncedLocation.trim() && (
                   <Button variant="outline" size="sm" onClick={() => setLocation("")}>
                     Remove location
                   </Button>
                 )}
                 {sector !== "all" && (
-                  <Button variant="outline" size="sm" onClick={() => setSector("all")}>
+                  <Button variant="outline" size="sm" onClick={() => changeSector("all")}>
                     All sectors
                   </Button>
                 )}
@@ -688,6 +787,7 @@ export default function JobSearch() {
                 query: debouncedQ.trim(),
                 location: debouncedLocation.trim(),
                 sector: sector !== "all" ? sector : null,
+                families,
                 sourceType: source !== "all" ? source : null,
                 alertEnabled: false,
                 lastRunAt: null,

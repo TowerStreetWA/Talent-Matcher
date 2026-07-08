@@ -20,10 +20,12 @@ describe("resolveSectorInput", () => {
     expect(resolveSectorInput("pension")).toBe("pensions");
     expect(resolveSectorInput("London Market")).toBe("insurance");
     expect(resolveSectorInput("wealth management")).toBe("asset_management");
+    expect(resolveSectorInput("technology")).toBe("it_tech");
+    expect(resolveSectorInput("IT")).toBe("it_tech");
   });
 
   it("returns null for unknown or empty input", () => {
-    expect(resolveSectorInput("technology")).toBeNull();
+    expect(resolveSectorInput("hospitality")).toBeNull();
     expect(resolveSectorInput("")).toBeNull();
     expect(resolveSectorInput(null)).toBeNull();
   });
