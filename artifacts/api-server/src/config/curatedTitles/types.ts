@@ -22,4 +22,10 @@ export interface CuratedTitleEntry {
   variants: string[];
   /** Optional typical seniority band for the canonical title. */
   seniority?: "junior" | "mid" | "senior" | "executive";
+  /**
+   * Optional free-form grouping tags (e.g. "executive_leadership",
+   * "reinsurance", "health_medical_specialist"). Config-only for now —
+   * not yet consumed by search or classification.
+   */
+  tags?: string[];
 }

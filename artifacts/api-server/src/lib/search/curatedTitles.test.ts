@@ -13,8 +13,10 @@ describe("lookupCuratedTitle", () => {
   });
 
   it("matches a variant spelling", () => {
-    const match = lookupCuratedTitle("claims adjuster");
+    const match = lookupCuratedTitle("claims negotiator");
     expect(match?.entry.canonicalTitle).toBe("Claims Handler");
+    expect(lookupCuratedTitle("field adjuster")?.entry.canonicalTitle).toBe("Claims Adjuster");
+    expect(lookupCuratedTitle("treaty underwriter")?.entry.tags).toContain("reinsurance");
   });
 
   it("matches a multi-word variant contained in a longer title", () => {
@@ -37,6 +39,23 @@ describe("lookupCuratedTitle", () => {
     expect(lookupCuratedTitle("Software Engineer")).toBeNull();
     expect(lookupCuratedTitle(null)).toBeNull();
     expect(lookupCuratedTitle("")).toBeNull();
+  });
+
+  it("does not force-tag cross-sector titles lacking an insurance qualifier", () => {
+    // These titles exist widely outside insurance; curated entries only carry
+    // insurance-qualified variants, so bare forms must not match.
+    expect(lookupCuratedTitle("Data Protection Officer")).toBeNull();
+    expect(lookupCuratedTitle("Account Handler")).toBeNull();
+    expect(lookupCuratedTitle("Head of Placement")).toBeNull();
+    expect(lookupCuratedTitle("Conduct Risk Manager")).toBeNull();
+    expect(lookupCuratedTitle("Chief Risk Officer")).toBeNull();
+    expect(lookupCuratedTitle("Operational Risk Manager")).toBeNull();
+    expect(lookupCuratedTitle("Distribution Manager")).toBeNull();
+    expect(lookupCuratedTitle("Head of Pricing")).toBeNull();
+    expect(lookupCuratedTitle("Sales Agent")).toBeNull();
+    // ...while their insurance-qualified forms do match
+    expect(lookupCuratedTitle("Conduct Risk Manager (Insurance)")?.entry.family).toBe("compliance");
+    expect(lookupCuratedTitle("Insurance Account Handler")?.entry.family).toBe("client_service");
   });
 });
 
@@ -68,11 +87,11 @@ describe("curatedSynonymGroups + search expansion", () => {
     const groups = curatedSynonymGroups();
     const claims = groups.find((g) => g.includes("claims handler"));
     expect(claims).toBeDefined();
-    expect(claims).toContain("claims adjuster");
+    expect(claims).toContain("claims negotiator");
   });
 
   it("expands a curated variant into its siblings in query variants", () => {
-    const nq = normalizeQuery("claims adjuster");
+    const nq = normalizeQuery("claims negotiator");
     expect(nq.variants).toContain("claims handler");
   });
 

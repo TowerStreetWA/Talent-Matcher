@@ -1,0 +1,478 @@
+# VacancyMatch AI — Replit Prompt for Source Truthfulness, Freshness, and Insurance Taxonomy
+
+Please implement a refinement phase for VacancyMatch AI focused on source truthfulness, freshness, ingestion transparency, and curated insurance job-title taxonomy support.
+
+## GOAL
+
+We have completed the ingestion audit and discovered that the old “LinkedIn Jobs Crawler” source in the Sources panel is not a real crawler — it is a seeded demo row with static demo counts. This caused misleading expectations.
+
+A compliant real path is now in place via Google Jobs pagination + attribution of LinkedIn-hosted jobs as “LinkedIn Jobs (via Google)”.
+
+This phase should:
+1. Remove or clearly relabel the fake LinkedIn seeded source so it cannot be mistaken for a live ingestion source.
+2. Add expiry/inactive logic so jobs do not remain active forever when no longer re-discovered.
+3. Improve the Sources page so it shows a clearer ingestion funnel:
+   - fetched
+   - active
+   - canonical
+   - duplicates
+   - last successful run
+4. Add a config-driven taxonomy layer for curated industry job-title lists, starting with insurance, using the supplied insurance title list below.
+
+Do not change candidate matching, billing, or auth.
+
+## PART 1 — SOURCE TRUTHFULNESS
+
+### Objective
+Ensure the Sources page accurately represents real ingestion sources.
+
+### Implementation
+
+- Find the seeded demo source row for “LinkedIn Jobs Crawler”.
+- Either:
+  - remove it completely from production/demo source displays, or
+  - relabel it very clearly as a seeded/demo source so no one can mistake it for a live source.
+- Prefer removing it from normal production-facing UI if possible.
+- Ensure the real source “LinkedIn Jobs (via Google)” is shown where relevant.
+- Audit other source cards too and confirm none of them are misleading seeded placeholders.
+
+### Acceptance
+A user looking at Sources should immediately understand which sources are real, which are derived, and which are demo-only.
+
+## PART 2 — EXPIRY / INACTIVE LOGIC
+
+### Objective
+Jobs should not stay active forever if they stop appearing in ingestion runs.
+
+### Implementation
+
+- Add a freshness model for ingested jobs, for example:
+  - track `last_seen_at` on each vacancy/source record,
+  - mark jobs inactive if not re-discovered within a configurable threshold.
+- Make the threshold configurable by `source_type` / `source_provider` if feasible.
+  Example:
+  - Google Jobs: inactive after X days not seen
+  - Company career sites: inactive after Y days not seen
+  - LinkedIn Jobs (via Google): inactive after Z days not seen
+- Add a background/internal sweep job that:
+  - checks all active jobs,
+  - marks stale jobs inactive,
+  - records counts of jobs inactivated per source.
+- Do this additively, without breaking existing canonical logic.
+
+### Acceptance
+Jobs that disappear from source feeds eventually become inactive and no longer inflate active counts forever.
+
+## PART 3 — SOURCES PAGE: FUNNEL METRICS
+
+### Objective
+Make the Sources page more transparent and useful.
+
+Update each source card to show some or all of:
+
+- fetched (latest run or rolling recent total)
+- active jobs
+- canonical jobs
+- duplicates merged
+- last successful run
+- source type / provider
+- source health/status
+
+If necessary, add a lightweight source metrics structure or endpoint to support this.
+
+### Important
+
+- Keep the UI clean and readable.
+- Do not overload the cards with too much text.
+- If needed, show the core metrics on the card and fuller detail in a modal or drawer.
+
+At minimum, the user should be able to tell:
+- how many jobs came in,
+- how many are currently active,
+- whether the source is healthy,
+- when it last really ran,
+- and why canonical active counts may be lower than raw fetched counts.
+
+Also add concise help text/tooltips where useful:
+- “Active” = currently active and not stale
+- “Canonical” = deduplicated jobs shown in search/matching
+
+### Acceptance
+The Sources page clearly communicates why a source might fetch 240 jobs but expose fewer canonical active jobs.
+
+## PART 4 — CURATED INSURANCE JOB TITLE TAXONOMY
+
+### Objective
+Add a config-driven taxonomy structure for curated industry job-title lists, starting with insurance.
+
+### Implementation requirements
+
+- Add a file/config-driven taxonomy layer.
+- Support at least these fields:
+  - industry
+  - family
+  - canonicalTitle
+  - variants
+  - optional seniority
+  - optional tags
+
+A good target structure would be JSON or TypeScript config objects like:
+
+```ts
+{
+  industry: "insurance",
+  family: "underwriting",
+  canonicalTitle: "Underwriter",
+  variants: ["Assistant Underwriter", "Junior Underwriter", "Senior Underwriter"],
+  seniority: "mixed",
+  tags: ["underwriting"]
+}
+```
+
+- Create a dedicated insurance taxonomy file/place to store the supplied curated insurance job titles.
+- Use this taxonomy in at least one meaningful part of the system:
+  - search normalization, and/or
+  - sector/function tagging, and/or
+  - ranking boosts, and/or
+  - candidate-side role inference
+
+For this phase:
+- implement the structure and loader
+- paste and structure the supplied insurance title list below
+- wire it into the search/tagging pipeline in a testable way
+
+Do not build admin UI for this. File/config-driven is preferred.
+
+## INSURANCE TAXONOMY DATA TO INGEST
+
+Please structure the following supplied job titles into sensible insurance families and canonical groups.
+
+Use your judgment to group them into families such as:
+- executive_leadership
+- underwriting
+- actuarial
+- claims
+- broking_distribution
+- sales_account_management
+- risk_compliance
+- product_marketing
+- operations_administration
+- finance_investment
+- data_change_technology
+- health_medical_specialist
+- reinsurance
+
+Where a title could fit more than one family, choose the most commercially useful primary family.
+Where obvious duplicates exist, normalize them under one canonical title with variants.
+
+### INSURANCE JOB TITLES
+
+Chief Insurance Officer
+Chief Underwriting Officer
+Chief Claims Officer
+Chief Risk Officer
+Chief Actuary
+Chief Actuarial Officer
+Chief Broking Officer
+Chief Distribution Officer
+Chief Compliance Officer
+Head of Insurance
+Head of Underwriting
+Head of Claims
+Head of Pricing
+Head of Actuarial
+Head of Risk
+Head of Enterprise Risk Management
+Head of Broking
+Head of Placement
+Head of Loss Control
+Head of Risk Engineering
+Head of Product (Insurance)
+Insurance Director
+Director of Insurance
+
+Underwriter
+Assistant Underwriter
+Underwriting Assistant
+Junior Underwriter
+Senior Underwriter
+Lead Underwriter
+Principal Underwriter
+Underwriting Manager
+Underwriting Team Leader
+Underwriting Supervisor
+Underwriting Director
+Portfolio Underwriter
+Portfolio Manager (Underwriting)
+Product Underwriter
+Line Underwriter
+Technical Underwriter
+Commercial Underwriter
+Personal Lines Underwriter
+Specialty Underwriter
+Reinsurance Underwriter
+Treaty Underwriter
+Facultative Underwriter
+Medical Underwriter
+Life Underwriter
+Health Underwriter
+Motor Underwriter
+Auto Underwriter
+Property Underwriter
+Casualty Underwriter
+Liability Underwriter
+Marine Underwriter
+Aviation Underwriter
+Energy Underwriter
+Cyber Underwriter
+Agriculture Underwriter
+Financial Lines Underwriter
+
+Actuary
+Trainee Actuary
+Actuarial Trainee
+Graduate Actuarial Analyst
+Graduate Actuary
+Actuarial Analyst
+Senior Actuarial Analyst
+Pricing Analyst (Insurance)
+Senior Pricing Analyst
+Pricing Actuary
+Reserving Actuary
+Capital Actuary
+Capital Modelling Actuary
+Risk Actuary
+Life Actuary
+Non-life Actuary
+General Insurance Actuary
+Pensions Actuary
+Actuarial Consultant
+Actuarial Manager
+Head of Actuarial
+Chief Actuary
+
+Claims Handler
+Claims Advisor
+Claims Representative
+Claims Adjuster
+Adjuster
+Field Adjuster
+Field Claims Adjuster
+Claims Examiner
+Claims Assessor
+Claims Analyst
+Claims Investigator
+Insurance Investigator
+Insurance Fraud Investigator
+Special Investigations Unit Investigator
+Loss Adjuster
+Senior Claims Adjuster
+Senior Claims Handler
+Claims Team Leader
+Claims Supervisor
+Claims Manager
+Head of Claims
+Claims Director
+Claims Consultant
+FNOL Claims Handler
+First Notification of Loss Handler
+Motor Claims Handler
+Motor Claims Engineer
+Property Claims Handler
+Casualty Claims Handler
+Liability Claims Handler
+Personal Injury Claims Handler
+Complex Claims Adjuster
+Major Loss Adjuster
+Catastrophe Claims Adjuster
+CAT Adjuster
+PPI Claims Handler
+
+Insurance Broker
+Commercial Insurance Broker
+Corporate Insurance Broker
+Reinsurance Broker
+Wholesale Broker
+Retail Broker
+Account Broker
+Broking Executive
+Insurance Producer
+Insurance Agent
+Sales Agent
+Captive Insurance Agent
+Independent Insurance Agent
+Health Insurance Agent
+Life Insurance Agent
+Insurance Adviser
+Insurance Advisor
+Protection Adviser
+Protection Advisor
+Protection Officer
+Protection Consultant
+Financial Adviser (Protection)
+Employee Benefits Consultant
+Employee Benefits Broker
+Business Development Manager (Insurance)
+Distribution Manager
+Regional Distribution Manager
+Affinity Partnerships Manager (Insurance)
+Bancassurance Manager
+Bancassurance Specialist
+
+Insurance Sales Representative
+Insurance Sales Executive
+Insurance Sales Manager
+Telesales Executive (Insurance)
+Call Centre Agent (Insurance)
+Customer Service Representative (Insurance)
+Insurance Customer Service Agent
+Policy Service Representative
+Client Services Executive (Insurance)
+Account Manager (Insurance)
+Key Account Manager (Insurance)
+Corporate Account Manager
+Client Relationship Manager (Insurance)
+Retention Specialist (Insurance)
+Renewal Specialist
+Renewals Executive
+New Business Executive (Insurance)
+
+Risk Manager (Insurance)
+Enterprise Risk Manager
+Financial Risk Specialist (Insurance)
+Operational Risk Manager
+Credit Risk Manager (Insurance)
+Risk Analyst
+Insurance Risk Analyst
+Loss Control Specialist
+Loss Control Consultant
+Risk Engineer
+Risk Control Engineer
+Insurance Risk Engineer
+Insurance Risk Surveyor
+Health and Safety Risk Consultant (Insurance)
+Compliance Officer (Insurance)
+Insurance Compliance Officer
+Regulatory Compliance Manager (Insurance)
+Conduct Risk Manager
+Sanctions Screening Specialist (Insurance)
+Financial Crime Officer (Insurance)
+Complaints Handler (Insurance)
+Complaints Manager (Insurance)
+
+Product Manager (Insurance)
+Insurance Product Owner
+Proposition Manager
+Insurance Proposition Manager
+Policy Development Manager
+Insurance Product Analyst
+Market Development Manager (Insurance)
+Insurance Marketing Manager
+Digital Marketing Manager (Insurance)
+Brand Manager (Insurance)
+Customer Insight Analyst (Insurance)
+CRM Manager (Insurance)
+Distribution Marketing Manager (Insurance)
+
+Insurance Administrator
+Insurance Administrative Assistant
+Insurance Clerk
+Insurance Officer
+Policy Processing Clerk
+Insurance Policy Processing Clerk
+Insurance Claims and Processing Clerk
+Policy Administrator
+Policy Services Administrator
+Documentation Specialist (Insurance)
+Schedule Issuance Clerk
+Endorsements Clerk
+Operations Analyst (Insurance)
+Operations Manager (Insurance)
+Contact Centre Manager (Insurance)
+Business Continuity Manager (Insurance)
+
+Insurance Accountant
+Financial Controller (Insurance)
+Finance Manager (Insurance)
+Financial Analyst (Insurance)
+Investment Analyst (Insurance)
+Asset Liability Management Analyst
+ALM Analyst
+Treasury Analyst (Insurance)
+Capital Management Manager (Insurance)
+
+Insurance Business Analyst
+Business Analyst (General Insurance)
+Business Analyst (Life Insurance)
+Systems Analyst (Insurance)
+Insurance Data Analyst
+Pricing Data Analyst
+Data Scientist (Insurance)
+Portfolio Analyst (Insurance)
+MI Analyst (Insurance)
+Reporting Analyst (Insurance)
+Insurance Product Owner (Digital)
+Digital Transformation Manager (Insurance)
+Underwriting Systems Manager
+Policy Administration System Analyst
+Guidewire Specialist
+Duck Creek Specialist
+Sapiens Specialist
+Insurance Solutions Architect
+Insurance Implementation Consultant
+Insurance Technology Consultant
+
+Medical Underwriter
+Medical Claims Assessor
+Nurse Case Manager (Insurance)
+Clinical Reviewer (Insurance)
+Rehabilitation Case Manager
+Workers’ Compensation Specialist
+Disability Claims Manager
+Life & Health Claims Assessor
+Travel Claims Handler
+Pet Insurance Claims Handler
+Marine Surveyor (Insurance)
+Aviation Surveyor (Insurance)
+
+Reinsurance Underwriter
+Reinsurance Broker
+Reinsurance Analyst
+Reinsurance Technician
+Reinsurance Claims Specialist
+Treaty Underwriter
+Facultative Underwriter
+Retrocession Analyst
+
+## PART 5 — SMALL UX IMPROVEMENTS
+
+- Ensure “LinkedIn Jobs (via Google)” is clearly labeled as derived from Google discovery but LinkedIn-hosted.
+- Add concise help text where useful in Sources.
+- Keep the design calm and product-like.
+
+## CONSTRAINTS
+
+- Do not add direct LinkedIn scraping.
+- Do not change billing, auth, or candidate matching flows.
+- Keep everything additive and explicit.
+- Keep the taxonomy system file/config-driven for now.
+
+## ACCEPTANCE CRITERIA
+
+1. Fake or misleading seeded source rows are removed or clearly labeled.
+2. There is a freshness/expiry system so stale jobs become inactive.
+3. Sources page shows a more honest funnel of ingestion metrics.
+4. A config-driven insurance taxonomy structure exists using the supplied titles.
+5. The insurance taxonomy is used in the search/tagging pipeline in at least a basic, testable way.
+6. Full typecheck passes and existing tests still pass.
+
+## REPORT BACK
+
+When done, please report:
+- Files changed.
+- What happened to the old LinkedIn demo source.
+- How expiry/inactive logic works and thresholds chosen.
+- What metrics are now shown in Sources.
+- The taxonomy file format and where future curated industry title lists should be pasted.
+- Where the taxonomy is used in search/tagging.
+- Typecheck/test outcomes.
