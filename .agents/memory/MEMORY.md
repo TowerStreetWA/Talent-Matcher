@@ -13,4 +13,5 @@
 - [Stripe pricing/currency lessons](stripe-pricing-lessons.md) — Stripe blocks cross-currency checkout for existing customers; catch → 400 + portal; never name a state setter `setInterval`.
 - [Screenshots behind login](screenshot-auth.md) — temp dev-only session-redirect route (removed after use) is how to capture authenticated app-preview screenshots.
 - [Background sweep jobs](background-sweeps.md) — "new since last run" sweeps need a bounded (since, windowEnd] window + pg advisory xact lock; process-local flags don't survive autoscale.
+- [Typed errors in transport try blocks](typed-errors-in-transport-try.md) — config checks inside a fetch try/catch get remapped to generic upstream errors; hoist them before the I/O.
 - [Internal endpoint tenancy](internal-endpoint-tenancy.md) — /internal admin routes are reachable by every tenant's admin; HTTP-triggered mutations must be tenant-scoped, global ops belong in schedulers only.

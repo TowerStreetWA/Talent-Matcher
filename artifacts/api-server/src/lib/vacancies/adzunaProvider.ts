@@ -58,6 +58,12 @@ export function stripAdzunaMarkup(text: string | null | undefined): string | nul
   return cleaned.length > 0 ? cleaned : null;
 }
 
+export function parseAdzunaDate(raw: string | null | undefined): Date | null {
+  if (!raw) return null;
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 export function adzunaSalaryText(
   min: number | null | undefined,
   max: number | null | undefined,
@@ -156,7 +162,7 @@ export const adzunaProvider: VacancyProvider = {
           salaryText: adzunaSalaryText(job.salary_min, job.salary_max),
           descriptionText: stripAdzunaMarkup(job.description),
           skills: [],
-          postedAt: job.created ? new Date(job.created) : null,
+          postedAt: parseAdzunaDate(job.created),
           applyUrl: url,
           sourceType: "job_board",
           sourceProvider: "adzuna_api",

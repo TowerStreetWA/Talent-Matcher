@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { adzunaProvider, adzunaSalaryText, stripAdzunaMarkup } from "./adzunaProvider";
+import {
+  adzunaProvider,
+  adzunaSalaryText,
+  parseAdzunaDate,
+  stripAdzunaMarkup,
+} from "./adzunaProvider";
 import {
   boardPatternsFor,
   resolveBoardPatternCap,
@@ -11,6 +16,15 @@ describe("stripAdzunaMarkup / adzunaSalaryText", () => {
   it("strips <strong> highlight markup", () => {
     expect(stripAdzunaMarkup("Senior <strong>Underwriter</strong>")).toBe("Senior Underwriter");
     expect(stripAdzunaMarkup(null)).toBeNull();
+  });
+
+  it("rejects malformed created timestamps instead of producing Invalid Date", () => {
+    expect(parseAdzunaDate("2026-07-01T00:00:00Z")?.toISOString()).toBe(
+      "2026-07-01T00:00:00.000Z",
+    );
+    expect(parseAdzunaDate("not-a-date")).toBeNull();
+    expect(parseAdzunaDate("")).toBeNull();
+    expect(parseAdzunaDate(null)).toBeNull();
   });
 
   it("formats salary ranges", () => {
