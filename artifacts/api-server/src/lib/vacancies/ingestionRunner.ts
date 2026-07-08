@@ -48,6 +48,10 @@ export interface IngestionSummary {
   clustersTouched: number;
   /** fetched split by the per-vacancy provider attribution (e.g. LinkedIn-via-Google). */
   fetchedByProvider: Record<string, number>;
+  /** newly stored rows (canonical + duplicate) split by provider attribution. */
+  insertedByProvider: Record<string, number>;
+  /** freshness-only bumps of rows that already existed, split by provider. */
+  refreshedByProvider: Record<string, number>;
   warnings: string[];
 }
 
@@ -190,7 +194,12 @@ export async function runVacancyIngestion(opts: {
     refreshedExisting: 0,
     clustersTouched: 0,
     fetchedByProvider: {},
+    insertedByProvider: {},
+    refreshedByProvider: {},
     warnings,
+  };
+  const bump = (map: Record<string, number>, provider: string): void => {
+    map[provider] = (map[provider] ?? 0) + 1;
   };
   const clustersTouched = new Set<string>();
 
@@ -210,6 +219,7 @@ export async function runVacancyIngestion(opts: {
           .set({ lastSeenAt: now })
           .where(eq(jobsTable.id, already.id));
         summary.refreshedExisting += 1;
+        bump(summary.refreshedByProvider, vacancy.sourceProvider);
         continue;
       }
     }
@@ -235,6 +245,7 @@ export async function runVacancyIngestion(opts: {
         .returning();
       if (inserted) existingJobs.push(inserted);
       summary.insertedCanonical += 1;
+      bump(summary.insertedByProvider, vacancy.sourceProvider);
       continue;
     }
 
@@ -282,6 +293,7 @@ export async function runVacancyIngestion(opts: {
       if (inserted) existingJobs.push(inserted);
       summary.insertedCanonical += 1;
       summary.canonicalSwaps += 1;
+      bump(summary.insertedByProvider, vacancy.sourceProvider);
     } else {
       // Existing canonical wins: store the new copy as a duplicate and record
       // it as a backing source on the canonical record (atomically).
@@ -308,6 +320,7 @@ export async function runVacancyIngestion(opts: {
       canonical.backingSources = backing;
       if (inserted) existingJobs.push(inserted);
       summary.insertedDuplicates += 1;
+      bump(summary.insertedByProvider, vacancy.sourceProvider);
     }
   }
 
@@ -320,6 +333,8 @@ export async function runVacancyIngestion(opts: {
         lastSyncAt: now,
         healthStatus: "healthy",
         lastFetchCount: summary.fetchedByProvider[providerKey] ?? 0,
+        lastNewCount: summary.insertedByProvider[providerKey] ?? 0,
+        lastRefreshedCount: summary.refreshedByProvider[providerKey] ?? 0,
       })
       .where(eq(jobSourcesTable.id, touched.id));
   }

@@ -1905,6 +1905,12 @@ components:
         lastFetchCount:
           type: ["integer", "null"]
           description: "Vacancies attributed to this source in its most recent ingestion run"
+        lastNewCount:
+          type: ["integer", "null"]
+          description: "Of the last run's fetches, how many were stored as new jobs for this source"
+        lastRefreshedCount:
+          type: ["integer", "null"]
+          description: "Of the last run's fetches, how many already existed (often first discovered via another source) and were only freshness-bumped"
         createdAt: { type: string }
     JobSourceInput:
       type: object

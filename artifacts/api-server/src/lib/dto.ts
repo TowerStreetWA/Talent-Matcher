@@ -184,6 +184,8 @@ export function toJobSourceDto(s: JobSource, metrics: JobSourceMetrics) {
     canonicalJobs: metrics.canonicalJobs,
     duplicateJobs: metrics.duplicateJobs,
     lastFetchCount: s.lastFetchCount,
+    lastNewCount: s.lastNewCount,
+    lastRefreshedCount: s.lastRefreshedCount,
     createdAt: s.createdAt.toISOString(),
   };
 }

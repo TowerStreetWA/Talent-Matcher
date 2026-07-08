@@ -38,5 +38,15 @@ export interface JobSource {
      * @nullable
      */
   lastFetchCount?: number | null;
+  /**
+     * Of the last run's fetches, how many were stored as new jobs for this source
+     * @nullable
+     */
+  lastNewCount?: number | null;
+  /**
+     * Of the last run's fetches, how many already existed (often first discovered via another source) and were only freshness-bumped
+     * @nullable
+     */
+  lastRefreshedCount?: number | null;
   createdAt: string;
 }

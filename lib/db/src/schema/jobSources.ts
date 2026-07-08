@@ -18,6 +18,11 @@ export const jobSourcesTable = pgTable("job_sources", {
   provider: text("provider"),
   // number of vacancies attributed to this source in its most recent run
   lastFetchCount: integer("last_fetch_count"),
+  // of the last run's fetches: how many were stored as new rows for this source
+  lastNewCount: integer("last_new_count"),
+  // of the last run's fetches: how many already existed (same URL, often first
+  // discovered via another source) and were only freshness-bumped
+  lastRefreshedCount: integer("last_refreshed_count"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

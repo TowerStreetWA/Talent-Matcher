@@ -1253,6 +1253,8 @@ export const ListJobSourcesResponseItem = zod.object({
   "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
   "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
   "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
+  "lastNewCount": zod.number().nullish().describe('Of the last run\'s fetches, how many were stored as new jobs for this source'),
+  "lastRefreshedCount": zod.number().nullish().describe('Of the last run\'s fetches, how many already existed (often first discovered via another source) and were only freshness-bumped'),
   "createdAt": zod.string()
 })
 export const ListJobSourcesResponse = zod.array(ListJobSourcesResponseItem)
@@ -1288,6 +1290,8 @@ export const CreateJobSourceResponse = zod.object({
   "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
   "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
   "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
+  "lastNewCount": zod.number().nullish().describe('Of the last run\'s fetches, how many were stored as new jobs for this source'),
+  "lastRefreshedCount": zod.number().nullish().describe('Of the last run\'s fetches, how many already existed (often first discovered via another source) and were only freshness-bumped'),
   "createdAt": zod.string()
 })
 
@@ -1325,6 +1329,8 @@ export const UpdateJobSourceResponse = zod.object({
   "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
   "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
   "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
+  "lastNewCount": zod.number().nullish().describe('Of the last run\'s fetches, how many were stored as new jobs for this source'),
+  "lastRefreshedCount": zod.number().nullish().describe('Of the last run\'s fetches, how many already existed (often first discovered via another source) and were only freshness-bumped'),
   "createdAt": zod.string()
 })
 

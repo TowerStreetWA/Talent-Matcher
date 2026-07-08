@@ -240,7 +240,16 @@ export default function Sources() {
                     {source.lastSyncAt ? `Synced ${formatDistanceToNow(new Date(source.lastSyncAt), { addSuffix: true })}` : 'Never synced'}
                   </span>
                   {source.lastFetchCount != null && (
-                    <span data-testid={`text-last-fetch-${source.id}`}>Last run: {source.lastFetchCount} fetched</span>
+                    <span data-testid={`text-last-fetch-${source.id}`}>
+                      Last run: {source.lastFetchCount} fetched
+                      {source.lastNewCount != null && source.lastRefreshedCount != null && source.lastFetchCount > 0 && (
+                        <> · {source.lastNewCount} new
+                          {source.lastRefreshedCount > 0 && (
+                            <> · {source.lastRefreshedCount} already tracked</>
+                          )}
+                        </>
+                      )}
+                    </span>
                   )}
                 </div>
                 {source.baseUrl && (
