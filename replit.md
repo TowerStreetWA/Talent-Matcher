@@ -111,7 +111,14 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - `jobs.sector_tag` (nullable, additive) stores the pattern's sectorTag; query-time classification stays the fallback for untagged rows
 - POST `/internal/ingestion/run-patterns` (`{patterns?}`, admin+, audit-logged, NOT in OpenAPI) runs configured patterns sequentially + returns per-pattern summaries and the funnel. Run patterns one per curl call — a full multi-pattern run over HTTP can exceed safe request duration
 - Metrics: `vacancy_ingestion` log now has runId/stored/fetchedByProvider; `logCanonicalFunnel(tenantId)` logs `vacancy_canonical_funnel` (per-provider total/active/inactive/duplicates/canonicalActive). ingestionRunner routes job_sources rows per-vacancy sourceProvider
-- Known gap: no expiry sweep — ingested jobs stay active forever (flagged in the audit doc)
+- Expiry gap closed in Phase 15 (see below)
+
+## Source truthfulness & freshness (Phase 15)
+
+- Schema (additive): `jobs.last_seen_at` (bumped on re-discovery; discoveredAt is now first-seen only); `job_sources.is_demo` (seeded demo sources labeled, never live), `.provider` (machine id: google_jobs_serpapi / linkedin_via_google_jobs / company_site), `.last_fetch_count`
+- Expiry sweep: `lib/vacancies/expirySweep.ts` — every 6h (60s first pass, advisory xact lock), marks ingestion-backed jobs (`sourceProvider` set) `expired` when `coalesce(lastSeenAt, discoveredAt, createdAt)` exceeds thresholds in `config/ingestionFreshness.ts` (google/linkedin 14d, company_site 21d, default 30d — extend config, not code). Manual trigger: POST `/internal/ingestion/expire-stale` (admin+, audited, 409 if lock held). Manual/demo jobs never expire
+- Sources funnel: JobSource DTO adds isDemo/provider/totalJobs/activeJobs/canonicalJobs/duplicateJobs/lastFetchCount (`jobCount` now = activeJobs, was all-status). sources.tsx: metric grid + tooltips, amber "Demo data" badge, LinkedIn-via-Google derivation note
+- Curated titles: `config/curatedTitles/` (types.ts + insurance.ts ~15 entries, PASTE-HERE comment; new industries = new file spread into index.ts). Loader `lib/search/curatedTitles.ts`: exact-then-longest-contained variant match (single-word variants exact-only); feeds classifyVacancy override (curated title beats term scoring) + curated synonym groups merged into normalize.ts query expansion. Tests: `curatedTitles.test.ts`
 
 ## Search quality (Phase 5)
 

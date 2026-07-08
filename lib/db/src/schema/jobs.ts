@@ -41,6 +41,9 @@ export const jobsTable = pgTable("jobs", {
   // canonical job detail URL at the source
   sourceUrl: text("source_url"),
   discoveredAt: timestamp("discovered_at", { withTimezone: true }),
+  // freshness: bumped every time an ingestion run re-discovers this vacancy;
+  // the expiry sweep marks ingested jobs "expired" when this goes stale
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
   // sector tag from the ingestion search pattern (e.g. "insurance"); null for
   // legacy/manual rows — query-time classification remains the fallback
   sectorTag: text("sector_tag"),

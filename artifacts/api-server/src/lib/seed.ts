@@ -111,6 +111,8 @@ export async function seedIfEmpty(): Promise<void> {
   const sources = await db
     .insert(jobSourcesTable)
     .values([
+      // Demo sources are sample data only (isDemo: true) — they are clearly
+      // labeled in the Sources UI and never fetch anything from a live feed.
       {
         name: "Indeed Feed API",
         sourceType: "job_board_api",
@@ -118,6 +120,7 @@ export async function seedIfEmpty(): Promise<void> {
         isActive: true,
         healthStatus: "healthy",
         lastSyncAt: hoursAgo(1),
+        isDemo: true,
       },
       {
         name: "LinkedIn Jobs Crawler",
@@ -126,6 +129,7 @@ export async function seedIfEmpty(): Promise<void> {
         isActive: true,
         healthStatus: "healthy",
         lastSyncAt: hoursAgo(3),
+        isDemo: true,
       },
       {
         name: "Greenhouse Boards",
@@ -134,6 +138,7 @@ export async function seedIfEmpty(): Promise<void> {
         isActive: true,
         healthStatus: "degraded",
         lastSyncAt: hoursAgo(9),
+        isDemo: true,
       },
       {
         name: "Workable Partner Feed",
@@ -142,6 +147,7 @@ export async function seedIfEmpty(): Promise<void> {
         isActive: false,
         healthStatus: "error",
         lastSyncAt: daysAgo(4),
+        isDemo: true,
       },
     ])
     .returning();

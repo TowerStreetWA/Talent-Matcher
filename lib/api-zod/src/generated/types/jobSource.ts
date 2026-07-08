@@ -18,5 +18,25 @@ export interface JobSource {
   /** @nullable */
   lastSyncAt?: string | null;
   jobCount: number;
+  /** Seeded demo/sample source — never a live feed */
+  isDemo: boolean;
+  /**
+     * Machine provider id for ingestion-backed sources (e.g. google_jobs_serpapi, linkedin_via_google_jobs, company_site)
+     * @nullable
+     */
+  provider?: string | null;
+  /** All jobs ever stored from this source (any status) */
+  totalJobs: number;
+  /** Jobs currently active (not expired/stale) */
+  activeJobs: number;
+  /** Active deduplicated jobs shown in search/matching */
+  canonicalJobs: number;
+  /** Jobs merged into another source's canonical record */
+  duplicateJobs: number;
+  /**
+     * Vacancies attributed to this source in its most recent ingestion run
+     * @nullable
+     */
+  lastFetchCount?: number | null;
   createdAt: string;
 }

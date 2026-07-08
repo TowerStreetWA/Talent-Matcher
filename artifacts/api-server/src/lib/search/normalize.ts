@@ -1,4 +1,5 @@
 import { ABBREVIATIONS, SYNONYM_GROUPS, STOP_WORDS } from "./dictionaries";
+import { curatedSynonymGroups } from "./curatedTitles";
 
 export interface NormalizedQuery {
   /** Original user input, untouched. */
@@ -33,7 +34,7 @@ const cleanText = (input: string): string =>
 
 const synonymAlternatives = (term: string): string[] => {
   const out: string[] = [];
-  for (const group of SYNONYM_GROUPS) {
+  for (const group of [...SYNONYM_GROUPS, ...curatedSynonymGroups()]) {
     if (group.includes(term)) {
       for (const member of group) {
         if (member !== term) out.push(member);

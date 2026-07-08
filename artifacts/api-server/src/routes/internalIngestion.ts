@@ -10,6 +10,7 @@ import {
   type IngestionSummary,
 } from "../lib/vacancies/ingestionRunner";
 import { IngestionError } from "../lib/vacancies/types";
+import { sweepStaleJobs } from "../lib/vacancies/expirySweep";
 import { GOOGLE_JOBS_PATTERNS, resolvePatternCap } from "../config/ingestionPatterns";
 
 /**
@@ -206,6 +207,27 @@ router.post("/internal/ingestion/run-patterns", async (req, res) => {
   });
 
   res.json({ runs, funnel });
+});
+
+/**
+ * Manually trigger the stale-job expiry sweep (also runs periodically —
+ * see lib/vacancies/expirySweep.ts). Marks ingestion-backed jobs "expired"
+ * when they have not been re-discovered within their freshness threshold.
+ */
+router.post("/internal/ingestion/expire-stale", async (req, res) => {
+  // Tenant-scoped: an admin can only expire their own tenant's stale jobs.
+  const result = await sweepStaleJobs({ tenantId: tenantOf(req) });
+  if (result === null) {
+    res.status(409).json({ message: "Expiry sweep already running — try again shortly" });
+    return;
+  }
+  await recordAudit({
+    action: "ingestion.expire_stale",
+    entityType: "job",
+    metadata: JSON.stringify({ expired: result.expired, bySource: result.bySource }),
+    ...auditActor(req),
+  });
+  res.json(result);
 });
 
 export default router;

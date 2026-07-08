@@ -128,7 +128,21 @@ export function toMatchRunDto(r: MatchRun) {
   };
 }
 
-export function toJobSourceDto(s: JobSource, jobCount: number) {
+export interface JobSourceMetrics {
+  totalJobs: number;
+  activeJobs: number;
+  canonicalJobs: number;
+  duplicateJobs: number;
+}
+
+export const EMPTY_JOB_SOURCE_METRICS: JobSourceMetrics = {
+  totalJobs: 0,
+  activeJobs: 0,
+  canonicalJobs: 0,
+  duplicateJobs: 0,
+};
+
+export function toJobSourceDto(s: JobSource, metrics: JobSourceMetrics) {
   return {
     id: s.id,
     name: s.name,
@@ -137,7 +151,15 @@ export function toJobSourceDto(s: JobSource, jobCount: number) {
     isActive: s.isActive,
     healthStatus: s.healthStatus,
     lastSyncAt: iso(s.lastSyncAt),
-    jobCount,
+    // jobCount kept for backwards compatibility: currently-active jobs
+    jobCount: metrics.activeJobs,
+    isDemo: s.isDemo,
+    provider: s.provider,
+    totalJobs: metrics.totalJobs,
+    activeJobs: metrics.activeJobs,
+    canonicalJobs: metrics.canonicalJobs,
+    duplicateJobs: metrics.duplicateJobs,
+    lastFetchCount: s.lastFetchCount,
     createdAt: s.createdAt.toISOString(),
   };
 }

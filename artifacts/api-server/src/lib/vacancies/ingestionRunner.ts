@@ -45,18 +45,38 @@ async function ensureIngestionSource(
   sourceProvider: string,
 ): Promise<typeof jobSourcesTable.$inferSelect> {
   const name = SOURCE_DISPLAY_NAMES[sourceProvider] ?? sourceProvider;
-  const [existing] = await db
+  // Prefer the machine provider id; fall back to display name for rows that
+  // predate the provider column.
+  const [byProvider] = await db
+    .select()
+    .from(jobSourcesTable)
+    .where(
+      and(eq(jobSourcesTable.tenantId, tenantId), eq(jobSourcesTable.provider, sourceProvider)),
+    )
+    .limit(1);
+  if (byProvider) return byProvider;
+  const [byName] = await db
     .select()
     .from(jobSourcesTable)
     .where(and(eq(jobSourcesTable.tenantId, tenantId), eq(jobSourcesTable.name, name)))
     .limit(1);
-  if (existing) return existing;
+  if (byName) {
+    if (byName.provider !== sourceProvider) {
+      await db
+        .update(jobSourcesTable)
+        .set({ provider: sourceProvider })
+        .where(eq(jobSourcesTable.id, byName.id));
+      byName.provider = sourceProvider;
+    }
+    return byName;
+  }
   const [created] = await db
     .insert(jobSourcesTable)
     .values({
       tenantId,
       name,
       sourceType,
+      provider: sourceProvider,
       isActive: true,
     })
     .returning();
@@ -105,6 +125,7 @@ function insertValues(
     sourceUrl: v.sourceUrl,
     sectorTag: v.sectorTag ?? null,
     discoveredAt: now,
+    lastSeenAt: now,
   };
 }
 
@@ -170,9 +191,10 @@ export async function runVacancyIngestion(opts: {
         (j) => j.sourceUrl != null && j.sourceUrl === vacancy.sourceUrl,
       );
       if (already) {
+        // Re-discovered: bump freshness (discoveredAt stays first-discovery).
         await db
           .update(jobsTable)
-          .set({ discoveredAt: now })
+          .set({ lastSeenAt: now })
           .where(eq(jobsTable.id, already.id));
         summary.refreshedExisting += 1;
         continue;
@@ -278,10 +300,14 @@ export async function runVacancyIngestion(opts: {
 
   summary.clustersTouched = clustersTouched.size;
 
-  for (const touched of sourceCache.values()) {
+  for (const [providerKey, touched] of sourceCache.entries()) {
     await db
       .update(jobSourcesTable)
-      .set({ lastSyncAt: now, healthStatus: "healthy" })
+      .set({
+        lastSyncAt: now,
+        healthStatus: "healthy",
+        lastFetchCount: summary.fetchedByProvider[providerKey] ?? 0,
+      })
       .where(eq(jobSourcesTable.id, touched.id));
   }
 

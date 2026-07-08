@@ -1170,6 +1170,13 @@ export const ListJobSourcesResponseItem = zod.object({
   "healthStatus": zod.string().nullish(),
   "lastSyncAt": zod.string().nullish(),
   "jobCount": zod.number(),
+  "isDemo": zod.boolean().describe('Seeded demo\/sample source — never a live feed'),
+  "provider": zod.string().nullish().describe('Machine provider id for ingestion-backed sources (e.g. google_jobs_serpapi, linkedin_via_google_jobs, company_site)'),
+  "totalJobs": zod.number().describe('All jobs ever stored from this source (any status)'),
+  "activeJobs": zod.number().describe('Jobs currently active (not expired\/stale)'),
+  "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
+  "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
+  "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
   "createdAt": zod.string()
 })
 export const ListJobSourcesResponse = zod.array(ListJobSourcesResponseItem)
@@ -1198,6 +1205,13 @@ export const CreateJobSourceResponse = zod.object({
   "healthStatus": zod.string().nullish(),
   "lastSyncAt": zod.string().nullish(),
   "jobCount": zod.number(),
+  "isDemo": zod.boolean().describe('Seeded demo\/sample source — never a live feed'),
+  "provider": zod.string().nullish().describe('Machine provider id for ingestion-backed sources (e.g. google_jobs_serpapi, linkedin_via_google_jobs, company_site)'),
+  "totalJobs": zod.number().describe('All jobs ever stored from this source (any status)'),
+  "activeJobs": zod.number().describe('Jobs currently active (not expired\/stale)'),
+  "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
+  "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
+  "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
   "createdAt": zod.string()
 })
 
@@ -1228,6 +1242,13 @@ export const UpdateJobSourceResponse = zod.object({
   "healthStatus": zod.string().nullish(),
   "lastSyncAt": zod.string().nullish(),
   "jobCount": zod.number(),
+  "isDemo": zod.boolean().describe('Seeded demo\/sample source — never a live feed'),
+  "provider": zod.string().nullish().describe('Machine provider id for ingestion-backed sources (e.g. google_jobs_serpapi, linkedin_via_google_jobs, company_site)'),
+  "totalJobs": zod.number().describe('All jobs ever stored from this source (any status)'),
+  "activeJobs": zod.number().describe('Jobs currently active (not expired\/stale)'),
+  "canonicalJobs": zod.number().describe('Active deduplicated jobs shown in search\/matching'),
+  "duplicateJobs": zod.number().describe('Jobs merged into another source\'s canonical record'),
+  "lastFetchCount": zod.number().nullish().describe('Vacancies attributed to this source in its most recent ingestion run'),
   "createdAt": zod.string()
 })
 

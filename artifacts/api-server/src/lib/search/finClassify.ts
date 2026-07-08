@@ -11,6 +11,7 @@ import {
   type EmployerType,
 } from "./finTaxonomy";
 import type { NormalizedQuery } from "./normalize";
+import { lookupCuratedTitle } from "./curatedTitles";
 
 /**
  * Deterministic, rule-based financial-services classification.
@@ -153,6 +154,17 @@ function pickFunction(
  * type) before it is tagged, so generic roles stay untagged.
  */
 export function classifyVacancy(job: VacancyLike): FinTags {
+  // Curated-title override: an explicit taxonomy entry beats term scoring.
+  const curated = lookupCuratedTitle(job.title);
+  if (curated) {
+    return {
+      sector: curated.entry.industry,
+      fn: curated.entry.family,
+      employerType: classifyEmployerType(job.companyName),
+      matchedTerms: [curated.matchedVariant],
+    };
+  }
+
   const title = normText(job.title);
   const body = normText(
     [

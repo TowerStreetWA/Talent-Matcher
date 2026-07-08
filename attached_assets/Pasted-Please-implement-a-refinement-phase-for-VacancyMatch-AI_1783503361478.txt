@@ -1,0 +1,184 @@
+Please implement a refinement phase for VacancyMatch AI focused on source truthfulness, freshness, and domain taxonomy support.
+
+GOAL
+
+We have completed the ingestion audit and discovered that the old “LinkedIn Jobs Crawler” source in the Sources panel is not a real crawler — it is a seeded demo row with static demo counts. This caused misleading expectations.
+
+A compliant real path is now in place via Google Jobs pagination + attribution of LinkedIn-hosted jobs as “LinkedIn Jobs (via Google)”.
+
+This phase should:
+1. Remove or clearly relabel the fake LinkedIn seeded source so it cannot be mistaken for a live ingestion source.
+2. Add expiry/inactive logic so jobs do not remain active forever when no longer re-discovered.
+3. Improve the Sources page so it shows a clearer ingestion funnel:
+   - fetched
+   - active
+   - canonical
+   - duplicates
+   - last successful run
+4. Prepare the search/taxonomy layer to ingest curated industry job-title lists, starting with insurance.
+
+Do not change candidate matching, billing, or auth.
+
+---
+
+PART 1 — SOURCE TRUTHFULNESS
+
+Objective:
+Ensure the Sources page accurately represents real ingestion sources.
+
+Implementation:
+
+- Find the seeded demo source row for “LinkedIn Jobs Crawler”.
+- Either:
+  - remove it completely from production/demo source displays, or
+  - relabel it very clearly as a seeded/demo source so no one can mistake it for a live source.
+- If removed, ensure the new real source “LinkedIn Jobs (via Google)” is shown instead where relevant.
+- Audit other source cards too and confirm none of them are misleading seeded placeholders.
+
+Acceptance:
+A user looking at Sources should immediately understand which sources are real, which are derived, and which are demo-only (ideally none are demo-only in production-facing UI).
+
+---
+
+PART 2 — EXPIRY / INACTIVE LOGIC
+
+Objective:
+Jobs should not stay active forever if they stop appearing in ingestion runs.
+
+Implementation:
+
+- Add a freshness model for ingested jobs, for example:
+  - track last_seen_at on each vacancy/source record,
+  - mark jobs inactive if not re-discovered within a configurable threshold (e.g. 14, 21, or 30 days depending on source).
+- Make the threshold configurable by source_type/source_provider if feasible.
+  Example:
+  - Google Jobs: inactive after X days not seen
+  - Company career sites: inactive after Y days not seen
+- Add a background/internal sweep job that:
+  - checks all active jobs,
+  - marks stale jobs inactive,
+  - records counts of jobs inactivated per source.
+- Do this additively, without breaking existing canonical logic.
+
+Acceptance:
+Jobs that disappear from source feeds eventually become inactive, and no longer inflate active counts forever.
+
+---
+
+PART 3 — SOURCES PAGE: FUNNEL METRICS
+
+Objective:
+Make the Sources page more transparent and useful.
+
+Update each source card to show some or all of:
+
+- fetched (latest run or rolling recent total)
+- active jobs
+- canonical jobs
+- duplicates merged
+- last successful run
+- source type / provider
+- source health/status
+
+If necessary, add a lightweight source metrics structure or endpoint to support this.
+
+Important:
+- Keep the UI clean and readable.
+- Do not overload the cards with too much text.
+- If needed, show the core metrics on the card and fuller detail in a modal or drawer.
+
+At minimum, the user should be able to tell:
+- how many jobs came in,
+- how many are currently active,
+- whether the source is healthy,
+- and when it last really ran.
+
+Acceptance:
+The Sources page clearly communicates why a source might fetch 240 jobs but expose fewer canonical active jobs.
+
+---
+
+PART 4 — CURATED INDUSTRY JOB TITLE LISTS
+
+Objective:
+Prepare VacancyMatch to use curated job-title libraries, starting with insurance.
+
+Context:
+I have manually created a full list of insurance job titles and may do the same for other industries later. The app should be ready to accept and use these lists.
+
+Implementation:
+
+- Add a config-driven taxonomy layer for curated job-title lists.
+- Create a structure that can support:
+  - industry (e.g. insurance, banking, pensions, asset_management)
+  - function/family (e.g. underwriting, claims, broking, actuarial, compliance, operations)
+  - canonical title
+  - variants / synonyms
+  - optional seniority
+- Example schema could be JSON or TS config:
+  {
+    industry: "insurance",
+    family: "broking",
+    canonicalTitle: "Account Executive",
+    variants: ["Client Executive", "Insurance Account Executive"],
+    seniority: "mid"
+  }
+
+- Wire this taxonomy so it can be used in:
+  1. search normalization,
+  2. sector/function tagging,
+  3. ranking boosts,
+  4. candidate-side role inference.
+
+For this phase:
+- implement the structure and loader,
+- add one initial insurance taxonomy file/place to paste data into,
+- use it in at least one meaningful place in search or tagging.
+
+Do not over-engineer admin UI for this yet. File/config-driven is fine.
+
+Acceptance:
+There is now a clear place and format to paste curated insurance job titles, and the app uses them in the search/tagging pipeline in at least a basic, testable way.
+
+---
+
+PART 5 — SMALL UX IMPROVEMENTS
+
+- Ensure “LinkedIn Jobs (via Google)” is clearly labeled as derived from Google discovery but LinkedIn-hosted.
+- Where useful, add tooltip/help text in Sources explaining:
+  - “Active” = currently active and not stale
+  - “Canonical” = deduplicated jobs shown in search/matching
+- Keep this concise and product-friendly.
+
+---
+
+CONSTRAINTS
+
+- Do not add direct LinkedIn scraping.
+- Do not change billing, auth, or candidate matching flows.
+- Keep everything additive and explicit.
+- Keep any taxonomy system file/config-driven for now.
+
+---
+
+ACCEPTANCE CRITERIA
+
+1. Fake or misleading seeded source rows are removed or clearly labeled.
+2. There is a freshness/expiry system so stale jobs become inactive.
+3. Sources page shows a more honest funnel of ingestion metrics.
+4. A config-driven taxonomy structure exists for curated industry job-title lists.
+5. Insurance job-title taxonomy can be pasted in and used by the search/tagging logic.
+6. Full typecheck passes and existing tests still pass.
+
+---
+
+REPORT BACK
+
+When done, please report:
+- Files changed.
+- What happened to the old LinkedIn demo source.
+- How expiry/inactive logic works and thresholds chosen.
+- What metrics are now shown in Sources.
+- The taxonomy file format and where curated insurance titles should be pasted.
+- Where the taxonomy is used in search/tagging.
+- Typecheck/test outcomes.

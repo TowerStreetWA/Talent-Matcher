@@ -8,7 +8,11 @@ import {
   UpdateJobSourceBody,
   UpdateJobSourceResponse,
 } from "@workspace/api-zod";
-import { toJobSourceDto } from "../lib/dto";
+import {
+  toJobSourceDto,
+  EMPTY_JOB_SOURCE_METRICS,
+  type JobSourceMetrics,
+} from "../lib/dto";
 import { recordAudit } from "../lib/audit";
 import { tenantOf, auditActor } from "../middlewares/auth";
 
@@ -17,35 +21,47 @@ const router: IRouter = Router();
 const paramId = (raw: string | string[]): string =>
   Array.isArray(raw) ? (raw[0] ?? "") : raw;
 
-async function jobCounts(tenant: string): Promise<Map<string, number>> {
+async function jobMetrics(tenant: string): Promise<Map<string, JobSourceMetrics>> {
   const rows = await db
     .select({
       sourceId: jobsTable.sourceId,
-      count: sql<number>`count(*)::int`,
+      totalJobs: sql<number>`count(*)::int`,
+      activeJobs: sql<number>`count(*) filter (where ${jobsTable.status} = 'active')::int`,
+      canonicalJobs: sql<number>`count(*) filter (where ${jobsTable.status} = 'active' and ${jobsTable.isCanonical})::int`,
+      duplicateJobs: sql<number>`count(*) filter (where not ${jobsTable.isCanonical})::int`,
     })
     .from(jobsTable)
     .where(eq(jobsTable.tenantId, tenant))
     .groupBy(jobsTable.sourceId);
-  const map = new Map<string, number>();
+  const map = new Map<string, JobSourceMetrics>();
   for (const r of rows) {
-    if (r.sourceId) map.set(r.sourceId, r.count);
+    if (r.sourceId) {
+      map.set(r.sourceId, {
+        totalJobs: r.totalJobs,
+        activeJobs: r.activeJobs,
+        canonicalJobs: r.canonicalJobs,
+        duplicateJobs: r.duplicateJobs,
+      });
+    }
   }
   return map;
 }
 
 router.get("/job-sources", async (req, res): Promise<void> => {
   const tenant = tenantOf(req);
-  const [rows, counts] = await Promise.all([
+  const [rows, metrics] = await Promise.all([
     db
       .select()
       .from(jobSourcesTable)
       .where(eq(jobSourcesTable.tenantId, tenant))
       .orderBy(desc(jobSourcesTable.createdAt)),
-    jobCounts(tenant),
+    jobMetrics(tenant),
   ]);
   res.json(
     ListJobSourcesResponse.parse(
-      rows.map((s) => toJobSourceDto(s, counts.get(s.id) ?? 0)),
+      rows.map((s) =>
+        toJobSourceDto(s, metrics.get(s.id) ?? EMPTY_JOB_SOURCE_METRICS),
+      ),
     ),
   );
 });
@@ -71,7 +87,13 @@ router.post("/job-sources", async (req, res): Promise<void> => {
     metadata: `Source "${row.name}" (${row.sourceType}) registered`,
     ...auditActor(req),
   });
-  res.status(201).json(CreateJobSourceResponse.parse(toJobSourceDto(row, 0)));
+  res
+    .status(201)
+    .json(
+      CreateJobSourceResponse.parse(
+        toJobSourceDto(row, EMPTY_JOB_SOURCE_METRICS),
+      ),
+    );
 });
 
 router.patch("/job-sources/:id", async (req, res): Promise<void> => {
@@ -106,9 +128,11 @@ router.patch("/job-sources/:id", async (req, res): Promise<void> => {
       ...auditActor(req),
     });
   }
-  const counts = await jobCounts(tenantOf(req));
+  const metrics = await jobMetrics(tenantOf(req));
   res.json(
-    UpdateJobSourceResponse.parse(toJobSourceDto(row, counts.get(row.id) ?? 0)),
+    UpdateJobSourceResponse.parse(
+      toJobSourceDto(row, metrics.get(row.id) ?? EMPTY_JOB_SOURCE_METRICS),
+    ),
   );
 });
 

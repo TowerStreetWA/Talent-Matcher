@@ -10,7 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Database, Plus, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { Database, Plus, RefreshCw, CheckCircle2, XCircle, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -154,17 +160,32 @@ export default function Sources() {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 flex-wrap">
                       {source.name}
                       {source.healthStatus === 'healthy' ? (
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                       ) : source.healthStatus === 'error' ? (
                         <XCircle className="w-4 h-4 text-destructive" />
                       ) : null}
+                      {source.isDemo && (
+                        <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400 text-[10px]" data-testid={`badge-demo-${source.id}`}>
+                          Demo data
+                        </Badge>
+                      )}
                     </CardTitle>
                     <CardDescription className="uppercase text-[10px] tracking-wider font-semibold mt-1">
                       {source.sourceType}
                     </CardDescription>
+                    {source.isDemo && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Sample data for exploring the product — not a live feed.
+                      </p>
+                    )}
+                    {source.provider === 'linkedin_via_google_jobs' && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        LinkedIn-hosted listings discovered via Google Jobs — not scraped from LinkedIn.
+                      </p>
+                    )}
                   </div>
                   <Switch 
                     checked={source.isActive} 
@@ -173,21 +194,57 @@ export default function Sources() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium uppercase">Active Jobs</p>
-                    <p className="text-2xl font-semibold">{source.jobCount.toLocaleString()}</p>
+                <TooltipProvider delayDuration={200}>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-2">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium uppercase flex items-center gap-1">
+                        Active Jobs
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3 h-3 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[220px]">
+                            Jobs from this source that are currently live (stale listings are expired automatically).
+                          </TooltipContent>
+                        </Tooltip>
+                      </p>
+                      <p className="text-2xl font-semibold" data-testid={`text-active-jobs-${source.id}`}>{source.activeJobs.toLocaleString()}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium uppercase flex items-center gap-1">
+                        Canonical
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3 h-3 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[220px]">
+                            Active jobs after de-duplication — these are the ones used in search and matching.
+                          </TooltipContent>
+                        </Tooltip>
+                      </p>
+                      <p className="text-2xl font-semibold" data-testid={`text-canonical-jobs-${source.id}`}>{source.canonicalJobs.toLocaleString()}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium uppercase">Total Stored</p>
+                      <p className="text-sm font-medium">{source.totalJobs.toLocaleString()}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium uppercase">Duplicates Merged</p>
+                      <p className="text-sm font-medium">{source.duplicateJobs.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium uppercase">Last Sync</p>
-                    <p className="text-sm flex items-center gap-1 mt-1">
-                      <RefreshCw className="w-3 h-3 text-muted-foreground" />
-                      {source.lastSyncAt ? formatDistanceToNow(new Date(source.lastSyncAt), { addSuffix: true }) : 'Never'}
-                    </p>
-                  </div>
+                </TooltipProvider>
+                <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3" />
+                    {source.lastSyncAt ? `Synced ${formatDistanceToNow(new Date(source.lastSyncAt), { addSuffix: true })}` : 'Never synced'}
+                  </span>
+                  {source.lastFetchCount != null && (
+                    <span data-testid={`text-last-fetch-${source.id}`}>Last run: {source.lastFetchCount} fetched</span>
+                  )}
                 </div>
                 {source.baseUrl && (
-                  <div className="mt-4 pt-4 border-t text-xs font-mono text-muted-foreground truncate">
+                  <div className="mt-3 text-xs font-mono text-muted-foreground truncate">
                     {source.baseUrl}
                   </div>
                 )}
