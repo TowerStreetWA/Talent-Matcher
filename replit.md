@@ -104,6 +104,15 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Employer seed list: `src/config/employerSites.ts` (Monzo greenhouse, Octopus Energy lever, maxJobs 6 each) — external careers URLs rot; curl-probe before debugging extraction
 - UI: source badges on Jobs page ("Direct employer"/"Google Jobs"/"Duplicate"); dedupe unit tests in `dedupe.test.ts`
 
+## Ingestion expansion & metrics (Phase 14)
+
+- **No LinkedIn crawler exists** — "LinkedIn Jobs Crawler" is a seeded demo source (7 static jobs). Direct LinkedIn scraping violates its TOS; instead, Google Jobs results with linkedin.com apply links are attributed to a "LinkedIn Jobs (via Google)" source (`sourceProvider: linkedin_via_google_jobs`, sourceType stays google_jobs so dedupe ranks are unchanged). Full audit + before/after metrics in `docs/linkedin-audit.md`
+- Config-driven patterns in `src/config/ingestionPatterns.ts` (insurance/banking/pensions/asset_management × London, per-pattern cap default 60, ceiling 200) — extend coverage there, not in the provider. googleJobsProvider paginates via SerpApi `next_page_token` (≤20 pages/query)
+- `jobs.sector_tag` (nullable, additive) stores the pattern's sectorTag; query-time classification stays the fallback for untagged rows
+- POST `/internal/ingestion/run-patterns` (`{patterns?}`, admin+, audit-logged, NOT in OpenAPI) runs configured patterns sequentially + returns per-pattern summaries and the funnel. Run patterns one per curl call — a full multi-pattern run over HTTP can exceed safe request duration
+- Metrics: `vacancy_ingestion` log now has runId/stored/fetchedByProvider; `logCanonicalFunnel(tenantId)` logs `vacancy_canonical_funnel` (per-provider total/active/inactive/duplicates/canonicalActive). ingestionRunner routes job_sources rows per-vacancy sourceProvider
+- Known gap: no expiry sweep — ingested jobs stay active forever (flagged in the audit doc)
+
 ## Search quality (Phase 5)
 
 - `artifacts/api-server/src/lib/search/` — dictionaries.ts (explicit ABBREVIATIONS/SYNONYM_GROUPS/STOP_WORDS; extend these to teach search new shorthand), normalize.ts (`normalizeQuery` → phrases/tokens/variants; quoted phrases preserved verbatim), rank.ts (explicit weighted components: exactTitle 100 > phraseInTitle 70 > variantInTitle 55 > titleTokens ≤40 > name > company 25/12 > taxonomy ≤30 > fuzzy 5; recency tiebreak)

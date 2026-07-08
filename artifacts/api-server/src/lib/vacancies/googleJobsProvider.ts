@@ -10,7 +10,10 @@ import {
 
 const SERPAPI_BASE_URL = "https://serpapi.com/search.json";
 const REQUEST_TIMEOUT_MS = 60_000;
-const MAX_RESULTS = 10;
+/** Default when the caller does not ask for pagination: one SerpApi page. */
+const DEFAULT_MAX_RESULTS = 10;
+/** Safety ceiling on pages per query regardless of requested maxResults. */
+const MAX_PAGES_PER_QUERY = 20;
 
 const applyOptionSchema = z
   .object({
@@ -43,8 +46,16 @@ const serpApiResponseSchema = z
   .object({
     error: z.string().nullish(),
     jobs_results: z.array(jobResultSchema).nullish(),
+    serpapi_pagination: z
+      .object({
+        next_page_token: z.string().nullish(),
+      })
+      .loose()
+      .nullish(),
   })
   .loose();
+
+type JobResult = z.infer<typeof jobResultSchema>;
 
 function apiKey(): string {
   const key = process.env["SERPAPI_API_KEY"];
@@ -77,12 +88,73 @@ export function parsePostedAt(raw: string | null | undefined, now = new Date()):
  * domain over aggregator links; fall back to the first apply link, then the
  * Google share link.
  */
-function pickSourceUrl(job: z.infer<typeof jobResultSchema>): string | null {
+function pickSourceUrl(job: JobResult): string | null {
   const links = (job.apply_options ?? [])
     .map((o) => o.link)
     .filter((l): l is string => typeof l === "string" && l.length > 0);
   const employerLink = links.find((l) => !isAggregatorHost(l));
   return employerLink ?? links[0] ?? job.share_link ?? null;
+}
+
+/**
+ * A result is LinkedIn-hosted when any of its apply options points at
+ * linkedin.com. We do NOT crawl LinkedIn directly (their ToS forbids it) —
+ * this attribution is how LinkedIn listings enter via Google Jobs.
+ */
+export function hasLinkedInApplyOption(
+  applyOptions: Array<{ link?: string | null }> | null | undefined,
+): boolean {
+  for (const option of applyOptions ?? []) {
+    if (!option.link) continue;
+    try {
+      const host = new URL(option.link).hostname.toLowerCase();
+      if (host === "linkedin.com" || host.endsWith(".linkedin.com")) return true;
+    } catch {
+      // ignore malformed links
+    }
+  }
+  return false;
+}
+
+export const LINKEDIN_VIA_GOOGLE_PROVIDER = "linkedin_via_google_jobs";
+
+async function fetchPage(
+  params: URLSearchParams,
+): Promise<z.infer<typeof serpApiResponseSchema>> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${SERPAPI_BASE_URL}?${params.toString()}`, {
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new IngestionError("timeout", "Google Jobs (SerpApi) request timed out");
+    }
+    throw new IngestionError("upstream", "Could not reach SerpApi");
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (response.status === 429) {
+    throw new IngestionError("rate_limited", "SerpApi rate limit reached — try again later");
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new IngestionError("config", "SerpApi rejected the API key");
+  }
+
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  const parsed = serpApiResponseSchema.safeParse(payload);
+  if (!response.ok || !parsed.success) {
+    throw new IngestionError("upstream", `SerpApi error (HTTP ${response.status})`);
+  }
+  return parsed.data;
 }
 
 export const googleJobsProvider: VacancyProvider = {
@@ -95,81 +167,64 @@ export const googleJobsProvider: VacancyProvider = {
       throw new IngestionError("config", "A search query is required for Google Jobs ingestion");
     }
     const q = input.company ? `${query} ${input.company.trim()}` : query;
-
-    const params = new URLSearchParams({
-      engine: "google_jobs",
-      q,
-      hl: "en",
-      gl: "gb",
-      api_key: apiKey(),
-    });
-    if (input.location?.trim()) params.set("location", input.location.trim());
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    let response: Response;
-    try {
-      response = await fetch(`${SERPAPI_BASE_URL}?${params.toString()}`, {
-        signal: controller.signal,
-      });
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
-        throw new IngestionError("timeout", "Google Jobs (SerpApi) request timed out");
-      }
-      throw new IngestionError("upstream", "Could not reach SerpApi");
-    } finally {
-      clearTimeout(timer);
-    }
-
-    if (response.status === 429) {
-      throw new IngestionError("rate_limited", "SerpApi rate limit reached — try again later");
-    }
-    if (response.status === 401 || response.status === 403) {
-      throw new IngestionError("config", "SerpApi rejected the API key");
-    }
-
-    let payload: unknown;
-    try {
-      payload = await response.json();
-    } catch {
-      payload = null;
-    }
-    const parsed = serpApiResponseSchema.safeParse(payload);
-    if (!response.ok || !parsed.success) {
-      throw new IngestionError("upstream", `SerpApi error (HTTP ${response.status})`);
-    }
-    if (parsed.data.error) {
-      // SerpApi reports "no results" as an error string; treat as empty.
-      if (/hasn't returned any results|no results/i.test(parsed.data.error)) {
-        return { vacancies: [], warnings: [] };
-      }
-      throw new IngestionError("upstream", `SerpApi error: ${parsed.data.error}`);
-    }
+    const maxResults = Math.max(1, input.maxResults ?? DEFAULT_MAX_RESULTS);
 
     const warnings: string[] = [];
     const vacancies: NormalizedVacancy[] = [];
-    for (const job of (parsed.data.jobs_results ?? []).slice(0, MAX_RESULTS)) {
-      if (!job.title) {
-        warnings.push("Skipped a Google Jobs result without a title");
-        continue;
-      }
-      const ext = job.detected_extensions;
-      vacancies.push({
-        title: job.title,
-        companyName: job.company_name ?? null,
-        locationText: job.location ?? null,
-        remoteType: ext?.work_from_home ? "remote" : null,
-        employmentType: ext?.schedule_type ?? null,
-        salaryText: ext?.salary ?? null,
-        descriptionText: job.description ?? null,
-        skills: [],
-        postedAt: parsePostedAt(ext?.posted_at),
-        applyUrl: pickSourceUrl(job),
-        sourceType: "google_jobs",
-        sourceProvider: "google_jobs_serpapi",
-        sourceUrl: pickSourceUrl(job),
+    let nextPageToken: string | null = null;
+
+    for (let page = 0; page < MAX_PAGES_PER_QUERY && vacancies.length < maxResults; page++) {
+      const params = new URLSearchParams({
+        engine: "google_jobs",
+        q,
+        hl: "en",
+        gl: "gb",
+        api_key: apiKey(),
       });
+      if (input.location?.trim()) params.set("location", input.location.trim());
+      if (nextPageToken) params.set("next_page_token", nextPageToken);
+
+      const data = await fetchPage(params);
+      if (data.error) {
+        // SerpApi reports "no results" as an error string; treat as end-of-results.
+        if (/hasn't returned any results|no results/i.test(data.error)) break;
+        throw new IngestionError("upstream", `SerpApi error: ${data.error}`);
+      }
+
+      const results = data.jobs_results ?? [];
+      if (results.length === 0) break;
+
+      for (const job of results) {
+        if (vacancies.length >= maxResults) break;
+        if (!job.title) {
+          warnings.push("Skipped a Google Jobs result without a title");
+          continue;
+        }
+        const ext = job.detected_extensions;
+        const viaLinkedIn = hasLinkedInApplyOption(job.apply_options);
+        const url = pickSourceUrl(job);
+        vacancies.push({
+          title: job.title,
+          companyName: job.company_name ?? null,
+          locationText: job.location ?? null,
+          remoteType: ext?.work_from_home ? "remote" : null,
+          employmentType: ext?.schedule_type ?? null,
+          salaryText: ext?.salary ?? null,
+          descriptionText: job.description ?? null,
+          skills: [],
+          postedAt: parsePostedAt(ext?.posted_at),
+          applyUrl: url,
+          sourceType: "google_jobs",
+          sourceProvider: viaLinkedIn ? LINKEDIN_VIA_GOOGLE_PROVIDER : "google_jobs_serpapi",
+          sourceUrl: url,
+          sectorTag: input.sectorTag ?? null,
+        });
+      }
+
+      nextPageToken = data.serpapi_pagination?.next_page_token ?? null;
+      if (!nextPageToken) break;
     }
+
     return { vacancies, warnings };
   },
 };

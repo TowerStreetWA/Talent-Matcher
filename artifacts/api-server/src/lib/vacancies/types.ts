@@ -15,10 +15,12 @@ export interface NormalizedVacancy {
   /** Where a candidate would apply (may equal sourceUrl). */
   applyUrl: string | null;
   sourceType: VacancySourceType;
-  /** e.g. "company_site", "google_jobs_serpapi" */
+  /** e.g. "company_site", "google_jobs_serpapi", "linkedin_via_google_jobs" */
   sourceProvider: string;
   /** Canonical job detail URL at the source. */
   sourceUrl: string | null;
+  /** Sector tag inherited from the ingestion search pattern (nullable). */
+  sectorTag?: string | null;
 }
 
 export type IngestionErrorKind = "config" | "rate_limited" | "upstream" | "timeout";
@@ -47,6 +49,10 @@ export interface GoogleJobsQuery {
   query: string;
   location?: string | null;
   company?: string | null;
+  /** Fetch up to this many results via pagination (default: one page ≈ 10). */
+  maxResults?: number | null;
+  /** Sector tag stamped onto every vacancy from this query (nullable). */
+  sectorTag?: string | null;
 }
 
 export interface EmployerSiteFetchInput {

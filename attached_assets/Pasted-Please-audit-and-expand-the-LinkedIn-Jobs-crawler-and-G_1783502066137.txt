@@ -1,0 +1,221 @@
+Please audit and expand the LinkedIn Jobs crawler and Google Jobs ingestion so VacancyMatch AI pulls a materially larger, high-quality set of “active + canonical” jobs.
+
+GOAL
+
+Right now:
+- LinkedIn Jobs crawler shows only 7 active jobs.
+- LinkedIn’s own Jobs UI shows “99+ results” for equivalent searches.
+- Google Jobs shows 90 active jobs, but coverage is still narrow vs expectations.
+
+We want:
+- A clear understanding of how many jobs are fetched vs stored vs exposed.
+- Broader, systematic ingestion for LinkedIn and Google Jobs in our target markets.
+- Better alignment between what recruiters see in native UIs and what VacancyMatch exposes.
+
+Do not change candidate matching, billing, or auth. This phase focuses on source ingestion and visibility.
+
+---
+
+PART 1 — LINKEDIN JOBS CRAWLER AUDIT
+
+1. Inspect crawler configuration
+
+Locate the LinkedIn Jobs crawler code/config, e.g.:
+- artifacts/api-server/src/jobs/linkedinCrawler.ts
+- or equivalent module/config.
+
+Identify:
+- The base URL(s) being crawled (search pages vs company pages).
+- Which query parameters are used (keywords, location, filters).
+- Pagination logic (how many pages, offsets, etc.).
+- Any hard limits (max jobs per run, max pages, rate-limit controls).
+
+2. Add logging for audit
+
+Instrument the crawler so each run logs:
+
+- number of raw results fetched from LinkedIn (per run),
+- number of jobs stored in the database,
+- number of jobs marked active,
+- number of jobs dropped/ignored and reasons (if available),
+- how many jobs are later classified as duplicates/canonical vs raw.
+
+Use structured logs (JSON or consistent text) so we can see:
+
+{
+  "source": "linkedin_jobs",
+  "runId": "...",
+  "fetched": 120,
+  "stored": 80,
+  "active": 40,
+  "canonical": 25,
+  "duplicates": 55
+}
+
+3. Check sector & location filters
+
+Verify if the crawler is:
+
+- constrained to specific sectors (e.g. only insurance),
+- constrained to specific locations (e.g. only London),
+- constrained to a particular date range.
+
+If the crawler is currently only hitting a single generic search (e.g. jobs without filters), note that.
+
+4. Run an audit crawl
+
+Trigger a manual or dev-only crawler run and collect:
+
+- the raw “fetched vs stored vs active vs canonical” metrics,
+- a small sample of fetched job records so we can see title/company/location and why they were or weren’t kept.
+
+Summarize the findings in comments or a separate markdown report file (e.g. docs/linkedin-audit.md) so we can review later.
+
+---
+
+PART 2 — LINKEDIN JOBS CRAWLER EXPANSION
+
+Based on the audit, expand ingestion systematically:
+
+1. Targeted search patterns
+
+Define a configuration for LinkedIn search patterns that match our market focus, for example:
+
+- insurance + London Area, United Kingdom
+- banking + London Area, United Kingdom
+- pensions + London Area, United Kingdom
+- asset management + London Area, United Kingdom
+
+Each pattern should be configurable, e.g.:
+
+{
+  "name": "insurance_london",
+  "keywords": "insurance",
+  "location": "London Area, United Kingdom",
+  "sectorTag": "insurance"
+}
+
+2. Pagination
+
+Ensure the crawler:
+
+- iterates through multiple pages for each search pattern (within safe limits),
+- respects LinkedIn’s pagination structure (e.g. start/offset),
+- stops when:
+  - no more results, or
+  - a configured per-pattern cap (e.g. 100–200 jobs) is reached.
+
+3. Date/recency logic
+
+Prefer jobs with recent posting dates, but do not restrict to only the last few days in a way that dramatically cuts volume. For example:
+
+- include jobs up to 30–60 days old,
+- let the canonicalisation/expiry logic mark jobs inactive later.
+
+4. Mapping to internal fields
+
+Ensure each LinkedIn job mapped into our DB has:
+
+- title
+- company
+- location
+- sectorTag (based on search pattern or content)
+- postedAt / discoveredAt
+- source_type = "crawler"
+- source_provider = "linkedin_jobs_crawler"
+
+We should be able to use sectorTag for ranking and filtering later.
+
+5. Config-driven design
+
+Make search patterns and caps **config-driven**, e.g. in a JSON or TypeScript config file:
+
+- easy to add/remove patterns,
+- easy to adjust per-pattern caps and locations.
+
+Do not hardcode deep logic in the crawler function itself.
+
+---
+
+PART 3 — GOOGLE JOBS INGESTION AUDIT & EXPANSION
+
+1. Audit current Google Jobs ingestion
+
+Locate the Google Jobs provider code/config.
+
+Log per run:
+
+- queries used (keywords, location),
+- number of raw results per query,
+- number stored, active, canonical,
+- source_type/source_provider values.
+
+2. Expand queries for our sectors
+
+Define a set of queries similar to LinkedIn, e.g.:
+
+- insurance + London
+- banking + London
+- pensions + London
+- asset management + London
+
+Add them to a config so Google Jobs ingestion runs through these patterns regularly.
+
+3. Pagination & caps
+
+Ensure:
+- we request enough pages/results per query (within provider limits),
+- we cap per-query results sensibly (e.g. 100–200) to avoid overload.
+
+---
+
+PART 4 — CANONICAL + ACTIVE LOGGING
+
+Objective:
+Improve visibility into how many jobs we lose at the canonicalisation/expiry layer.
+
+Implementation:
+
+- Add a small logging or metrics helper around the canonicalisation/active filter step to record:
+  - raw jobs per source,
+  - number marked inactive or expired,
+  - number merged into duplicates,
+  - number left as canonical active.
+
+- Make sure this is source-aware (LinkedIn vs Google Jobs vs company sites).
+
+This should help us see, for example, if we fetch 200 LinkedIn jobs but only 7 survive as canonical active.
+
+---
+
+CONSTRAINTS
+
+- Do not change candidate matching, billing, or auth.
+- Do not add aggressive crawling that would clearly violate provider limits or TOS.
+- Keep all expansions config-driven and safe, with caps per pattern.
+- Keep canonicalisation and expiry behaviour logically consistent; do not disable them widely in production.
+
+---
+
+ACCEPTANCE CRITERIA
+
+1. There is clear logging/metrics for LinkedIn and Google Jobs ingestion (fetched vs stored vs active vs canonical).
+2. LinkedIn Jobs crawler uses a config of multiple sector/location search patterns with pagination and caps.
+3. Google Jobs ingestion uses expanded queries for our key sectors/locations.
+4. Canonicalisation/active filtering has metrics so we can see how many jobs are dropped at that layer.
+5. Active job counts for LinkedIn and Google Jobs in the Sources panel increase materially for our target sectors and locations (within safe limits).
+6. Full typecheck passes and existing tests still pass.
+
+---
+
+REPORT BACK
+
+When done, please report:
+
+- Files changed for LinkedIn crawler, Google Jobs provider, and logging/metrics.
+- The search pattern config for LinkedIn and Google Jobs.
+- Before/after metrics for:
+  - LinkedIn: fetched, stored, active, canonical jobs.
+  - Google Jobs: same metrics.
+- Any issues found in canonicalisation/expiry behaviour.
+- Typecheck/test outcomes.

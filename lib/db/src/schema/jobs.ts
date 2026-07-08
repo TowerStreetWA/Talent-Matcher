@@ -41,6 +41,9 @@ export const jobsTable = pgTable("jobs", {
   // canonical job detail URL at the source
   sourceUrl: text("source_url"),
   discoveredAt: timestamp("discovered_at", { withTimezone: true }),
+  // sector tag from the ingestion search pattern (e.g. "insurance"); null for
+  // legacy/manual rows — query-time classification remains the fallback
+  sectorTag: text("sector_tag"),
   // duplicate clustering: rows sharing a canonicalGroupId are the same vacancy;
   // exactly one of them has isCanonical=true and is used for matching/search
   canonicalGroupId: uuid("canonical_group_id"),

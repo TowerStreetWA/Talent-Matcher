@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable, type BackingSource } from "@workspace/db";
 import { logger } from "../logger";
 import {
@@ -20,9 +20,11 @@ type JobRow = typeof jobsTable.$inferSelect;
 const SOURCE_DISPLAY_NAMES: Record<string, string> = {
   company_site: "Company career sites",
   google_jobs_serpapi: "Google Jobs",
+  linkedin_via_google_jobs: "LinkedIn Jobs (via Google)",
 };
 
 export interface IngestionSummary {
+  runId: string;
   sourceType: string;
   sourceProvider: string;
   fetched: number;
@@ -31,15 +33,18 @@ export interface IngestionSummary {
   canonicalSwaps: number;
   refreshedExisting: number;
   clustersTouched: number;
+  /** fetched split by the per-vacancy provider attribution (e.g. LinkedIn-via-Google). */
+  fetchedByProvider: Record<string, number>;
   warnings: string[];
 }
 
 /** Find or create the per-tenant job_sources row backing a discovery provider. */
 async function ensureIngestionSource(
   tenantId: string,
-  provider: VacancyProvider,
+  sourceType: string,
+  sourceProvider: string,
 ): Promise<typeof jobSourcesTable.$inferSelect> {
-  const name = SOURCE_DISPLAY_NAMES[provider.sourceProvider] ?? provider.sourceProvider;
+  const name = SOURCE_DISPLAY_NAMES[sourceProvider] ?? sourceProvider;
   const [existing] = await db
     .select()
     .from(jobSourcesTable)
@@ -51,7 +56,7 @@ async function ensureIngestionSource(
     .values({
       tenantId,
       name,
-      sourceType: provider.sourceType,
+      sourceType,
       isActive: true,
     })
     .returning();
@@ -98,6 +103,7 @@ function insertValues(
     sourceType: v.sourceType,
     sourceProvider: v.sourceProvider,
     sourceUrl: v.sourceUrl,
+    sectorTag: v.sectorTag ?? null,
     discoveredAt: now,
   };
 }
@@ -113,8 +119,25 @@ export async function runVacancyIngestion(opts: {
   input: GoogleJobsQuery | EmployerSiteFetchInput;
 }): Promise<IngestionSummary> {
   const { tenantId, provider, input } = opts;
-  const source = await ensureIngestionSource(tenantId, provider);
   const { vacancies, warnings } = await provider.fetchVacancies(input);
+
+  // Vacancies from one provider run may attribute to different job_sources
+  // rows (e.g. LinkedIn-hosted listings discovered via Google Jobs). Resolve
+  // and cache the source row per per-vacancy sourceProvider.
+  const sourceCache = new Map<string, typeof jobSourcesTable.$inferSelect>();
+  async function sourceFor(vacancy: NormalizedVacancy) {
+    const cached = sourceCache.get(vacancy.sourceProvider);
+    if (cached) return cached;
+    const row = await ensureIngestionSource(tenantId, vacancy.sourceType, vacancy.sourceProvider);
+    sourceCache.set(vacancy.sourceProvider, row);
+    return row;
+  }
+  // Always ensure the provider's own source row exists (health/lastSync even
+  // on empty runs).
+  sourceCache.set(
+    provider.sourceProvider,
+    await ensureIngestionSource(tenantId, provider.sourceType, provider.sourceProvider),
+  );
 
   const existingJobs: JobRow[] = await db
     .select()
@@ -123,6 +146,7 @@ export async function runVacancyIngestion(opts: {
 
   const now = new Date();
   const summary: IngestionSummary = {
+    runId: randomUUID(),
     sourceType: provider.sourceType,
     sourceProvider: provider.sourceProvider,
     fetched: vacancies.length,
@@ -131,11 +155,15 @@ export async function runVacancyIngestion(opts: {
     canonicalSwaps: 0,
     refreshedExisting: 0,
     clustersTouched: 0,
+    fetchedByProvider: {},
     warnings,
   };
   const clustersTouched = new Set<string>();
 
   for (const vacancy of vacancies) {
+    summary.fetchedByProvider[vacancy.sourceProvider] =
+      (summary.fetchedByProvider[vacancy.sourceProvider] ?? 0) + 1;
+    const source = await sourceFor(vacancy);
     // Idempotency: same source URL already ingested for this tenant.
     if (vacancy.sourceUrl) {
       const already = existingJobs.find(
@@ -250,27 +278,80 @@ export async function runVacancyIngestion(opts: {
 
   summary.clustersTouched = clustersTouched.size;
 
-  await db
-    .update(jobSourcesTable)
-    .set({ lastSyncAt: now, healthStatus: "healthy" })
-    .where(eq(jobSourcesTable.id, source.id));
+  for (const touched of sourceCache.values()) {
+    await db
+      .update(jobSourcesTable)
+      .set({ lastSyncAt: now, healthStatus: "healthy" })
+      .where(eq(jobSourcesTable.id, touched.id));
+  }
 
   logger.info(
     {
       event: "vacancy_ingestion",
+      runId: summary.runId,
       tenantId,
       sourceType: summary.sourceType,
       sourceProvider: summary.sourceProvider,
       fetched: summary.fetched,
+      stored: summary.insertedCanonical + summary.insertedDuplicates,
       insertedCanonical: summary.insertedCanonical,
       insertedDuplicates: summary.insertedDuplicates,
       canonicalSwaps: summary.canonicalSwaps,
       refreshedExisting: summary.refreshedExisting,
       clustersTouched: summary.clustersTouched,
+      fetchedByProvider: summary.fetchedByProvider,
       warningCount: warnings.length,
     },
     "vacancy ingestion run completed",
   );
 
   return summary;
+}
+
+export interface SourceFunnelRow {
+  sourceProvider: string;
+  total: number;
+  active: number;
+  inactive: number;
+  canonicalActive: number;
+  duplicates: number;
+}
+
+/**
+ * Source-aware canonicalisation/active funnel: for each source provider,
+ * how many stored jobs remain, how many are inactive/expired, how many were
+ * merged as duplicates, and how many survive as canonical + active (the set
+ * recruiters actually see). Logged so ingestion loss is visible per source.
+ */
+export async function logCanonicalFunnel(tenantId: string): Promise<SourceFunnelRow[]> {
+  const rows = await db
+    .select({
+      sourceProvider: sql<string>`coalesce(${jobsTable.sourceProvider}, 'legacy_manual')`,
+      total: count(),
+      active: count(sql`case when ${jobsTable.status} = 'active' then 1 end`),
+      inactive: count(sql`case when ${jobsTable.status} <> 'active' then 1 end`),
+      canonicalActive: count(
+        sql`case when ${jobsTable.status} = 'active' and ${jobsTable.isCanonical} then 1 end`,
+      ),
+      duplicates: count(sql`case when not ${jobsTable.isCanonical} then 1 end`),
+    })
+    .from(jobsTable)
+    .where(eq(jobsTable.tenantId, tenantId))
+    .groupBy(sql`coalesce(${jobsTable.sourceProvider}, 'legacy_manual')`);
+
+  const funnel: SourceFunnelRow[] = rows.map((r) => ({
+    sourceProvider: r.sourceProvider,
+    total: Number(r.total),
+    active: Number(r.active),
+    inactive: Number(r.inactive),
+    canonicalActive: Number(r.canonicalActive),
+    duplicates: Number(r.duplicates),
+  }));
+
+  logger.info(
+    { event: "vacancy_canonical_funnel", tenantId, funnel },
+    "vacancy canonicalisation funnel snapshot",
+  );
+
+  return funnel;
 }
