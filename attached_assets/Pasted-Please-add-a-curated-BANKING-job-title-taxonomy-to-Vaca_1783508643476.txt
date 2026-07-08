@@ -1,0 +1,234 @@
+Please add a curated BANKING job-title taxonomy to VacancyMatch AI, using the supplied titles and the existing curatedTitles config layer.
+
+GOAL
+
+We already have:
+- config/curatedTitles/ with typed entries (industry, family, canonicalTitle, variants, optional seniority).
+- Insurance starter entries feeding search synonym expansion and classification.
+
+This phase should:
+1. Create a banking taxonomy file/config (e.g. config/curatedTitles/banking.ts or banking.json).
+2. Structure the supplied banking titles into sensible families and canonical groups.
+3. Wire the banking taxonomy into the search/tagging pipeline in the same way as insurance.
+
+Do not change candidate matching, billing, or auth.
+
+========================
+STRUCTURE REQUIREMENTS
+========================
+
+Each entry should support at least:
+- industry: "banking"
+- family: e.g. executive_leadership, relationship_management, branch_network, credit_lending, investment_banking, treasury_balance_sheet, risk, compliance_financial_crime, operations_middle_back_office, payments_transaction_banking, digital_product_change, contact_centre_collections
+- canonicalTitle: primary title for the group
+- variants: list of alternate titles
+- optional seniority: e.g. "junior", "mid", "senior", "lead", "exec"
+- optional tags: e.g. ["risk", "market_risk", "credit_risk"]
+
+As with insurance, use file/config-driven entries (TS or JSON) and keep them easy to extend.
+
+========================
+FAMILIES TO USE
+========================
+
+Please group the supplied titles into these banking families (adjust if you see a better fit):
+
+- executive_leadership
+- relationship_management
+- branch_network
+- credit_lending
+- investment_banking
+- treasury_balance_sheet
+- risk
+- compliance_financial_crime
+- operations_middle_back_office
+- payments_transaction_banking
+- digital_product_change
+- contact_centre_collections
+
+Where a title could sit in more than one family, choose the most commercially useful primary family.
+
+========================
+BANKING TITLES TO INGEST
+========================
+
+Chief Executive Officer (Banking)
+Chief Operating Officer (Banking)
+Chief Financial Officer (Banking)
+Chief Risk Officer (Banking)
+Chief Compliance Officer (Banking)
+Chief Credit Officer
+Chief Investment Officer (Bank)
+Head of Retail Banking
+Head of Corporate Banking
+Head of Commercial Banking
+Head of Investment Banking
+Head of Transaction Banking
+Head of Private Banking
+Head of Wealth Management
+Head of Credit Risk
+Head of Market Risk
+Head of Operational Risk
+Head of Financial Crime
+Head of Compliance (Banking)
+Head of Internal Audit (Banking)
+Head of Treasury
+Head of Payments
+Head of Digital Banking
+
+Relationship Manager (Banking)
+Corporate Relationship Manager
+Commercial Relationship Manager
+SME Relationship Manager
+Retail Relationship Manager
+Private Banker
+Wealth Manager
+Wealth Advisor (Banking)
+Premier Relationship Manager
+Key Account Manager (Banking)
+Client Relationship Manager (Banking)
+
+Branch Manager
+Deputy Branch Manager
+Assistant Branch Manager
+Customer Service Manager (Branch)
+Personal Banker
+Customer Service Representative (Banking)
+Banking Associate
+Bank Teller
+Universal Banker
+
+Credit Analyst (Banking)
+Corporate Credit Analyst
+Retail Credit Analyst
+Structured Credit Analyst
+Credit Risk Analyst (Banking)
+Credit Risk Manager (Banking)
+Senior Credit Officer
+Loan Officer
+Lending Manager
+Mortgage Adviser
+Mortgage Advisor
+Mortgage Underwriter (Banking)
+Secured Lending Specialist
+Unsecured Lending Specialist
+
+Investment Banker
+Analyst (Investment Banking)
+Associate (Investment Banking)
+Vice President (Investment Banking)
+Director (Investment Banking)
+Managing Director (Investment Banking)
+M&A Analyst
+M&A Associate
+Equity Capital Markets Analyst
+Debt Capital Markets Analyst
+Leveraged Finance Analyst
+Project Finance Analyst
+Structured Finance Analyst
+Syndicated Loans Analyst
+
+Treasury Analyst (Banking)
+Treasury Manager (Banking)
+ALM Analyst (Banking)
+Liquidity Risk Analyst
+Liquidity Manager (Banking)
+Balance Sheet Manager
+Capital Management Analyst (Banking)
+Funding Manager (Banking)
+
+Market Risk Analyst (Banking)
+Market Risk Manager (Banking)
+Counterparty Credit Risk Analyst
+Traded Risk Analyst
+Risk Modelling Analyst (Banking)
+Stress Testing Analyst
+Enterprise Risk Manager (Banking)
+Operational Risk Analyst (Banking)
+Operational Risk Manager (Banking)
+
+Compliance Analyst (Banking)
+Compliance Manager (Banking)
+Regulatory Compliance Manager (Banking)
+Financial Crime Analyst (Banking)
+Financial Crime Manager (Banking)
+AML Analyst
+AML Investigator
+Sanctions Screening Analyst (Banking)
+KYC Analyst
+KYC Officer
+Onboarding Analyst (Banking)
+Client Onboarding Specialist (Banking)
+
+Internal Auditor (Banking)
+Senior Internal Auditor (Banking)
+Audit Manager (Banking)
+Quantitative Analyst (Banking)
+Front Office Quant Analyst
+Risk Quant Analyst
+Model Validation Analyst (Banking)
+
+Payments Product Manager (Bank)
+Payments Operations Manager
+Payments Analyst (Banking)
+Cards Product Manager
+Cards Operations Manager
+Trade Finance Officer
+Trade Finance Analyst
+Trade Finance Manager
+Cash Management Specialist
+Transaction Banking Specialist
+
+Operations Analyst (Banking)
+Operations Manager (Banking)
+Middle Office Analyst (Banking)
+Settlements Analyst (Banking)
+Reconciliations Analyst (Banking)
+Client Services Officer (Banking)
+Loan Operations Analyst
+Trade Support Analyst (Banking)
+Collateral Management Analyst (Banking)
+
+Digital Product Manager (Banking)
+Digital Banking Product Owner
+Digital Transformation Manager (Banking)
+Business Analyst (Banking)
+Change Manager (Banking)
+Implementation Manager (Banking)
+Banking Technology Consultant
+Core Banking Systems Analyst
+Payments Systems Analyst
+
+Contact Centre Agent (Banking)
+Contact Centre Team Leader (Banking)
+Collections Agent (Banking)
+Collections Manager (Banking)
+Recoveries Officer (Banking)
+
+========================
+INTEGRATION
+========================
+
+- Add the banking taxonomy file and entries.
+- Ensure the curated banking titles:
+  - feed search synonym expansion (e.g. “mortgage adviser” vs “mortgage advisor”),
+  - can influence tagging/classification for banking roles.
+
+Do not break insurance taxonomy.
+
+========================
+ACCEPTANCE CRITERIA
+========================
+
+1. A banking taxonomy file exists under config/curatedTitles/ with typed entries.
+2. Supplied titles are grouped into families and canonical/variant sets.
+3. Banking taxonomy is used in search/tagging (similar to insurance).
+4. Full typecheck passes; tests pass or are updated appropriately.
+
+REPORT BACK
+
+Please report:
+- The taxonomy file name and structure.
+- Families used and examples of canonicalTitle + variants.
+- Where in the pipeline the banking taxonomy is used.
+- Typecheck/test outcomes.

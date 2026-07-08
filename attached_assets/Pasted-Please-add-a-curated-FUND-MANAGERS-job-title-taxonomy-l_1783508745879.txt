@@ -1,0 +1,177 @@
+Please add a curated FUND MANAGERS job-title taxonomy (long-only, hedge, multi-asset, etc.) to VacancyMatch AI, using the supplied titles and the existing curatedTitles config layer.
+
+GOAL
+
+We already have insurance and banking taxonomy files. This phase adds a buy-side “fund managers” taxonomy for core asset-management roles.
+
+This phase should:
+1. Create a fundManagers taxonomy file (e.g. config/curatedTitles/fundManagers.ts).
+2. Structure the supplied titles into sensible families and canonical groups.
+3. Wire the fund managers taxonomy into search/tagging.
+
+Do not change candidate matching, billing, or auth.
+
+========================
+STRUCTURE REQUIREMENTS
+========================
+
+Entries:
+- industry: "asset_management" (or "fund_managers" if you prefer)
+- family: e.g. executive_leadership, portfolio_management, research_analysis, trading_dealing, client_sales_distribution, risk_performance, compliance_operations, product_marketing
+- canonicalTitle
+- variants
+- optional seniority
+- optional tags
+
+========================
+FAMILIES TO USE
+========================
+
+Suggested families:
+
+- executive_leadership
+- portfolio_management
+- research_analysis
+- trading_dealing
+- client_sales_distribution
+- risk_performance
+- compliance_operations
+- product_marketing
+
+========================
+FUND MANAGERS TITLES TO INGEST
+========================
+
+Chief Executive Officer (Asset Management)
+Chief Investment Officer (Fund Manager)
+Deputy CIO
+Head of Investments
+Head of Equities
+Head of Fixed Income
+Head of Multi-Asset
+Head of Alternatives
+Head of ESG Investing
+Head of Research
+Head of Portfolio Management
+Head of Trading
+Head of Distribution (Asset Management)
+Head of Institutional Sales
+Head of Wholesale Sales
+
+Portfolio Manager
+Senior Portfolio Manager
+Lead Portfolio Manager
+Co-Portfolio Manager
+Assistant Portfolio Manager
+Associate Portfolio Manager
+Multi-Asset Portfolio Manager
+Equity Portfolio Manager
+Fixed Income Portfolio Manager
+Credit Portfolio Manager
+High Yield Portfolio Manager
+Emerging Markets Portfolio Manager
+Absolute Return Portfolio Manager
+Quant Portfolio Manager
+Index Portfolio Manager
+Passive Portfolio Manager
+ETF Portfolio Manager
+
+Fund Manager
+Fund of Funds Manager
+Investment Manager (Fund Management)
+Assistant Fund Manager
+Junior Fund Manager
+
+Investment Analyst
+Equity Research Analyst (Buy-Side)
+Credit Research Analyst (Buy-Side)
+Fixed Income Analyst (Buy-Side)
+Multi-Asset Analyst
+Fund Research Analyst
+Manager Research Analyst
+Quantitative Research Analyst (Asset Management)
+ESG Analyst
+SRI Analyst
+Thematic Investment Analyst
+
+Trader (Asset Management)
+Equity Trader (Buy-Side)
+Fixed Income Trader (Buy-Side)
+FX Trader (Buy-Side)
+Derivatives Trader (Buy-Side)
+Execution Trader
+Dealing Desk Analyst
+
+Client Portfolio Manager
+Investment Specialist
+Product Specialist (Asset Management)
+Client Director (Asset Management)
+Institutional Client Director
+Wholesale Sales Manager (Asset Management)
+Sales Director (Asset Management)
+Business Development Manager (Asset Management)
+Client Relationship Manager (Asset Management)
+Client Service Manager (Asset Management)
+Client Reporting Analyst
+RFP Writer (Asset Management)
+RFP Manager (Asset Management)
+Consultant Relations Manager
+
+Risk Analyst (Asset Management)
+Investment Risk Analyst
+Portfolio Risk Analyst
+Market Risk Manager (Asset Management)
+Performance Analyst
+Senior Performance Analyst
+Attribution Analyst
+Performance and Risk Analyst
+
+Compliance Officer (Asset Management)
+Compliance Manager (Asset Management)
+Regulatory Reporting Specialist (Funds)
+AML Analyst (Asset Management)
+Operations Analyst (Asset Management)
+Fund Operations Manager
+Middle Office Analyst (Asset Management)
+Trade Support Analyst (Asset Management)
+Settlements Analyst (Asset Management)
+Reconciliations Analyst (Asset Management)
+Valuations Analyst
+Fund Accountant
+Senior Fund Accountant
+NAV Specialist
+Pricing Analyst (Funds)
+
+Product Manager (Asset Management)
+Fund Launch Manager
+Product Development Manager (Funds)
+Product Governance Manager (Funds)
+Marketing Manager (Asset Management)
+Content Marketing Specialist (Asset Management)
+Investment Writer
+
+========================
+INTEGRATION
+========================
+
+- Add fundManagers taxonomy file and entries.
+- Use curated titles for:
+  - search synonym expansion (e.g. “Investment Manager” vs “Fund Manager”),
+  - tagging/classification of buy-side roles.
+
+========================
+ACCEPTANCE CRITERIA
+========================
+
+1. Fund managers taxonomy file exists.
+2. Titles are grouped into families and canonical/variant sets.
+3. Taxonomy is used in search/tagging.
+4. Typecheck/tests pass.
+
+REPORT BACK
+
+Please report:
+- File name/structure.
+- Families used + example canonical/variants.
+- Where it is used in the pipeline.
+- Typecheck/test outcomes.

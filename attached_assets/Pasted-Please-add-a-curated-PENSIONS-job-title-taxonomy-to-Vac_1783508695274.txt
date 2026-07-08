@@ -1,0 +1,161 @@
+Please add a curated PENSIONS job-title taxonomy to VacancyMatch AI, using the supplied titles and the existing curatedTitles config layer.
+
+GOAL
+
+We already have:
+- Insurance taxonomy in config/curatedTitles.
+- Banking taxonomy being added.
+
+This phase should:
+1. Create a pensions taxonomy file/config (e.g. config/curatedTitles/pensions.ts).
+2. Structure the supplied pensions titles into sensible families and canonical groups.
+3. Wire the pensions taxonomy into the search/tagging pipeline.
+
+Do not change candidate matching, billing, or auth.
+
+========================
+STRUCTURE REQUIREMENTS
+========================
+
+Each entry:
+- industry: "pensions"
+- family: e.g. executive_leadership, administration_operations, consulting_advice, actuarial_risk, investment_ldi, policy_regulation_compliance, member_services_communications, reporting_change_systems
+- canonicalTitle
+- variants
+- optional seniority
+- optional tags
+
+========================
+FAMILIES TO USE
+========================
+
+Suggested families:
+
+- executive_leadership
+- administration_operations
+- consulting_advice
+- actuarial_risk
+- investment_ldi
+- policy_regulation_compliance
+- member_services_communications
+- reporting_change_systems
+
+Use your judgment to assign each title.
+
+========================
+PENSIONS TITLES TO INGEST
+========================
+
+Chief Executive Officer (Pensions)
+Chief Operating Officer (Pensions)
+Chief Financial Officer (Pensions)
+Chief Investment Officer (Pensions)
+Chief Risk Officer (Pensions)
+Chief Actuary (Pensions)
+Head of Pensions
+Head of Pension Administration
+Head of Scheme Governance
+Head of Pensions Operations
+Head of Defined Benefit (DB) Pensions
+Head of Defined Contribution (DC) Pensions
+Head of Workplace Pensions
+Head of Trustee Services
+Head of Pensions Consulting
+Head of Retirement Solutions
+
+Pensions Director
+Pensions Manager
+Senior Pensions Manager
+Pension Scheme Manager
+Trustee Executive
+Trustee Services Manager
+
+Pensions Administrator
+Senior Pensions Administrator
+Pensions Team Leader
+Pensions Operations Manager
+Pension Benefit Administrator
+Pension Payroll Administrator
+Pension Calculation Specialist
+Pension Data Specialist
+Pension Transfers Specialist
+Pension Onboarding Specialist
+
+Pensions Consultant
+Senior Pensions Consultant
+Associate Pensions Consultant
+Corporate Pensions Consultant
+DC Pensions Consultant
+DB Pensions Consultant
+Group Pensions Consultant
+Employee Benefits Consultant (Pensions)
+Pension Governance Consultant
+Pension Risk Transfer Consultant
+Bulk Annuity Consultant
+
+Pensions Actuary
+Scheme Actuary
+Trainee Pensions Actuary
+Actuarial Analyst (Pensions)
+Senior Actuarial Analyst (Pensions)
+Pension Risk Actuary
+De-risking Actuary
+Longevity Risk Specialist
+
+Pension Investment Analyst
+Pension Investment Manager
+LDI Analyst (Liability Driven Investment)
+LDI Portfolio Manager
+Asset Liability Management Analyst (Pensions)
+Funding Strategy Analyst (Pensions)
+
+Pension Policy Manager
+Pension Technical Specialist
+Pension Legislation Specialist
+Regulatory Specialist (Pensions)
+Compliance Manager (Pensions)
+Risk Manager (Pensions)
+Internal Auditor (Pensions)
+
+Member Services Representative (Pensions)
+Pensions Contact Centre Agent
+Member Communications Specialist (Pensions)
+Retirement Consultant
+Retirement Advice Specialist
+Retirement Options Consultant
+
+Auto-Enrolment Specialist
+Workplace Pensions Specialist
+Pension Scheme Accountant
+Pension Reporting Accountant
+MI Analyst (Pensions)
+Business Analyst (Pensions)
+Systems Analyst (Pensions Administration)
+Pensions Implementation Consultant
+Pensions Change Manager
+
+========================
+INTEGRATION
+========================
+
+- Add pensions taxonomy file and entries.
+- Use curated pensions titles in:
+  - search synonym expansion (e.g. “Bulk Annuity Consultant” matching de-risking work),
+  - tagging/classification for pensions roles.
+
+========================
+ACCEPTANCE CRITERIA
+========================
+
+1. Pensions taxonomy file exists under config/curatedTitles/.
+2. Supplied titles are grouped into families and canonical/variant sets.
+3. Pensions taxonomy is used in search/tagging.
+4. Typecheck/tests pass.
+
+REPORT BACK
+
+Please report:
+- Taxonomy file name/structure.
+- Families used + examples.
+- Where the pensions taxonomy is used in the pipeline.
+- Typecheck/test outcomes.
