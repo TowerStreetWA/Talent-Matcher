@@ -1,0 +1,190 @@
+Please implement the next careers-directory phase for VacancyMatch / Talent Matcher:
+
+1) add support for more ATS platforms the resolver already detects, and
+2) expose sector scorecard diagnostics so we can see coverage quality by industry.
+
+GOAL
+
+Turn currently detected-but-unsupported ATS boards into real job sources, and give us a single scorecard endpoint that shows how healthy each sector is (seeded employers, ingestion paths, jobs, and gaps).
+
+PRIORITY ATS PLATFORMS
+
+Focus first on ATS that the resolver already flags as unsupported_ats:
+
+- Greenhouse
+- iCIMS
+- SuccessFactors
+
+If feasible, also prepare hooks/config for:
+
+- Taleo
+- Personio
+- BambooHR
+- Rippling
+- JazzHR
+- Comeet
+
+====================================
+1. ADD ATS SUPPORT
+====================================
+
+Implementation:
+
+1) Extend ATS URL parsing & provider detection so Greenhouse, iCIMS, and SuccessFactors are recognised as first-class providers (not “unsupported”).
+
+2) For each new ATS:
+
+- create/extend provider modules under the existing ATS-fetch layer (similar to Workday / Lever / Teamtailor / Recruitee):
+  - parse job listings from public JSON/HTML endpoints or stable feeds,
+  - normalise into the existing jobs schema:
+    - title
+    - company
+    - location
+    - description/summary
+    - applyUrl
+    - discoveredAt / lastSeenAt
+    - sectorTag / industry linkage where available
+- integrate with:
+  - atsEntryFromUrl
+  - makeDirectoryEmployerProvider
+  - careers→board resolution
+  - ingestion metrics / source health
+
+3) Keep routing rules:
+
+- ATS-backed employers → ATS fetchers first
+- basic HTML crawler → for static non-ATS pages
+- Firecrawl → ONLY for JS-heavy pages when neither ATS nor basic HTML can extract jobs
+
+4) Diagnostics:
+
+- update the coverage / directory endpoints so Greenhouse/iCIMS/SuccessFactors appear as normal ATS providers, not “unsupported_ats”.
+
+Acceptance:
+
+- At least one live employer per new ATS (e.g. a Greenhouse company, an iCIMS company, a SuccessFactors company) is successfully resolved and ingested.
+- Previously “unsupported_ats” cases move into the ATS-ingested path where boards are accessible.
+
+====================================
+2. SECTOR SCORECARD ENDPOINT
+====================================
+
+Add an admin-only internal endpoint:
+
+- GET /internal/debug/sector-scorecards
+
+It should return, for each industry:
+
+- industry name:
+  - insurance
+  - banking
+  - pensions
+  - asset_management
+  - accountancy_finance
+  - it_tech
+- seeded_employers
+- careers_page_detected
+- actively_posting_employers
+- ats_resolved_employers
+- basic_html_employers
+- firecrawl_employers
+- needs_firecrawl_employers
+- unsupported_ats_employers (if any remain after this phase)
+- zero_job_employers
+- active_canonical_jobs
+- direct_employer_jobs
+
+For insurance, include segment detail:
+
+- lloyds_syndicate
+- company_market_insurer
+- mga_coverholder
+- insurance_broker
+
+Example response sketch:
+
+```json
+{
+  "industries": [
+    {
+      "industry": "insurance",
+      "seeded_employers": 189,
+      "careers_page_detected": 170,
+      "actively_posting_employers": 90,
+      "ats_resolved_employers": 60,
+      "basic_html_employers": 40,
+      "firecrawl_employers": 10,
+      "needs_firecrawl_employers": 5,
+      "unsupported_ats_employers": 3,
+      "zero_job_employers": 30,
+      "active_canonical_jobs": 550,
+      "direct_employer_jobs": 400,
+      "segments": {
+        "lloyds_syndicate": { ... },
+        "company_market_insurer": { ... },
+        "mga_coverholder": { ... },
+        "insurance_broker": { ... }
+      }
+    },
+    ...
+  ]
+}
+```
+
+====================================
+3. PRIORITY SUMMARY
+====================================
+
+For each industry in the scorecard, derive a small “what to do next” summary, e.g.:
+
+- best_next_gain:
+  - "add more ATS employers"
+  - "support remaining ATS providers"
+  - "top up Firecrawl for JS-heavy sites"
+  - "expand seed list"
+- coverage_status:
+  - "healthy" | "developing" | "thin"
+
+Simple rule-based thresholds are fine (no ML needed).
+
+====================================
+4. TESTS & SAFETY
+====================================
+
+Add tests for:
+
+- ATS URL parsing & detection for Greenhouse, iCIMS, SuccessFactors
+- at least one happy-path job ingestion case per new ATS
+- scorecard endpoint response shape and basic content
+- priority summary logic
+- no regression in:
+  - existing London insurance directory behaviour
+  - basic HTML crawler
+  - Firecrawl circuit breaker
+  - SSRF protections (unchanged)
+
+Run:
+
+- full typecheck
+- full test suite
+- live smoke:
+  - 1 Greenhouse employer,
+  - 1 iCIMS employer,
+  - 1 SuccessFactors employer,
+  - sector scorecards endpoint for all industries
+
+====================================
+5. REPORT BACK
+====================================
+
+When done, please report:
+
+- Which ATS platforms were added (and examples of employers using them)
+- Any ATS still detected but unsupported (and why)
+- Before/after:
+  - unsupported_ats_employers by industry
+  - active_canonical_jobs by industry
+  - direct_employer_jobs by industry
+- Example output from /internal/debug/sector-scorecards
+- Priority summary per industry
+- Typecheck/test outcomes
