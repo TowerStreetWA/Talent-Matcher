@@ -47,6 +47,10 @@ export const jobsTable = pgTable("jobs", {
   // sector tag from the ingestion search pattern (e.g. "insurance"); null for
   // legacy/manual rows — query-time classification remains the fallback
   sectorTag: text("sector_tag"),
+  // company kind: "direct_employer" | "recruitment_firm" | "job_board" |
+  // "unknown" (null for unclassified legacy rows). Set at ingestion by the
+  // recruiter registry/classifier; search excludes recruitment_firm by default
+  companyKind: text("company_kind"),
   // duplicate clustering: rows sharing a canonicalGroupId are the same vacancy;
   // exactly one of them has isCanonical=true and is used for matching/search
   canonicalGroupId: uuid("canonical_group_id"),

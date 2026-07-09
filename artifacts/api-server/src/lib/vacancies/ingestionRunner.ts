@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, count, eq, sql } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable, type BackingSource } from "@workspace/db";
 import { logger } from "../logger";
+import { classifyCompanyKind } from "../search/companyKind";
 import {
   clusterKey,
   locationsCompatible,
@@ -141,6 +142,11 @@ function insertValues(
     sourceProvider: v.sourceProvider,
     sourceUrl: v.sourceUrl,
     sectorTag: v.sectorTag ?? null,
+    companyKind: classifyCompanyKind({
+      companyName: v.companyName,
+      urls: [v.applyUrl, v.sourceUrl],
+      descriptionText: v.descriptionText,
+    }),
     discoveredAt: now,
     lastSeenAt: now,
   };
