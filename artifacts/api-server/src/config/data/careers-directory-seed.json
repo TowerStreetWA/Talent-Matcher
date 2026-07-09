@@ -3,7 +3,7 @@
   "industries": {
     "banking": {
       "label": "Banking & Lending",
-      "segments": ["retail_bank", "challenger_bank", "commercial_lender"],
+      "segments": ["retail_bank", "challenger_bank", "commercial_lender", "investment_bank", "international_bank", "central_bank"],
       "employers": [
         { "name": "Barclays", "careersUrl": "https://search.jobs.barclays", "segment": "retail_bank" },
         { "name": "HSBC", "careersUrl": "https://mycareer.hsbc.com/en_GB/external", "segment": "retail_bank" },
@@ -22,7 +22,24 @@
         { "name": "ClearBank", "careersUrl": "https://clear.bank/careers", "segment": "challenger_bank" },
         { "name": "OakNorth", "careersUrl": "https://www.oaknorth.co.uk/careers/", "segment": "commercial_lender" },
         { "name": "Shawbrook Bank", "careersUrl": "https://www.shawbrook.co.uk/careers/", "segment": "commercial_lender" },
-        { "name": "Tandem Bank", "careersUrl": "https://www.tandem.co.uk/careers", "segment": "challenger_bank" }
+        { "name": "Tandem Bank", "careersUrl": "https://www.tandem.co.uk/careers", "segment": "challenger_bank" },
+        { "name": "JPMorgan", "careersUrl": "https://careers.jpmorgan.com", "segment": "investment_bank" },
+        { "name": "Bank of America", "careersUrl": "https://careers.bankofamerica.com", "segment": "investment_bank" },
+        { "name": "Citi", "careersUrl": "https://jobs.citi.com", "segment": "investment_bank" },
+        { "name": "Goldman Sachs", "careersUrl": "https://www.goldmansachs.com/careers", "segment": "investment_bank" },
+        { "name": "Morgan Stanley", "careersUrl": "https://www.morganstanley.com/careers", "segment": "investment_bank" },
+        { "name": "UBS", "careersUrl": "https://jobs.ubs.com/TGnewUI/Search/home/HomeWithPreLoad?partnerid=25008&siteid=5012&PageType=searchResults", "segment": "investment_bank", "notes": "Official careers hub www.ubs.com blocks non-browser fetches; this is the ATS search entry" },
+        { "name": "Deutsche Bank", "careersUrl": "https://careers.db.com", "segment": "investment_bank" },
+        { "name": "RBC Capital Markets", "careersUrl": "https://jobs.rbc.com", "segment": "investment_bank" },
+        { "name": "Wells Fargo", "careersUrl": "https://www.wellsfargojobs.com", "segment": "international_bank" },
+        { "name": "BNP Paribas UK", "careersUrl": "https://careers.bnpparibas.co.uk", "segment": "international_bank" },
+        { "name": "Crédit Agricole CIB", "careersUrl": "https://jobs.ca-cib.com", "segment": "international_bank" },
+        { "name": "Société Générale", "careersUrl": "https://careers.societegenerale.com", "segment": "international_bank" },
+        { "name": "ING", "careersUrl": "https://www.ing.jobs", "segment": "international_bank" },
+        { "name": "MUFG EMEA", "careersUrl": "https://mufgub.wd3.myworkdayjobs.com/MUFG-Careers", "segment": "international_bank" },
+        { "name": "SMBC Group EMEA", "careersUrl": "https://www.smbcgroup.com/emea/careers", "segment": "international_bank" },
+        { "name": "Mizuho EMEA", "careersUrl": "https://www.mizuhogroup.com/emea/careers", "segment": "international_bank" },
+        { "name": "Bank of England", "careersUrl": "https://www.bankofengland.co.uk/careers", "segment": "central_bank" }
       ]
     },
     "pensions": {
@@ -44,7 +61,10 @@
         { "name": "Marsh McLennan (Mercer)", "careersUrl": "https://careers.marshmclennan.com", "segment": "consultancy" },
         { "name": "Isio", "careersUrl": "https://www.isio.com/careers/", "segment": "consultancy" },
         { "name": "Broadstone", "careersUrl": "https://broadstone.co.uk/careers/", "segment": "consultancy" },
-        { "name": "Capita Pension Solutions", "careersUrl": "https://www.capita.com/careers", "segment": "administrator" }
+        { "name": "Capita Pension Solutions", "careersUrl": "https://www.capita.com/careers", "segment": "administrator" },
+        { "name": "Canada Life UK", "careersUrl": "https://www.canadalife.co.uk/our-company/careers/", "segment": "provider" },
+        { "name": "Just Group", "careersUrl": "https://www.justgroupplc.co.uk/careers", "segment": "provider" },
+        { "name": "Aon", "careersUrl": "https://jobs.aon.com", "segment": "consultancy" }
       ]
     },
     "asset_management": {
@@ -66,7 +86,16 @@
         { "name": "3i Group", "careersUrl": "https://www.3i.com/careers/", "segment": "private_markets" },
         { "name": "Rathbones", "careersUrl": "https://www.rathbones.com/careers", "segment": "wealth_manager" },
         { "name": "Evelyn Partners", "careersUrl": "https://www.evelyn.com/careers/", "segment": "wealth_manager" },
-        { "name": "St. James's Place", "careersUrl": "https://careers.sjp.co.uk", "segment": "wealth_manager" }
+        { "name": "St. James's Place", "careersUrl": "https://careers.sjp.co.uk", "segment": "wealth_manager" },
+        { "name": "BlackRock", "careersUrl": "https://careers.blackrock.com", "segment": "asset_manager" },
+        { "name": "Vanguard", "careersUrl": "https://www.vanguardjobs.com", "segment": "asset_manager" },
+        { "name": "PIMCO", "careersUrl": "https://www.pimco.com/en-gb/careers", "segment": "asset_manager", "notes": "Site blocks non-browser fetches (403); likely needs Firecrawl" },
+        { "name": "Franklin Templeton", "careersUrl": "https://www.franklintempletoncareers.com", "segment": "asset_manager" },
+        { "name": "Invesco", "careersUrl": "https://careers.invesco.com", "segment": "asset_manager" },
+        { "name": "State Street", "careersUrl": "https://careers.statestreet.com", "segment": "asset_manager" },
+        { "name": "AQR Capital Management", "careersUrl": "https://careers.aqr.com", "segment": "hedge_fund" },
+        { "name": "Brookfield", "careersUrl": "https://www.brookfield.com/careers", "segment": "private_markets" },
+        { "name": "Blackstone", "careersUrl": "https://www.blackstone.com/careers/", "segment": "private_markets" }
       ]
     },
     "accountancy_finance": {
@@ -88,7 +117,9 @@
         { "name": "Azets", "careersUrl": "https://www.azets.co.uk/careers/", "segment": "mid_tier" },
         { "name": "Buzzacott", "careersUrl": "https://www.buzzacott.co.uk/careers", "segment": "mid_tier" },
         { "name": "Price Bailey", "careersUrl": "https://www.pricebailey.co.uk/careers/", "segment": "mid_tier" },
-        { "name": "Bishop Fleming", "careersUrl": "https://www.bishopfleming.co.uk/careers", "segment": "mid_tier" }
+        { "name": "Bishop Fleming", "careersUrl": "https://www.bishopfleming.co.uk/careers", "segment": "mid_tier" },
+        { "name": "PKF Littlejohn", "careersUrl": "https://www.pkf-l.com/careers/", "segment": "mid_tier" },
+        { "name": "MHA", "careersUrl": "https://careers.mha.co.uk", "segment": "mid_tier" }
       ]
     },
     "it_tech": {
@@ -110,7 +141,27 @@
         { "name": "Kainos", "careersUrl": "https://careers.kainos.com", "segment": "consultancy" },
         { "name": "Endava", "careersUrl": "https://careers.endava.com", "segment": "consultancy" },
         { "name": "FDM Group", "careersUrl": "https://www.fdmgroup.com/careers/", "segment": "consultancy" },
-        { "name": "Softcat", "careersUrl": "https://www.softcat.com/careers", "segment": "consultancy" }
+        { "name": "Softcat", "careersUrl": "https://www.softcat.com/careers", "segment": "consultancy" },
+        { "name": "Microsoft", "careersUrl": "https://careers.microsoft.com", "segment": "software" },
+        { "name": "Google", "careersUrl": "https://www.google.com/about/careers/applications/", "segment": "software" },
+        { "name": "Amazon", "careersUrl": "https://www.amazon.jobs", "segment": "software" },
+        { "name": "Meta", "careersUrl": "https://www.metacareers.com", "segment": "software", "notes": "Site blocks non-browser fetches (400); likely needs Firecrawl" },
+        { "name": "Apple", "careersUrl": "https://jobs.apple.com", "segment": "software" },
+        { "name": "Oracle", "careersUrl": "https://careers.oracle.com", "segment": "software" },
+        { "name": "Salesforce", "careersUrl": "https://careers.salesforce.com", "segment": "software" },
+        { "name": "SAP", "careersUrl": "https://jobs.sap.com", "segment": "software" },
+        { "name": "Adobe", "careersUrl": "https://careers.adobe.com", "segment": "software" },
+        { "name": "ServiceNow", "careersUrl": "https://careers.servicenow.com", "segment": "software" },
+        { "name": "Workday", "careersUrl": "https://workday.wd5.myworkdayjobs.com/Workday", "segment": "software" },
+        { "name": "Snowflake", "careersUrl": "https://careers.snowflake.com", "segment": "software" },
+        { "name": "HubSpot", "careersUrl": "https://www.hubspot.com/careers", "segment": "software" },
+        { "name": "IBM", "careersUrl": "https://www.ibm.com/careers", "segment": "consultancy" },
+        { "name": "Accenture", "careersUrl": "https://www.accenture.com/gb-en/careers", "segment": "consultancy" },
+        { "name": "Capgemini", "careersUrl": "https://www.capgemini.com/gb-en/careers/", "segment": "consultancy" },
+        { "name": "Cognizant", "careersUrl": "https://careers.cognizant.com", "segment": "consultancy" },
+        { "name": "Infosys", "careersUrl": "https://www.infosys.com/careers/", "segment": "consultancy", "notes": "Site blocks non-browser fetches (403); likely needs Firecrawl" },
+        { "name": "TCS", "careersUrl": "https://www.tcs.com/careers", "segment": "consultancy", "notes": "Site blocks non-browser fetches (403); likely needs Firecrawl" },
+        { "name": "Wipro", "careersUrl": "https://careers.wipro.com", "segment": "consultancy" }
       ]
     }
   }
