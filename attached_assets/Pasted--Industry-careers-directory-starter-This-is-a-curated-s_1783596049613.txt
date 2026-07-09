@@ -1,0 +1,716 @@
+# Industry careers directory starter
+
+This is a curated starter set of employers across banking, pensions, asset management, accountancy & finance, and IT & tech that are known or strongly indicated to maintain careers pages or job portals. It is designed as seed data for a discovery pipeline rather than a claim to be fully exhaustive. [1][2][3][4][5][6][7][8]
+
+## Banking
+
+```json
+[
+  {
+    "name": "Industrial and Commercial Bank of China (ICBC)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "ICBC Careers"
+  },
+  {
+    "name": "Agricultural Bank of China",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "ABC Careers"
+  },
+  {
+    "name": "Bank of China",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Bank of China Careers"
+  },
+  {
+    "name": "China Construction Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "CCB Careers"
+  },
+  {
+    "name": "China Merchants Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "CMB Careers"
+  },
+  {
+    "name": "Bank of Communications",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Bank of Communications Careers"
+  },
+  {
+    "name": "Postal Savings Bank of China (PSBC)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "PSBC Careers"
+  },
+  {
+    "name": "JPMorgan Chase & Co.",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "JPMorgan Careers"
+  },
+  {
+    "name": "Bank of America",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Bank of America Careers"
+  },
+  {
+    "name": "Citigroup (Citi)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Citi Careers"
+  },
+  {
+    "name": "Wells Fargo",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "Wells Fargo Careers"
+  },
+  {
+    "name": "Goldman Sachs",
+    "industry": "banking",
+    "companyType": "investment_bank",
+    "careersHint": "Goldman Sachs Careers"
+  },
+  {
+    "name": "Morgan Stanley",
+    "industry": "banking",
+    "companyType": "investment_bank",
+    "careersHint": "Morgan Stanley Careers"
+  },
+  {
+    "name": "HSBC Holdings plc",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "HSBC Careers"
+  },
+  {
+    "name": "Barclays PLC",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Barclays Careers"
+  },
+  {
+    "name": "Banco Santander",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Santander Careers"
+  },
+  {
+    "name": "BNP Paribas",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "BNP Paribas Careers"
+  },
+  {
+    "name": "Cr\u00e9dit Agricole Group",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Cr\u00e9dit Agricole Careers"
+  },
+  {
+    "name": "Soci\u00e9t\u00e9 G\u00e9n\u00e9rale",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Soci\u00e9t\u00e9 G\u00e9n\u00e9rale Careers"
+  },
+  {
+    "name": "UBS Group",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "UBS Careers"
+  },
+  {
+    "name": "Royal Bank of Canada (RBC)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "RBC Careers"
+  },
+  {
+    "name": "Toronto-Dominion Bank (TD)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "TD Careers"
+  },
+  {
+    "name": "Bank of England",
+    "industry": "banking",
+    "companyType": "central_bank",
+    "careersHint": "Bank of England Careers"
+  },
+  {
+    "name": "Lloyds Banking Group",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "Lloyds Banking Group Careers"
+  },
+  {
+    "name": "NatWest Group",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "NatWest Group Careers"
+  },
+  {
+    "name": "Standard Chartered",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Standard Chartered Careers"
+  },
+  {
+    "name": "Deutsche Bank",
+    "industry": "banking",
+    "companyType": "investment_bank",
+    "careersHint": "Deutsche Bank Careers"
+  },
+  {
+    "name": "ING Group",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "ING Careers"
+  },
+  {
+    "name": "DBS Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "DBS Careers"
+  },
+  {
+    "name": "OCBC Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "OCBC Careers"
+  },
+  {
+    "name": "UOB",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "UOB Careers"
+  },
+  {
+    "name": "MUFG Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "MUFG Careers"
+  },
+  {
+    "name": "SMBC",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "SMBC Careers"
+  },
+  {
+    "name": "Mizuho Bank",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Mizuho Careers"
+  },
+  {
+    "name": "ANZ",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "ANZ Careers"
+  },
+  {
+    "name": "Commonwealth Bank of Australia",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "CommBank Careers"
+  },
+  {
+    "name": "Westpac",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "Westpac Careers"
+  },
+  {
+    "name": "National Australia Bank (NAB)",
+    "industry": "banking",
+    "companyType": "retail_bank",
+    "careersHint": "NAB Careers"
+  },
+  {
+    "name": "Emirates NBD",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "Emirates NBD Careers"
+  },
+  {
+    "name": "First Abu Dhabi Bank (FAB)",
+    "industry": "banking",
+    "companyType": "universal_bank",
+    "careersHint": "FAB Careers"
+  }
+]
+```
+
+## Pensions
+
+```json
+[
+  {
+    "name": "Aegon",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Aegon Careers"
+  },
+  {
+    "name": "Canada Life",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Canada Life Careers"
+  },
+  {
+    "name": "Standard Life / Phoenix Group",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Standard Life Careers"
+  },
+  {
+    "name": "Just Group",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Just Careers"
+  },
+  {
+    "name": "Aviva",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Aviva Careers"
+  },
+  {
+    "name": "Legal & General",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Legal & General Careers"
+  },
+  {
+    "name": "Scottish Widows",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Scottish Widows Careers"
+  },
+  {
+    "name": "Royal London",
+    "industry": "pensions",
+    "companyType": "pension_provider",
+    "careersHint": "Royal London Careers"
+  },
+  {
+    "name": "Mercer",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Mercer Careers"
+  },
+  {
+    "name": "WTW",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "WTW Careers"
+  },
+  {
+    "name": "Aon",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Aon Careers"
+  },
+  {
+    "name": "Isio",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Isio Careers"
+  },
+  {
+    "name": "Broadstone",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Broadstone Careers"
+  },
+  {
+    "name": "Barnett Waddingham",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Barnett Waddingham Careers"
+  },
+  {
+    "name": "XPS Pensions Group",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "XPS Careers"
+  },
+  {
+    "name": "Capita Pension Solutions",
+    "industry": "pensions",
+    "companyType": "pension_administrator",
+    "careersHint": "Capita Careers"
+  },
+  {
+    "name": "Hymans Robertson",
+    "industry": "pensions",
+    "companyType": "pensions_consultancy",
+    "careersHint": "Hymans Robertson Careers"
+  },
+  {
+    "name": "Premier Pensions",
+    "industry": "pensions",
+    "companyType": "pension_administrator",
+    "careersHint": "Prime Pensions Careers"
+  }
+]
+```
+
+## Asset management
+
+```json
+[
+  {
+    "name": "BlackRock",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "BlackRock Careers"
+  },
+  {
+    "name": "Fidelity International",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Fidelity Careers"
+  },
+  {
+    "name": "Vanguard",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Vanguard Careers"
+  },
+  {
+    "name": "Jupiter Asset Management",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Jupiter Careers"
+  },
+  {
+    "name": "Schroders",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Schroders Careers"
+  },
+  {
+    "name": "abrdn",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "abrdn Careers"
+  },
+  {
+    "name": "Royal London Asset Management",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "RLAM Careers"
+  },
+  {
+    "name": "M&G Investments",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "M&G Careers"
+  },
+  {
+    "name": "PIMCO",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "PIMCO Careers"
+  },
+  {
+    "name": "LGIM",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "LGIM Careers"
+  },
+  {
+    "name": "Franklin Templeton",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Franklin Templeton Careers"
+  },
+  {
+    "name": "Invesco",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "Invesco Careers"
+  },
+  {
+    "name": "State Street Global Advisors",
+    "industry": "asset_management",
+    "companyType": "asset_manager_long_only",
+    "careersHint": "SSGA Careers"
+  },
+  {
+    "name": "Man Group",
+    "industry": "asset_management",
+    "companyType": "hedge_fund",
+    "careersHint": "Man Group Careers"
+  },
+  {
+    "name": "Bridgewater Associates",
+    "industry": "asset_management",
+    "companyType": "hedge_fund",
+    "careersHint": "Bridgewater Careers"
+  },
+  {
+    "name": "AQR Capital Management",
+    "industry": "asset_management",
+    "companyType": "hedge_fund",
+    "careersHint": "AQR Careers"
+  },
+  {
+    "name": "Brookfield Asset Management",
+    "industry": "asset_management",
+    "companyType": "private_markets_manager",
+    "careersHint": "Brookfield Careers"
+  },
+  {
+    "name": "Blackstone",
+    "industry": "asset_management",
+    "companyType": "private_markets_manager",
+    "careersHint": "Blackstone Careers"
+  }
+]
+```
+
+## Accountancy & finance
+
+```json
+[
+  {
+    "name": "PwC",
+    "industry": "accountancy_finance",
+    "companyType": "big4_accountancy",
+    "careersHint": "PwC Careers"
+  },
+  {
+    "name": "KPMG",
+    "industry": "accountancy_finance",
+    "companyType": "big4_accountancy",
+    "careersHint": "KPMG Careers"
+  },
+  {
+    "name": "Deloitte",
+    "industry": "accountancy_finance",
+    "companyType": "big4_accountancy",
+    "careersHint": "Deloitte Careers"
+  },
+  {
+    "name": "EY",
+    "industry": "accountancy_finance",
+    "companyType": "big4_accountancy",
+    "careersHint": "EY Careers"
+  },
+  {
+    "name": "BDO",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "BDO Careers"
+  },
+  {
+    "name": "Grant Thornton",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Grant Thornton Careers"
+  },
+  {
+    "name": "RSM",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "RSM Careers"
+  },
+  {
+    "name": "Mazars",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Mazars Careers"
+  },
+  {
+    "name": "Crowe",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Crowe Careers"
+  },
+  {
+    "name": "Forvis Mazars",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Forvis Mazars Careers"
+  },
+  {
+    "name": "Saffery",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Saffery Careers"
+  },
+  {
+    "name": "PKF",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "PKF Careers"
+  },
+  {
+    "name": "Moore Kingston Smith",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Moore Kingston Smith Careers"
+  },
+  {
+    "name": "Azets",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "Azets Careers"
+  },
+  {
+    "name": "MHA",
+    "industry": "accountancy_finance",
+    "companyType": "mid_tier_accountancy",
+    "careersHint": "MHA Careers"
+  }
+]
+```
+
+## IT & tech
+
+```json
+[
+  {
+    "name": "Microsoft",
+    "industry": "it_tech",
+    "companyType": "big_tech_platform",
+    "careersHint": "Microsoft Careers"
+  },
+  {
+    "name": "Google",
+    "industry": "it_tech",
+    "companyType": "big_tech_platform",
+    "careersHint": "Google Careers"
+  },
+  {
+    "name": "Amazon",
+    "industry": "it_tech",
+    "companyType": "big_tech_platform",
+    "careersHint": "Amazon Jobs"
+  },
+  {
+    "name": "Meta",
+    "industry": "it_tech",
+    "companyType": "big_tech_platform",
+    "careersHint": "Meta Careers"
+  },
+  {
+    "name": "Apple",
+    "industry": "it_tech",
+    "companyType": "big_tech_platform",
+    "careersHint": "Apple Careers"
+  },
+  {
+    "name": "IBM",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "IBM Careers"
+  },
+  {
+    "name": "Oracle",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Oracle Careers"
+  },
+  {
+    "name": "Salesforce",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Salesforce Careers"
+  },
+  {
+    "name": "SAP",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "SAP Careers"
+  },
+  {
+    "name": "Adobe",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Adobe Careers"
+  },
+  {
+    "name": "ServiceNow",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "ServiceNow Careers"
+  },
+  {
+    "name": "Workday",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Workday Careers"
+  },
+  {
+    "name": "Atlassian",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Atlassian Careers"
+  },
+  {
+    "name": "Shopify",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Shopify Careers"
+  },
+  {
+    "name": "HubSpot",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "HubSpot Careers"
+  },
+  {
+    "name": "Snowflake",
+    "industry": "it_tech",
+    "companyType": "saas_vendor",
+    "careersHint": "Snowflake Careers"
+  },
+  {
+    "name": "Accenture",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "Accenture Careers"
+  },
+  {
+    "name": "Capgemini",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "Capgemini Careers"
+  },
+  {
+    "name": "Cognizant",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "Cognizant Careers"
+  },
+  {
+    "name": "Infosys",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "Infosys Careers"
+  },
+  {
+    "name": "TCS",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "TCS Careers"
+  },
+  {
+    "name": "Wipro",
+    "industry": "it_tech",
+    "companyType": "it_consultancy",
+    "careersHint": "Wipro Careers"
+  }
+]
+```
