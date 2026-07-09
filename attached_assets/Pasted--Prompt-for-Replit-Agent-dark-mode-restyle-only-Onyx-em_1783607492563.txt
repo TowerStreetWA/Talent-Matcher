@@ -1,0 +1,122 @@
+# Prompt for Replit Agent — dark mode restyle only (Onyx + emerald, skyline background)
+
+Copy everything below the line and paste it into Replit Agent.
+
+---
+
+Restyle ONLY the dark theme of my VacancyMatch app. Do not touch the light theme, the theme toggle, or any functionality/routing/data logic. Every change below applies exclusively to the `[data-theme="dark"]` variable block and dark-mode-only elements.
+
+## 1. Replace the dark palette — "Onyx + emerald"
+
+Replace the current dark-mode values (the green-tinted charcoal set) with this neutral charcoal palette. The backgrounds must be pure neutral — no green tint. Green appears ONLY as the accent.
+
+```css
+[data-theme="dark"] {
+  --bg-canvas: #101113;      /* page background — neutral onyx */
+  --bg-sidebar: #0A0B0C;
+  --bg-card: #1A1C1F;        /* cards, inputs, panels */
+  --border: #2C2F33;
+  --border-strong: #3A3E44;  /* hover state */
+  --text-primary: #ECEEEF;
+  --text-secondary: #8A8F95;
+  --text-placeholder: #5F646B;
+  --accent: #2BC98F;         /* emerald — primary buttons, active nav, links */
+  --accent-contrast: #06251A;/* text on accent */
+  --accent-soft: rgba(43,201,143,0.13); /* active-nav tint, badge bg */
+  --highlight: #F0B429;      /* amber — "recently posted", timestamps, alerts */
+  --highlight-soft: rgba(240,180,41,0.13);
+  --success: #2BC98F;
+  --warning: #F0B429;
+  --danger: #E24B4A;
+}
+```
+
+Rules for applying it:
+- Active sidebar item: `--accent-soft` background with `--accent` icon and text.
+- Primary buttons (Save search, Add candidate): `--accent` background, `--accent-contrast` text.
+- Amber only for freshness/time signals ("3 min ago", "Recently posted") and alert counts.
+- Sector chips in dark mode: `--bg-card` background, `--border` border, `--text-secondary`-toned text; a selected/active chip switches to `--accent-soft` bg with `--accent` text and a `rgba(43,201,143,0.3)` border.
+- Match-score rings: track `--border`, high scores (85+) stroke `--accent`, lower scores stroke `--text-secondary`.
+
+## 2. Add a skyline silhouette background (dark mode only)
+
+Create a `SkylineBackdrop` component: an inline SVG pinned to the bottom of the page container, behind all content.
+
+- Render it ONLY in dark mode (hide it entirely when `[data-theme="dark"]` is not set).
+- Position: `position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; pointer-events: none; opacity: 0.65; z-index: 0;` inside the relatively-positioned page/main container. All page content must sit above it (`position: relative` or `z-index: 1`).
+- Show it on the Dashboard, Job Search, and login pages only — NOT behind dense tables (Candidates, Live Jobs, Team, Billing).
+- Fill colour `#1B1D21` (one step above the canvas — it must read as a subtle silhouette, never compete with content).
+
+Use exactly this SVG for the Paris variant:
+
+```html
+<svg viewBox="0 0 680 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <g fill="#1B1D21">
+    <rect x="0" y="72" width="46" height="38"/>
+    <rect x="8" y="64" width="6" height="8"/>
+    <rect x="50" y="80" width="40" height="30"/>
+    <rect x="62" y="72" width="5" height="8"/>
+    <path d="M104 110 Q128 62 136 36 L136 28 Q138 16 141 6 L143 0 L145 6 Q148 16 150 28 L150 35 Q158 62 182 110 H164 Q150 76 143 50 Q136 76 122 110 Z"/>
+    <rect x="124" y="48" width="38" height="5"/>
+    <rect x="132" y="26" width="22" height="4"/>
+    <rect x="188" y="76" width="34" height="34"/>
+    <rect x="196" y="68" width="6" height="8"/>
+    <rect x="230" y="78" width="11" height="32"/>
+    <rect x="259" y="78" width="11" height="32"/>
+    <rect x="230" y="68" width="40" height="13"/>
+    <rect x="276" y="82" width="30" height="28"/>
+    <path d="M312 110 L338 72 L364 110 Z"/>
+    <rect x="370" y="74" width="44" height="36"/>
+    <rect x="382" y="66" width="5" height="8"/>
+    <rect x="424" y="24" width="26" height="86"/>
+    <path d="M470 110 v-26 q0 -20 16 -20 q16 0 16 20 v26 Z"/>
+    <rect x="484" y="54" width="3" height="12"/>
+    <path d="M508 110 v-16 q0 -10 8 -10 q8 0 8 10 v16 Z"/>
+    <rect x="530" y="76" width="42" height="34"/>
+    <rect x="542" y="68" width="6" height="8"/>
+    <rect x="576" y="84" width="36" height="26"/>
+    <rect x="616" y="70" width="30" height="40"/>
+    <rect x="624" y="62" width="5" height="8"/>
+    <rect x="650" y="80" width="30" height="30"/>
+  </g>
+</svg>
+```
+
+And exactly this SVG for the London variant:
+
+```html
+<svg viewBox="0 0 680 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <g fill="#1B1D21">
+    <rect x="0" y="55" width="34" height="55"/>
+    <rect x="38" y="35" width="26" height="75"/>
+    <rect x="42" y="26" width="8" height="10"/>
+    <rect x="70" y="62" width="40" height="48"/>
+    <path d="M118 110 V38 L138 12 L158 38 V110 Z"/>
+    <rect x="162" y="50" width="30" height="60"/>
+    <path d="M200 110 V52 Q200 20 222 16 Q244 20 244 52 V110 Z"/>
+    <rect x="250" y="42" width="22" height="68"/>
+    <rect x="276" y="66" width="46" height="44"/>
+    <rect x="328" y="30" width="30" height="80"/>
+    <rect x="336" y="20" width="6" height="12"/>
+    <rect x="362" y="58" width="36" height="52"/>
+    <path d="M404 110 V46 L420 34 L436 46 V110 Z"/>
+    <rect x="440" y="70" width="52" height="40"/>
+    <rect x="496" y="38" width="26" height="72"/>
+    <rect x="526" y="56" width="38" height="54"/>
+    <rect x="568" y="28" width="24" height="82"/>
+    <rect x="574" y="18" width="5" height="12"/>
+    <rect x="596" y="64" width="44" height="46"/>
+    <rect x="644" y="44" width="36" height="66"/>
+  </g>
+</svg>
+```
+
+Skyline selection logic: default to the London variant. On the Job Search page, if the location filter contains "Paris" or "France", show the Paris variant instead. Structure the component so more city variants can be added later as simple SVG swaps.
+
+## 3. Acceptance checks
+
+- Light mode is pixel-identical to before — zero changes.
+- No green-tinted background colours remain anywhere in dark mode; backgrounds are neutral onyx/charcoal.
+- Skyline appears only in dark mode, only on Dashboard, Job Search, and login; content always renders above it; it never intercepts clicks.
+- All dark-mode text meets WCAG AA contrast against the new backgrounds.
+- Theme toggle still switches instantly with no flash on reload.

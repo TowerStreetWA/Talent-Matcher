@@ -187,6 +187,12 @@ export interface JobSearchPipelineArgs {
   sectorFilter: FinSector | null;
   familyFilters: DisplayFamily[];
   sourceFilter: string | null;
+  /**
+   * Recruitment-agency postings (company_kind = 'recruitment_firm') are
+   * excluded by default; pass true to include them. NULL/unknown kinds are
+   * always kept — only positively-identified recruiters are filtered.
+   */
+  includeRecruiters?: boolean;
 }
 
 export interface JobSearchPipelineRow {
@@ -210,6 +216,13 @@ export async function runJobSearchPipeline(
     eq(jobsTable.status, "active"),
     eq(jobsTable.isCanonical, true),
   ];
+  if (!args.includeRecruiters) {
+    // Default recruiter filter: keep NULL/unclassified rows (IS DISTINCT FROM
+    // treats NULL as "not a recruiter") so legacy data is never hidden.
+    conditions.push(
+      sql`${jobsTable.companyKind} IS DISTINCT FROM 'recruitment_firm'`,
+    );
+  }
   if (nq) {
     const likeConds = [];
     for (const variant of nq.variants.slice(0, 15)) {
@@ -326,6 +339,12 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     return;
   }
   const sourceFilter = sourceRaw || null;
+  const includeRecruitersRaw =
+    typeof req.query["includeRecruiters"] === "string"
+      ? req.query["includeRecruiters"]
+      : "";
+  const includeRecruiters =
+    includeRecruitersRaw === "true" || includeRecruitersRaw === "1";
   const locationVariants = locationRaw ? expandLocationInput(locationRaw) : [];
   const nq = q.trim() ? normalizeQuery(q) : null;
 
@@ -336,6 +355,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
     sectorFilter,
     familyFilters,
     sourceFilter,
+    includeRecruiters,
   });
 
   const total = scored.length;
@@ -404,6 +424,7 @@ router.get("/jobs/search", async (req, res): Promise<void> => {
         sourceType: r.job.sourceType,
         sourceProvider: r.job.sourceProvider,
         sourceName: r.sourceName,
+        companyKind: r.job.companyKind,
         postedAt: r.job.postedAt?.toISOString() ?? null,
         salaryText: r.job.salaryText,
         skills: r.job.skills ?? [],

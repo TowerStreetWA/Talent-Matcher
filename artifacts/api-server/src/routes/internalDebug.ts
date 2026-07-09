@@ -388,6 +388,7 @@ router.get("/internal/debug/sector-scorecards", async (req, res) => {
         sourceProvider: jobsTable.sourceProvider,
         sourceType: jobsTable.sourceType,
         sectorTag: jobsTable.sectorTag,
+        companyKind: jobsTable.companyKind,
       })
       .from(jobsTable)
       .where(activeCanonical),
@@ -412,7 +413,18 @@ router.get("/internal/debug/sector-scorecards", async (req, res) => {
   // Industry job totals via the display classifier, with sectorTag fallback —
   // same effective-sector rule the coverage endpoint uses.
   const jobsByIndustry = new Map<string, { total: number; directEmployer: number }>();
+  // Recruiter-filter diagnostics: jobs + distinct companies per company_kind,
+  // overall and per industry (kind buckets: direct_employer/recruitment_firm/
+  // job_board/unknown; null company_kind reported as "unclassified").
+  const kindTotals = new Map<string, { jobs: number; companies: Set<string> }>();
+  const kindsByIndustry = new Map<string, Record<string, number>>();
   for (const row of classifyRows) {
+    const kind = row.companyKind ?? "unclassified";
+    const kt = kindTotals.get(kind) ?? { jobs: 0, companies: new Set<string>() };
+    kt.jobs += 1;
+    if (row.companyName) kt.companies.add(normalizeCompany(row.companyName));
+    kindTotals.set(kind, kt);
+
     const c = classifyJobForDisplay(row);
     const sector = row.sectorTag ?? c?.sector ?? null;
     if (!sector) continue;
@@ -420,6 +432,10 @@ router.get("/internal/debug/sector-scorecards", async (req, res) => {
     bucket.total += 1;
     if (row.sourceType === "direct_employer") bucket.directEmployer += 1;
     jobsByIndustry.set(sector, bucket);
+
+    const ik = kindsByIndustry.get(sector) ?? {};
+    ik[kind] = (ik[kind] ?? 0) + 1;
+    kindsByIndustry.set(sector, ik);
   }
 
   const segmentJobs = new Map<string, number>();
@@ -470,7 +486,27 @@ router.get("/internal/debug/sector-scorecards", async (req, res) => {
     });
   });
 
-  const payload = { industries };
+  const companyKinds = {
+    totals: [...kindTotals.entries()]
+      .map(([kind, v]) => ({ kind, jobs: v.jobs, companies: v.companies.size }))
+      .sort((a, b) => b.jobs - a.jobs),
+    by_industry: Object.fromEntries(
+      [...kindsByIndustry.entries()].map(([industry, kinds]) => {
+        const total = Object.values(kinds).reduce((a, b) => a + b, 0);
+        const recruiter = kinds["recruitment_firm"] ?? 0;
+        return [
+          industry,
+          {
+            ...kinds,
+            total,
+            recruiter_share_pct: total > 0 ? Math.round((recruiter / total) * 1000) / 10 : 0,
+          },
+        ];
+      }),
+    ),
+  };
+
+  const payload = { industries, company_kinds: companyKinds };
   req.log.info(
     {
       event: "debug_sector_scorecards",

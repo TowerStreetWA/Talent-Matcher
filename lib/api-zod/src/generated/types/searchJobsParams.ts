@@ -30,6 +30,10 @@ families?: string;
  */
 source?: SearchJobsSource;
 /**
+ * Recruitment-agency postings are excluded by default; pass true to include them
+ */
+includeRecruiters?: boolean;
+/**
  * 1-based page number (default 1)
  * @minimum 1
  */

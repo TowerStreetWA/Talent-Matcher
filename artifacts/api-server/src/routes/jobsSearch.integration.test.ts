@@ -119,4 +119,46 @@ describe("GET /api/jobs/search (integration)", () => {
     const body = (await res.json()) as { message: string };
     expect(body.message).toContain("Unknown source");
   });
+
+  it("parses includeRecruiters (true/1 include; false/omitted exclude)", async () => {
+    const totals: Record<string, number> = {};
+    for (const qs of ["", "?includeRecruiters=false", "?includeRecruiters=true", "?includeRecruiters=1"]) {
+      const res = await get(`/api/jobs/search${qs}`);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as SearchResponse;
+      totals[qs || "omitted"] = body.total;
+    }
+    // false and omitted behave identically (recruiters excluded).
+    expect(totals["?includeRecruiters=false"]).toBe(totals["omitted"]);
+    // true and 1 behave identically and never return fewer rows than default.
+    expect(totals["?includeRecruiters=1"]).toBe(totals["?includeRecruiters=true"]);
+    expect(totals["?includeRecruiters=true"]).toBeGreaterThanOrEqual(
+      totals["omitted"] ?? 0,
+    );
+  });
+});
+
+describe("POST /api/internal/maintenance/reclassify-company-kinds (authz)", () => {
+  it("denies non-admin roles", async () => {
+    const [recruiter] = await db
+      .select({ id: tenantUsersTable.id })
+      .from(tenantUsersTable)
+      .where(eq(tenantUsersTable.email, "recruiter@demo.test"))
+      .limit(1);
+    expect(recruiter).toBeDefined();
+    const session = await createSession(recruiter!.id, {});
+    try {
+      const res = await fetch(
+        `${baseUrl}/api/internal/maintenance/reclassify-company-kinds`,
+        {
+          method: "POST",
+          headers: { cookie: `${SESSION_COOKIE}=${session.token}` },
+        },
+      );
+      expect(res.status).toBe(403);
+    } finally {
+      const { revokeSession } = await import("../lib/auth");
+      await revokeSession(session.token);
+    }
+  });
 });

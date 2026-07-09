@@ -27,5 +27,7 @@ export interface SavedJobSearchInput {
   families?: string[];
   /** @nullable */
   sourceType?: SavedJobSearchInputSourceType;
+  /** Include recruitment-agency postings (default false) */
+  includeRecruiters?: boolean;
   alertEnabled?: boolean;
 }

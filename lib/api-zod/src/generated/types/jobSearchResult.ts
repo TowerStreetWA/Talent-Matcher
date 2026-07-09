@@ -37,6 +37,11 @@ export interface JobSearchResult {
   sourceProvider?: string | null;
   /** @nullable */
   sourceName?: string | null;
+  /**
+     * Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null when unclassified
+     * @nullable
+     */
+  companyKind?: string | null;
   /** @nullable */
   postedAt?: string | null;
   /** @nullable */

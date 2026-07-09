@@ -780,6 +780,11 @@ paths:
           schema:
             type: string
             enum: [direct_employer, google_jobs, job_board, agency]
+        - name: includeRecruiters
+          in: query
+          required: false
+          description: Recruitment-agency postings are excluded by default; pass true to include them
+          schema: { type: boolean }
         - name: page
           in: query
           required: false
@@ -1690,6 +1695,7 @@ components:
         sourceType: { type: ["string", "null"], description: "Discovery source: direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
         sourceProvider: { type: ["string", "null"] }
         sourceUrl: { type: ["string", "null"] }
+        companyKind: { type: ["string", "null"], description: "Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows" }
         isCanonical: { type: boolean, default: true, description: "False when this row is a duplicate copy of another vacancy in the same canonical group" }
         classification:
           oneOf:
@@ -1752,6 +1758,7 @@ components:
         sourceType: { type: ["string", "null"], description: "direct_employer, google_jobs, job_board, agency; null for manual/legacy rows" }
         sourceProvider: { type: ["string", "null"] }
         sourceName: { type: ["string", "null"] }
+        companyKind: { type: ["string", "null"], description: "Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null when unclassified" }
         postedAt: { type: ["string", "null"] }
         salaryText: { type: ["string", "null"] }
         skills:
@@ -1799,7 +1806,7 @@ components:
         label: { type: string, description: "Human-friendly label for the UI" }
     SavedJobSearch:
       type: object
-      required: [id, name, query, location, families, alertEnabled, createdAt]
+      required: [id, name, query, location, families, includeRecruiters, alertEnabled, createdAt]
       properties:
         id: { type: string }
         name: { type: string }
@@ -1815,6 +1822,9 @@ components:
         sourceType:
           type: ["string", "null"]
           description: direct_employer/google_jobs/job_board/agency or null
+        includeRecruiters:
+          type: boolean
+          description: Whether this search includes recruitment-agency postings (default false)
         alertEnabled: { type: boolean }
         lastRunAt: { type: ["string", "null"], description: Last alert-sweep run for this search }
         createdAt: { type: string }
@@ -1836,6 +1846,9 @@ components:
         sourceType:
           type: ["string", "null"]
           enum: [direct_employer, google_jobs, job_board, agency, null]
+        includeRecruiters:
+          type: boolean
+          description: Include recruitment-agency postings (default false)
         alertEnabled: { type: boolean }
     SavedJobSearchUpdate:
       type: object

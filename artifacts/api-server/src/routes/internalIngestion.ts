@@ -1,7 +1,10 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { z } from "zod/v4";
+import { eq, inArray } from "drizzle-orm";
+import { db, jobsTable } from "@workspace/db";
 import { recordAudit } from "../lib/audit";
 import { tenantOf, auditActor } from "../middlewares/auth";
+import { classifyCompanyKind, type CompanyKind } from "../lib/search/companyKind";
 import { employerSiteProvider } from "../lib/vacancies/employerSiteProvider";
 import { googleJobsProvider } from "../lib/vacancies/googleJobsProvider";
 import {
@@ -774,5 +777,68 @@ router.post("/internal/ingestion/expire-stale", async (req, res) => {
   });
   res.json(result);
 });
+
+/**
+ * Backfill/refresh company_kind for every job in the tenant using the current
+ * recruiter registry + overrides (config/recruiterFirms.ts,
+ * config/recruiterOverrides.ts). Idempotent; run after taxonomy/registry
+ * edits. Tenant-scoped, admin+ (/internal guard). Never deletes jobs.
+ */
+router.post(
+  "/internal/maintenance/reclassify-company-kinds",
+  async (req, res) => {
+    const tenantId = tenantOf(req);
+    const rows = await db
+      .select({
+        id: jobsTable.id,
+        companyName: jobsTable.companyName,
+        applyUrl: jobsTable.applyUrl,
+        sourceUrl: jobsTable.sourceUrl,
+        descriptionText: jobsTable.descriptionText,
+        companyKind: jobsTable.companyKind,
+      })
+      .from(jobsTable)
+      .where(eq(jobsTable.tenantId, tenantId));
+
+    const idsByKind = new Map<CompanyKind, string[]>();
+    const counts: Record<string, number> = {};
+    let changed = 0;
+    for (const row of rows) {
+      const kind = classifyCompanyKind({
+        companyName: row.companyName,
+        urls: [row.applyUrl, row.sourceUrl],
+        descriptionText: row.descriptionText,
+      });
+      counts[kind] = (counts[kind] ?? 0) + 1;
+      if (row.companyKind !== kind) {
+        changed += 1;
+        const ids = idsByKind.get(kind) ?? [];
+        ids.push(row.id);
+        idsByKind.set(kind, ids);
+      }
+    }
+
+    for (const [kind, ids] of idsByKind) {
+      for (let i = 0; i < ids.length; i += 500) {
+        await db
+          .update(jobsTable)
+          .set({ companyKind: kind })
+          .where(inArray(jobsTable.id, ids.slice(i, i + 500)));
+      }
+    }
+
+    await recordAudit({
+      action: "ingestion.reclassify_company_kinds",
+      entityType: "job",
+      metadata: `Reclassified company kinds: ${rows.length} jobs scanned, ${changed} updated`,
+      ...auditActor(req),
+    });
+    req.log.info(
+      { event: "reclassify_company_kinds", scanned: rows.length, changed, counts },
+      "Company kinds reclassified",
+    );
+    res.json({ scanned: rows.length, changed, counts });
+  },
+);
 
 export default router;

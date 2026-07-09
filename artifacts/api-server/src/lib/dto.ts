@@ -89,6 +89,7 @@ export function toJobDto(
     sourceType: j.sourceType,
     sourceProvider: j.sourceProvider,
     sourceUrl: j.sourceUrl,
+    companyKind: j.companyKind,
     isCanonical: j.isCanonical,
     classification: classifyJobForDisplay({
       title: j.title,

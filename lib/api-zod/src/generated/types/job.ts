@@ -52,6 +52,11 @@ export interface Job {
   sourceProvider?: string | null;
   /** @nullable */
   sourceUrl?: string | null;
+  /**
+     * Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows
+     * @nullable
+     */
+  companyKind?: string | null;
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
   /** Taxonomy classification for display tags; null when no sector is confidently classified */

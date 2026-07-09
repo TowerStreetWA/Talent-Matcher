@@ -51,6 +51,7 @@ const toDto = (row: SavedJobSearch): Record<string, unknown> => ({
   sector: row.sector,
   families: row.families ?? [],
   sourceType: row.sourceType,
+  includeRecruiters: row.includeRecruiters,
   alertEnabled: row.alertEnabled,
   lastRunAt: row.lastRunAt?.toISOString() ?? null,
   createdAt: row.createdAt.toISOString(),
@@ -103,6 +104,7 @@ router.post("/job-searches", async (req, res): Promise<void> => {
       sector: body.sector ?? null,
       families: familiesCheck.families,
       sourceType: body.sourceType ?? null,
+      includeRecruiters: body.includeRecruiters ?? false,
       alertEnabled: body.alertEnabled ?? false,
     })
     .returning();

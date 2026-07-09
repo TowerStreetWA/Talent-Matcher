@@ -78,6 +78,13 @@ async function findNewJobsFor(
   }
   if (saved.sourceType)
     conditions.push(eq(jobsTable.sourceType, saved.sourceType));
+  if (!saved.includeRecruiters) {
+    // Mirror /jobs/search default: exclude recruitment-agency postings but
+    // keep NULL/unclassified rows.
+    conditions.push(
+      sql`${jobsTable.companyKind} IS DISTINCT FROM 'recruitment_firm'`,
+    );
+  }
 
   // Order must mirror the window predicate's coalesce: plain `postedAt DESC`
   // puts NULL postedAt rows first in Postgres, letting bulk-ingested rows

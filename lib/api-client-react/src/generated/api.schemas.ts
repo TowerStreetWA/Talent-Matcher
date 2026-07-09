@@ -511,6 +511,11 @@ export interface Job {
   sourceProvider?: string | null;
   /** @nullable */
   sourceUrl?: string | null;
+  /**
+     * Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows
+     * @nullable
+     */
+  companyKind?: string | null;
   /** False when this row is a duplicate copy of another vacancy in the same canonical group */
   isCanonical?: boolean;
   /** Taxonomy classification for display tags; null when no sector is confidently classified */
@@ -565,6 +570,11 @@ export interface JobSearchResult {
   sourceProvider?: string | null;
   /** @nullable */
   sourceName?: string | null;
+  /**
+     * Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null when unclassified
+     * @nullable
+     */
+  companyKind?: string | null;
   /** @nullable */
   postedAt?: string | null;
   /** @nullable */
@@ -624,6 +634,8 @@ export interface SavedJobSearch {
      * @nullable
      */
   sourceType?: string | null;
+  /** Whether this search includes recruitment-agency postings (default false) */
+  includeRecruiters: boolean;
   alertEnabled: boolean;
   /**
      * Last alert-sweep run for this search
@@ -680,6 +692,8 @@ export interface SavedJobSearchInput {
   families?: string[];
   /** @nullable */
   sourceType?: SavedJobSearchInputSourceType;
+  /** Include recruitment-agency postings (default false) */
+  includeRecruiters?: boolean;
   alertEnabled?: boolean;
 }
 
@@ -955,6 +969,10 @@ families?: string;
  * Filter by job source type
  */
 source?: SearchJobsSource;
+/**
+ * Recruitment-agency postings are excluded by default; pass true to include them
+ */
+includeRecruiters?: boolean;
 /**
  * 1-based page number (default 1)
  * @minimum 1

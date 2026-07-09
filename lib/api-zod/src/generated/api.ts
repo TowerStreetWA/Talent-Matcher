@@ -680,6 +680,7 @@ export const ListCandidateMatchesResponseItem = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(listCandidateMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
@@ -785,6 +786,7 @@ export const ListMatchesResponseItem = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(listMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
@@ -874,6 +876,7 @@ export const UpdateMatchResponse = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(updateMatchResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
@@ -978,6 +981,7 @@ export const ListJobsResponseItem = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(listJobsResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
@@ -1030,6 +1034,7 @@ export const SearchJobsQueryParams = zod.object({
   "sector": zod.enum(['insurance', 'banking', 'pensions', 'asset_management', 'accountancy_finance', 'it_tech']).optional().describe('Industry\/sector filter mapped to internal sector tags'),
   "families": zod.coerce.string().optional().describe('Comma-separated display-family keys (taxonomy-driven; see GET \/jobs\/search\/families). Results are restricted to jobs classified under any of them.'),
   "source": zod.enum(['direct_employer', 'google_jobs', 'job_board', 'agency']).optional().describe('Filter by job source type'),
+  "includeRecruiters": zod.coerce.boolean().optional().describe('Recruitment-agency postings are excluded by default; pass true to include them'),
   "page": zod.coerce.number().min(1).optional().describe('1-based page number (default 1)'),
   "pageSize": zod.coerce.number().min(1).max(searchJobsQueryPageSizeMax).optional().describe('Results per page (default 25, max 50)')
 })
@@ -1047,6 +1052,7 @@ export const SearchJobsResponse = zod.object({
   "sourceType": zod.string().nullish().describe('direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceName": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null when unclassified'),
   "postedAt": zod.string().nullish(),
   "salaryText": zod.string().nullish(),
   "skills": zod.array(zod.string()),
@@ -1096,6 +1102,7 @@ export const ListSavedJobSearchesResponseItem = zod.object({
   "sector": zod.string().nullish().describe('insurance\/banking\/pensions\/asset_management\/accountancy_finance\/it_tech or null'),
   "families": zod.array(zod.string()).describe('Display-family keys stored with the search'),
   "sourceType": zod.string().nullish().describe('direct_employer\/google_jobs\/job_board\/agency or null'),
+  "includeRecruiters": zod.boolean().describe('Whether this search includes recruitment-agency postings (default false)'),
   "alertEnabled": zod.boolean(),
   "lastRunAt": zod.string().nullish().describe('Last alert-sweep run for this search'),
   "createdAt": zod.string()
@@ -1123,6 +1130,7 @@ export const CreateSavedJobSearchBody = zod.object({
   "sector": zod.union([zod.literal('insurance'),zod.literal('banking'),zod.literal('pensions'),zod.literal('asset_management'),zod.literal('accountancy_finance'),zod.literal('it_tech'),zod.literal(null)]).nullish(),
   "families": zod.array(zod.string()).max(createSavedJobSearchBodyFamiliesMax).optional().describe('Display-family keys (validated against the taxonomy for the sector)'),
   "sourceType": zod.union([zod.literal('direct_employer'),zod.literal('google_jobs'),zod.literal('job_board'),zod.literal('agency'),zod.literal(null)]).nullish(),
+  "includeRecruiters": zod.boolean().optional().describe('Include recruitment-agency postings (default false)'),
   "alertEnabled": zod.boolean().optional()
 })
 
@@ -1134,6 +1142,7 @@ export const CreateSavedJobSearchResponse = zod.object({
   "sector": zod.string().nullish().describe('insurance\/banking\/pensions\/asset_management\/accountancy_finance\/it_tech or null'),
   "families": zod.array(zod.string()).describe('Display-family keys stored with the search'),
   "sourceType": zod.string().nullish().describe('direct_employer\/google_jobs\/job_board\/agency or null'),
+  "includeRecruiters": zod.boolean().describe('Whether this search includes recruitment-agency postings (default false)'),
   "alertEnabled": zod.boolean(),
   "lastRunAt": zod.string().nullish().describe('Last alert-sweep run for this search'),
   "createdAt": zod.string()
@@ -1164,6 +1173,7 @@ export const UpdateSavedJobSearchResponse = zod.object({
   "sector": zod.string().nullish().describe('insurance\/banking\/pensions\/asset_management\/accountancy_finance\/it_tech or null'),
   "families": zod.array(zod.string()).describe('Display-family keys stored with the search'),
   "sourceType": zod.string().nullish().describe('direct_employer\/google_jobs\/job_board\/agency or null'),
+  "includeRecruiters": zod.boolean().describe('Whether this search includes recruitment-agency postings (default false)'),
   "alertEnabled": zod.boolean(),
   "lastRunAt": zod.string().nullish().describe('Last alert-sweep run for this search'),
   "createdAt": zod.string()
@@ -1212,6 +1222,7 @@ export const GetJobResponse = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(getJobResponseIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),
@@ -1486,6 +1497,7 @@ export const GetTopMatchesResponseItem = zod.object({
   "sourceType": zod.string().nullish().describe('Discovery source: direct_employer, google_jobs, job_board, agency; null for manual\/legacy rows'),
   "sourceProvider": zod.string().nullish(),
   "sourceUrl": zod.string().nullish(),
+  "companyKind": zod.string().nullish().describe('Posting company classification: direct_employer, recruitment_firm, job_board, unknown; null for unclassified legacy rows'),
   "isCanonical": zod.boolean().default(getTopMatchesResponseJobIsCanonicalDefault).describe('False when this row is a duplicate copy of another vacancy in the same canonical group'),
   "classification": zod.union([zod.object({
   "sector": zod.string().describe('Sector key, e.g. insurance, it_tech'),

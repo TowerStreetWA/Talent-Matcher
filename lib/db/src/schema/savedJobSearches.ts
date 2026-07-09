@@ -28,6 +28,8 @@ export const savedJobSearchesTable = pgTable("saved_job_searches", {
   families: jsonb("families").$type<string[]>().notNull().default([]),
   // Source-type filter (direct_employer | google_jobs | job_board | agency) or null.
   sourceType: text("source_type"),
+  // Whether recruitment-agency postings are included (search default is false).
+  includeRecruiters: boolean("include_recruiters").notNull().default(false),
   alertEnabled: boolean("alert_enabled").notNull().default(false),
   lastRunAt: timestamp("last_run_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })

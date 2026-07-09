@@ -52,6 +52,7 @@ import {
   Play,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Switch } from "@/components/ui/switch";
 import { ClassificationTags } from "@/components/classification-tags";
 import { CompanyMonogram } from "@/components/company-monogram";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -94,6 +95,7 @@ interface FilterState {
   sector: SearchJobsSector | "all";
   source: SearchJobsSource | "all";
   families: string[];
+  includeRecruiters: boolean;
 }
 
 const initialParams = (): FilterState => {
@@ -101,6 +103,7 @@ const initialParams = (): FilterState => {
   const sectorParam = params.get("sector") ?? "";
   const sourceParam = params.get("source") ?? "";
   const familiesParam = params.get("families") ?? "";
+  const includeRecruitersParam = params.get("includeRecruiters") ?? "";
   return {
     q: params.get("q") ?? "",
     location: params.get("location") ?? "",
@@ -110,6 +113,8 @@ const initialParams = (): FilterState => {
       .split(",")
       .map((f) => f.trim())
       .filter(Boolean),
+    includeRecruiters:
+      includeRecruitersParam === "true" || includeRecruitersParam === "1",
   };
 };
 
@@ -127,6 +132,7 @@ const savedSearchSummary = (s: SavedJobSearchDto): string => {
     );
   const src = sourceLabel(s.sourceType);
   if (src) parts.push(src);
+  if (s.includeRecruiters) parts.push("incl. recruiters");
   return parts.length > 0 ? parts.join(" · ") : "All jobs";
 };
 
@@ -137,13 +143,16 @@ export default function JobSearch() {
   const [sector, setSector] = useState<SearchJobsSector | "all">(initial.sector);
   const [source, setSource] = useState<SearchJobsSource | "all">(initial.source);
   const [families, setFamilies] = useState<string[]>(initial.families);
+  const [includeRecruiters, setIncludeRecruiters] = useState(
+    initial.includeRecruiters,
+  );
   const [page, setPage] = useState(1);
   const debouncedQ = useDebounce(q, 300);
   const debouncedLocation = useDebounce(location, 300);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedQ, debouncedLocation, sector, source, families]);
+  }, [debouncedQ, debouncedLocation, sector, source, families, includeRecruiters]);
 
   const familyParams = sector !== "all" ? { sector } : undefined;
   const { data: familyCatalog } = useListJobSearchFamilies(familyParams, {
@@ -190,6 +199,7 @@ export default function JobSearch() {
     ...(sector !== "all" ? { sector } : {}),
     ...(families.length > 0 ? { families: families.join(",") } : {}),
     ...(source !== "all" ? { source } : {}),
+    ...(includeRecruiters ? { includeRecruiters: true } : {}),
     page,
     pageSize: PAGE_SIZE,
   });
@@ -239,6 +249,7 @@ export default function JobSearch() {
           sector: sector !== "all" ? sector : null,
           families,
           sourceType: source !== "all" ? source : null,
+          includeRecruiters,
           alertEnabled: saveAlerts,
         },
       },
@@ -267,6 +278,7 @@ export default function JobSearch() {
     setSector(s.sector && isSector(s.sector) ? s.sector : "all");
     setFamilies(s.families ?? []);
     setSource(s.sourceType && isSource(s.sourceType) ? s.sourceType : "all");
+    setIncludeRecruiters(s.includeRecruiters);
     setPage(1);
     track("job_search_saved_run", { savedSearchId: s.id });
   };
@@ -334,13 +346,15 @@ export default function JobSearch() {
     Boolean(debouncedLocation.trim()) ||
     sector !== "all" ||
     families.length > 0 ||
-    source !== "all";
+    source !== "all" ||
+    includeRecruiters;
   const clearAll = (): void => {
     setQ("");
     setLocation("");
     setSector("all");
     setFamilies([]);
     setSource("all");
+    setIncludeRecruiters(false);
   };
 
   return (
@@ -484,7 +498,7 @@ export default function JobSearch() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {SECTORS.map((s) => (
           <Button
             key={s.value}
@@ -497,6 +511,17 @@ export default function JobSearch() {
             {s.label}
           </Button>
         ))}
+        <label
+          className="ml-auto flex items-center gap-2 text-xs text-muted-foreground cursor-pointer"
+          data-testid="toggle-include-recruiters"
+        >
+          <Switch
+            checked={includeRecruiters}
+            onCheckedChange={setIncludeRecruiters}
+            aria-label="Include recruitment agency posts"
+          />
+          Include recruitment agency posts
+        </label>
       </div>
 
       {sector !== "all" && sectorFamilies.length > 0 && (
@@ -571,6 +596,18 @@ export default function JobSearch() {
           <Badge variant="secondary" className="gap-1 font-normal">
             Source: {sourceLabel(source)}
             <button aria-label="Clear source filter" onClick={() => setSource("all")} className="ml-0.5 hover:text-foreground">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
+        {includeRecruiters && (
+          <Badge variant="secondary" className="gap-1 font-normal">
+            Including recruiter posts
+            <button
+              aria-label="Exclude recruiter posts"
+              onClick={() => setIncludeRecruiters(false)}
+              className="ml-0.5 hover:text-foreground"
+            >
               <X className="h-3 w-3" />
             </button>
           </Badge>
@@ -677,6 +714,15 @@ export default function JobSearch() {
                       {job.sourceType === "agency" && (
                         <Badge variant="outline" className="text-xs font-normal">
                           Agency
+                        </Badge>
+                      )}
+                      {job.companyKind === "recruitment_firm" && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-normal border-transparent bg-warning/10 text-warning"
+                          data-testid={`badge-recruitment-firm-${job.id}`}
+                        >
+                          Recruitment firm
                         </Badge>
                       )}
                       {!job.sourceType && job.sourceName && (
@@ -812,6 +858,7 @@ export default function JobSearch() {
                 sector: sector !== "all" ? sector : null,
                 families,
                 sourceType: source !== "all" ? source : null,
+                includeRecruiters,
                 alertEnabled: false,
                 lastRunAt: null,
                 createdAt: "",

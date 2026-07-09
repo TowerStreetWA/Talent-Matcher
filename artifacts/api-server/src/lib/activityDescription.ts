@@ -85,6 +85,7 @@ const STATIC_ACTIONS: Record<string, string> = {
   "research.company_search": "Searched Companies House",
   "research.company_profile": "Viewed a Companies House profile",
   "ingestion.expire_stale": "Stale jobs expired",
+  "ingestion.reclassify_company_kinds": "Company kinds reclassified",
 };
 
 export function describeActivity(action: string, metadata: string | null): string {

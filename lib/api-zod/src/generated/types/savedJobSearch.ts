@@ -23,6 +23,8 @@ export interface SavedJobSearch {
      * @nullable
      */
   sourceType?: string | null;
+  /** Whether this search includes recruitment-agency postings (default false) */
+  includeRecruiters: boolean;
   alertEnabled: boolean;
   /**
      * Last alert-sweep run for this search
