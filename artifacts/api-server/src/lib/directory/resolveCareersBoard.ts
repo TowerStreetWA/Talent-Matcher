@@ -219,7 +219,7 @@ export async function fetchPage(url: string): Promise<FetchPageResult> {
  */
 export async function resolveCareersBoard(
   careersUrl: string,
-  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+  opts: { company: string; sectorTag?: string | null; maxJobs?: number; locationIncludes?: string[] },
 ): Promise<BoardResolution> {
   const key = cacheKey(careersUrl);
   const hit = cache.get(key);
@@ -240,7 +240,7 @@ export async function resolveCareersBoard(
  */
 function rebindEntry(
   hit: BoardResolution,
-  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+  opts: { company: string; sectorTag?: string | null; maxJobs?: number; locationIncludes?: string[] },
 ): AtsEmployerConfig | null {
   if (!hit.boardUrl) return hit.entry;
   if (hit.entry?.platform === "successfactors") {
@@ -254,7 +254,7 @@ const RMK_MARKER = /class="jobTitle-link"/;
 
 async function resolveUncached(
   careersUrl: string,
-  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+  opts: { company: string; sectorTag?: string | null; maxJobs?: number; locationIncludes?: string[] },
 ): Promise<BoardResolution> {
   const checkedAt = new Date();
 

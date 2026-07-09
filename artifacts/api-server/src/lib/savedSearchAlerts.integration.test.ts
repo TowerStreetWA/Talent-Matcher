@@ -107,4 +107,94 @@ describe("sweepSavedSearchAlerts window behavior (integration)", () => {
       afterFirst?.lastRunAt?.getTime() ?? Infinity,
     );
   });
+
+  it("keeps the most relevant job when a window has more than 25 matches", async () => {
+    const CAP_QUERY = "__capsort probe engineer__";
+    const CAP_TITLE = "__Capsort Probe Engineer__ Exact";
+    const fillerIds: string[] = [];
+    let capSearchId = "";
+    let exactJobId = "";
+
+    const [owner] = await db
+      .select({ id: tenantUsersTable.id })
+      .from(tenantUsersTable)
+      .where(eq(tenantUsersTable.email, "owner@demo.test"))
+      .limit(1);
+    if (!owner) throw new Error("Seeded demo owner not found");
+
+    try {
+      // 30 weak matches (query token only in description) posted NEWER than
+      // the exact match, so a postedAt-ordered cap would crowd it out.
+      const now = Date.now();
+      for (let i = 0; i < 30; i += 1) {
+        const [row] = await db
+          .insert(jobsTable)
+          .values({
+            tenantId: "demo",
+            title: `Generic Role ${i}`,
+            companyName: "Capsort Filler Co",
+            descriptionText: `filler ${CAP_QUERY} mention`,
+            locationText: "London",
+            status: "active",
+            isCanonical: true,
+            postedAt: new Date(now - i * 1000),
+          })
+          .returning({ id: jobsTable.id });
+        if (row) fillerIds.push(row.id);
+      }
+      const [exact] = await db
+        .insert(jobsTable)
+        .values({
+          tenantId: "demo",
+          title: CAP_TITLE,
+          companyName: "Capsort Exact Co",
+          locationText: "London",
+          status: "active",
+          isCanonical: true,
+          postedAt: new Date(now - 60 * 1000),
+        })
+        .returning({ id: jobsTable.id });
+      if (!exact) throw new Error("Failed to insert exact-match job");
+      exactJobId = exact.id;
+
+      const [saved] = await db
+        .insert(savedJobSearchesTable)
+        .values({
+          tenantId: "demo",
+          userId: owner.id,
+          name: "__capsort_test__",
+          query: CAP_QUERY,
+          location: "",
+          alertEnabled: true,
+          lastRunAt: new Date(now - 60 * 60 * 1000),
+        })
+        .returning({ id: savedJobSearchesTable.id });
+      if (!saved) throw new Error("Failed to insert capsort saved search");
+      capSearchId = saved.id;
+
+      await sweepSavedSearchAlerts();
+
+      const events = await db
+        .select()
+        .from(savedSearchAlertEventsTable)
+        .where(eq(savedSearchAlertEventsTable.savedSearchId, capSearchId));
+      expect(events).toHaveLength(1);
+      expect(events[0]?.jobIds.length).toBeLessThanOrEqual(25);
+      // Relevance-before-cap: exact title match must survive the cap even
+      // though 30 newer (weaker) matches exist in the same window.
+      expect(events[0]?.jobIds).toContain(exactJobId);
+    } finally {
+      if (capSearchId) {
+        await db
+          .delete(savedSearchAlertEventsTable)
+          .where(eq(savedSearchAlertEventsTable.savedSearchId, capSearchId));
+        await db
+          .delete(savedJobSearchesTable)
+          .where(eq(savedJobSearchesTable.id, capSearchId));
+      }
+      for (const id of [...fillerIds, exactJobId].filter(Boolean)) {
+        await db.delete(jobsTable).where(eq(jobsTable.id, id));
+      }
+    }
+  });
 });

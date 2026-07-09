@@ -40,12 +40,15 @@ type PlatformHint =
   | "recruitee"
   | "teamtailor"
   | "workday"
+  | "greenhouse"
+  | "icims"
   | "careers_page";
 
 interface SeedEmployer {
   name?: unknown;
   careersUrl?: unknown;
   segment?: unknown;
+  locationIncludes?: unknown;
   notes?: unknown;
 }
 
@@ -80,6 +83,23 @@ function detectPlatform(url: string): PlatformHint {
   if (host === "jobs.ashbyhq.com") return "ashby";
   if (host === "careers.smartrecruiters.com" || host === "jobs.smartrecruiters.com")
     return "smartrecruiters";
+  if (
+    [
+      "boards.greenhouse.io",
+      "job-boards.greenhouse.io",
+      "boards.eu.greenhouse.io",
+      "job-boards.eu.greenhouse.io",
+    ].includes(host) &&
+    path.split("/").filter(Boolean).length > 0
+  )
+    return "greenhouse";
+  if (
+    host.endsWith(".icims.com") &&
+    !["www", "media", "cdn", "jobs", "status", "help", "care", "community"].includes(
+      host.split(".")[0]!,
+    )
+  )
+    return "icims";
   return "careers_page";
 }
 
@@ -122,12 +142,20 @@ function main(): void {
         continue;
       }
       counts[industry] = (counts[industry] ?? 0) + 1;
+      const locationIncludes = Array.isArray(e.locationIncludes)
+        ? e.locationIncludes.filter((v): v is string => typeof v === "string" && v.length > 0)
+        : [];
+      if (Array.isArray(e.locationIncludes) && locationIncludes.length !== e.locationIncludes.length)
+        throw new Error(`${industry}: ${name} has non-string locationIncludes entries`);
       const fields = [
         `      name: ${JSON.stringify(name)},`,
         `      careersUrl: ${JSON.stringify(careersUrl)},`,
         `      segment: ${JSON.stringify(segment)},`,
         `      platformHint: ${JSON.stringify(detectPlatform(careersUrl))},`,
         `      sectorTag: ${JSON.stringify(industry)},`,
+        ...(locationIncludes.length
+          ? [`      locationIncludes: ${JSON.stringify(locationIncludes)},`]
+          : []),
         ...(typeof e.notes === "string" && e.notes
           ? [`      notes: ${JSON.stringify(e.notes)},`]
           : []),
@@ -178,8 +206,11 @@ export interface SeedDirectoryEmployer {
     | "recruitee"
     | "teamtailor"
     | "workday"
+    | "greenhouse"
+    | "icims"
     | "careers_page";
   sectorTag: SeedIndustryKey;
+  locationIncludes?: string[];
   notes?: string;
 }
 

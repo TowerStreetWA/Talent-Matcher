@@ -79,11 +79,14 @@ async function findNewJobsFor(
   if (saved.sourceType)
     conditions.push(eq(jobsTable.sourceType, saved.sourceType));
 
+  // Order must mirror the window predicate's coalesce: plain `postedAt DESC`
+  // puts NULL postedAt rows first in Postgres, letting bulk-ingested rows
+  // without a posted date consume the whole fetch window.
   const rows = await db
     .select()
     .from(jobsTable)
     .where(and(...conditions))
-    .orderBy(desc(jobsTable.postedAt))
+    .orderBy(desc(sql`coalesce(${jobsTable.postedAt}, ${jobsTable.createdAt})`))
     .limit(100);
 
   return rows
@@ -96,6 +99,14 @@ async function findNewJobsFor(
       familyFilters.length === 0
         ? true
         : familyFilters.some((df) => matchesDisplayFamily(df, s.fn, s.curatedTags)),
+    )
+    // Keep the most relevant new jobs, not arbitrary newest: broad queries can
+    // match far more than MAX_JOB_IDS rows in one window (bulk ingestion), and
+    // an exact-title match must never be crowded out of the alert.
+    .sort(
+      (a, b) =>
+        b.s.score - a.s.score ||
+        (b.job.postedAt?.getTime() ?? 0) - (a.job.postedAt?.getTime() ?? 0),
     )
     .slice(0, MAX_JOB_IDS)
     .map(({ job }) => job.id);

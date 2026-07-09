@@ -53,6 +53,12 @@ export interface CareersDirectoryEmployer {
   platformHint: DirectoryPlatformHint;
   /** Industry tag stamped on vacancies (FS taxonomy sector key). */
   sectorTag: string;
+  /**
+   * Case-insensitive location substrings to keep when the board is global
+   * (e.g. ["london", "united kingdom", "uk", "remote"]). Omit for
+   * UK-centric employers whose boards need no filtering.
+   */
+  locationIncludes?: string[];
   notes?: string;
 }
 
@@ -107,7 +113,12 @@ const WORKDAY_LOCALE_SEGMENT = /^[a-z]{2}[-_][A-Za-z]{2}$/;
  */
 export function atsEntryFromUrl(
   rawUrl: string,
-  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+  opts: {
+    company: string;
+    sectorTag?: string | null;
+    maxJobs?: number;
+    locationIncludes?: string[];
+  },
 ): AtsEmployerConfig | null {
   let url: URL;
   try {
@@ -123,6 +134,7 @@ export function atsEntryFromUrl(
     company: opts.company,
     maxJobs: opts.maxJobs ?? DIRECTORY_ATS_MAX_JOBS,
     sectorTag: opts.sectorTag ?? null,
+    ...(opts.locationIncludes?.length ? { locationIncludes: opts.locationIncludes } : {}),
   };
 
   // {token}.{wdN}.myworkdayjobs.com/[{locale}/]{site}
@@ -213,7 +225,12 @@ export function atsEntryFromUrl(
  */
 export function successFactorsEntryFromUrl(
   rawUrl: string,
-  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+  opts: {
+    company: string;
+    sectorTag?: string | null;
+    maxJobs?: number;
+    locationIncludes?: string[];
+  },
 ): AtsEmployerConfig | null {
   let url: URL;
   try {
@@ -226,6 +243,7 @@ export function successFactorsEntryFromUrl(
     company: opts.company,
     maxJobs: opts.maxJobs ?? DIRECTORY_ATS_MAX_JOBS,
     sectorTag: opts.sectorTag ?? null,
+    ...(opts.locationIncludes?.length ? { locationIncludes: opts.locationIncludes } : {}),
     platform: "successfactors",
     token: url.origin,
   };
@@ -284,7 +302,13 @@ export function makeDirectoryEmployerProvider(
 
     async fetchVacancies(): Promise<ProviderFetchResult> {
       const warnings: string[] = [];
-      const atsOpts = { company: employer.name, sectorTag: employer.sectorTag };
+      const atsOpts = {
+        company: employer.name,
+        sectorTag: employer.sectorTag,
+        ...(employer.locationIncludes?.length
+          ? { locationIncludes: employer.locationIncludes }
+          : {}),
+      };
       const url = employer.careersUrl;
       const done = (
         vacancies: NormalizedVacancy[],

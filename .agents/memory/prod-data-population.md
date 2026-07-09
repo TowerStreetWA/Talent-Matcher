@@ -20,3 +20,5 @@ description: Prod DB is separate — ingestion must be triggered against the pub
 **Rule:** Any "fetch newest N rows then filter in memory" pipeline silently loses recall for filtered categories as total volume grows past N — recent bulk ingestion of one category evicts older rows of another. Push at least a coarse category pre-filter into SQL (tag column OR NULL for untagged rows) and keep the precise in-memory classifier authoritative.
 
 **Why:** /jobs/search with cap 200 returned 23 insurance jobs while the DB held 171+, right after other sectors were bulk-ingested.
+
+**Postgres ordering trap:** `ORDER BY posted_at DESC` puts NULLs *first*, so bulk-ingested rows without a posted date consume the entire capped fetch before any dated row loads. If the window/filter predicate uses `coalesce(posted_at, created_at)`, the ORDER BY must use the same coalesce — otherwise the pipeline drops exactly the rows the predicate meant to include. Also rank-then-cap: when storing a capped list of matches (e.g. alert events), sort by relevance score before the cap, or an exact-title match gets crowded out by arbitrary newer weak matches.

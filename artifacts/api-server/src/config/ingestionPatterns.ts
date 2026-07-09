@@ -21,7 +21,13 @@ export interface SearchPatternConfig {
   /** Provider location string (SerpApi `location` param). */
   location: string;
   /** Sector tag stored on every job ingested by this pattern. */
-  sectorTag: "insurance" | "banking" | "pensions" | "asset_management";
+  sectorTag:
+    | "insurance"
+    | "banking"
+    | "pensions"
+    | "asset_management"
+    | "accountancy_finance"
+    | "it_tech";
   /**
    * Per-pattern cap on fetched results (pagination stops at this many).
    * SerpApi returns ~10 results per page, so 60 ≈ up to 6 API calls.
@@ -58,6 +64,44 @@ export const GOOGLE_JOBS_PATTERNS: SearchPatternConfig[] = [
     keywords: "asset management jobs",
     location: "London, United Kingdom",
     sectorTag: "asset_management",
+  },
+  // Banking depth (beyond the sector-level "banking jobs" query).
+  {
+    name: "investment_banking_london",
+    keywords: "investment banking jobs",
+    location: "London, United Kingdom",
+    sectorTag: "banking",
+  },
+  {
+    name: "fintech_banking_london",
+    keywords: "fintech bank jobs",
+    location: "London, United Kingdom",
+    sectorTag: "banking",
+  },
+  // IT & Tech coverage (sector had no Google Jobs patterns before).
+  {
+    name: "software_engineer_london",
+    keywords: "software engineer jobs",
+    location: "London, United Kingdom",
+    sectorTag: "it_tech",
+  },
+  {
+    name: "devops_engineer_london",
+    keywords: "devops engineer jobs",
+    location: "London, United Kingdom",
+    sectorTag: "it_tech",
+  },
+  {
+    name: "data_engineer_london",
+    keywords: "data engineer jobs",
+    location: "London, United Kingdom",
+    sectorTag: "it_tech",
+  },
+  {
+    name: "cyber_security_london",
+    keywords: "cyber security jobs",
+    location: "London, United Kingdom",
+    sectorTag: "it_tech",
   },
 ];
 

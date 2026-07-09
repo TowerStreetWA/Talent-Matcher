@@ -1,0 +1,68 @@
+Please focus the next coverage work on Banking and IT & Technology.
+
+Goal
+Push Banking and IT/Tech from “developing” into clearly “healthy” sectors in the careers-directory and vacancy search, with strong direct-employer coverage and visible depth in common role families.
+
+Context
+Sector scorecards currently show:
+- Banking: ~400 jobs, ~242 direct-employer jobs.
+- IT & Tech: ~250 jobs, ~178 direct-employer jobs.
+The ATS/directory engine already includes major employers in both sectors (global banks, big tech, major consultancies), plus Greenhouse/iCIMS/SuccessFactors support.
+
+What to do
+
+1) Use sector scorecards to identify gaps
+- Run GET /internal/debug/sector-scorecards.
+- For Banking and IT & Tech, list:
+  - seeded_employers
+  - ats_resolved_employers
+  - basic_html_employers
+  - firecrawl_employers
+  - needs_firecrawl_employers
+  - zero_job_employers
+  - active_canonical_jobs
+  - direct_employer_jobs
+- Summarise where each sector is still weak:
+  - too many zero-job employers,
+  - too many needs_firecrawl or unsupported_ats,
+  - or simply too few seeded employers.
+
+2) Expand employer coverage in Banking
+- Add any missing UK banks and high-value challengers where careers boards are accessible:
+  - retail/commercial: e.g. Nationwide, NatWest Group, Santander UK (via ATS board), etc.
+  - challengers/fintechs: e.g. Starling, Revolut UK careers, Checkout.com, etc.
+- Ensure each new employer:
+  - has a verified careers URL,
+  - goes through the ATS/basic-HTML/Firecrawl routing correctly,
+  - is tagged with sectorTag: banking.
+
+3) Expand employer coverage in IT & Tech
+- Add UK-relevant product/tech/fintech employers we don’t yet have that fit the Talent Matcher story (e.g. Deliveroo, Revolut, Checkout.com, more SaaS/product firms).
+- As above, verify careers URLs and route them via ATS/basic-HTML/Firecrawl with sectorTag: it_tech.
+
+4) Tune job-board patterns for Banking and IT & Tech
+- In the board pattern config (Google Jobs / Reed / Adzuna), refine/add patterns for:
+  - Banking:
+    - keywords like “analyst”, “risk”, “credit”, “relationship manager”, “lending”.
+  - IT & Tech:
+    - “software engineer”, “developer”, “data engineer”, “SRE”, “DevOps”, “cloud”, “product manager”.
+- Keep patterns config-only and consistent with existing pattern structure (caps, sector tags, etc.).
+
+5) Make Firecrawl usage explicit for high-value Banking/IT employers
+- Using the scorecards and coverage diagnostics, list Banking/IT employers in needs_firecrawl.
+- Mark them clearly in config as “Firecrawl-needed” high-priority targets.
+- Once Firecrawl credits are available (free tier or Hobby), ensure sweeps pick them up.
+- Do not send low-value or duplicate employers through Firecrawl; keep it focused on the highest-value blocked names.
+
+Acceptance
+- Banking and IT & Tech scorecards move to “healthy” status or clearly closer (more ats_resolved_employers, higher direct-employer jobs, fewer zero-job and needs_firecrawl employers).
+- Sector searches in the app:
+  - Banking (with and without analyst/risk keywords) and
+  - IT & Tech (with engineer/developer/data keywords)
+  show materially higher result counts and visible diversity of employers.
+
+Please report back:
+- Updated scorecard metrics for Banking and IT & Tech.
+- New employers added per sector.
+- Before/after direct-employer job counts.
+- Which Banking/IT employers still sit in needs_firecrawl and why.

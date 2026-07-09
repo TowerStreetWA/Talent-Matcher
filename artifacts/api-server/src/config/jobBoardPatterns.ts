@@ -69,6 +69,25 @@ export const REED_PATTERNS: JobBoardPatternConfig[] = [
     location: "United Kingdom",
     sectorTag: "insurance",
   },
+  // Banking depth (beyond the sector-level "banking" query).
+  {
+    name: "reed_investment_banking_london",
+    keywords: "investment banking",
+    location: "London",
+    sectorTag: "banking",
+  },
+  {
+    name: "reed_retail_banking_uk",
+    keywords: "retail banking",
+    location: "United Kingdom",
+    sectorTag: "banking",
+  },
+  // IT & Tech coverage (sector had no Reed patterns before).
+  { name: "reed_software_engineer_london", keywords: "software engineer", location: "London", sectorTag: "it_tech" },
+  { name: "reed_devops_london", keywords: "devops engineer", location: "London", sectorTag: "it_tech" },
+  { name: "reed_data_engineer_london", keywords: "data engineer", location: "London", sectorTag: "it_tech" },
+  { name: "reed_cyber_security_london", keywords: "cyber security", location: "London", sectorTag: "it_tech" },
+  { name: "reed_fintech_london", keywords: "fintech", location: "London", sectorTag: "it_tech" },
 ];
 
 export const ADZUNA_PATTERNS: JobBoardPatternConfig[] = [
@@ -108,6 +127,24 @@ export const ADZUNA_PATTERNS: JobBoardPatternConfig[] = [
     location: "UK",
     sectorTag: "insurance",
   },
+  // Banking depth (mirror the Reed set).
+  {
+    name: "adzuna_investment_banking_london",
+    keywords: "investment banking",
+    location: "London",
+    sectorTag: "banking",
+  },
+  {
+    name: "adzuna_retail_banking_uk",
+    keywords: "retail banking",
+    location: "UK",
+    sectorTag: "banking",
+  },
+  // IT & Tech coverage (mirror the Reed set).
+  { name: "adzuna_software_engineer_london", keywords: "software engineer", location: "London", sectorTag: "it_tech" },
+  { name: "adzuna_devops_london", keywords: "devops engineer", location: "London", sectorTag: "it_tech" },
+  { name: "adzuna_data_engineer_london", keywords: "data engineer", location: "London", sectorTag: "it_tech" },
+  { name: "adzuna_cyber_security_london", keywords: "cyber security", location: "London", sectorTag: "it_tech" },
 ];
 
 export function boardPatternsFor(provider: JobBoardProviderKey): JobBoardPatternConfig[] {
