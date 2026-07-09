@@ -387,7 +387,7 @@ export default function JobSearch() {
             data-testid="input-job-search-q"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

@@ -16,6 +16,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 
 - pnpm workspaces, Node 24, TS 5.9; Express 5 API; React + Vite frontend; PostgreSQL + Drizzle; Zod (`zod/v4`); Orval codegen from `lib/api-spec/openapi.yaml` (source of truth, root-level paths — no `/admin` prefix)
 - `lib/db/src/schema/` — Drizzle schemas; `artifacts/api-server/src/{lib,routes,config}/`; `artifacts/vacancymatch/src/{pages,components,lib}/`
+- Mobile: desktop sidebar is `hidden md:flex`; below md, nav is a Sheet drawer + hamburger in `components/layout/app-layout.tsx` (drawer holds user info + logout for <sm). Keep both in sync when adding nav items
 - Error responses use `{ message }` (ApiMessage). See the `pnpm-workspace` skill for workspace conventions
 
 ## Auth, tenancy, signup & team

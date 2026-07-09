@@ -409,23 +409,4 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   );
 });
 
-// TEMP dev-only helper for authenticated screenshots — remove after use.
-if (process.env.NODE_ENV !== "production") {
-  router.get("/auth/dev-screenshot-login", async (req, res): Promise<void> => {
-    const [user] = await db
-      .select({ id: tenantUsersTable.id })
-      .from(tenantUsersTable)
-      .where(eq(tenantUsersTable.email, "owner@demo.test"))
-      .limit(1);
-    if (!user) {
-      res.status(404).json({ message: "Demo user not found" });
-      return;
-    }
-    const { token, expiresAt } = await createSession(user.id, {});
-    res.cookie(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));
-    const to = typeof req.query.to === "string" && req.query.to.startsWith("/") ? req.query.to : "/";
-    res.redirect(to);
-  });
-}
-
 export default router;
