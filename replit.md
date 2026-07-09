@@ -94,6 +94,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 ## Gotchas
 
 - No `console.log` in server code — use `req.log` / `logger`
+- Audit-log `metadata` is raw JSON for compliance views only — never surface it to end users. Dashboard activity descriptions come from `lib/activityDescription.ts` (`describeActivity`); add new audit actions to its STATIC_ACTIONS map
 - After changing `lib/*`, run `pnpm run typecheck:libs` before artifact typechecks (stale declarations cause phantom TS2305)
 - `stripe-replit-sync` must stay in esbuild `external` (build.mjs) — bundling silently skips its migrations; `syncBackfill()` needs `{ object: "all" }`; connector settings keys are `secret` / `publishable`
 - api-server esbuild externals include `@opentelemetry/*` — external packages' transitive deps must be direct deps of api-server (pnpm strict node_modules)

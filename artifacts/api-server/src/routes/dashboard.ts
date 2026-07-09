@@ -15,6 +15,7 @@ import {
   GetTopMatchesResponse,
 } from "@workspace/api-zod";
 import { toMatchDto } from "../lib/dto";
+import { describeActivity } from "../lib/activityDescription";
 import { tenantOf } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -114,7 +115,7 @@ router.get("/dashboard/activity", async (req, res): Promise<void> => {
         action: l.action,
         entityType: l.entityType,
         entityId: l.entityId,
-        description: l.metadata ?? l.action,
+        description: describeActivity(l.action, l.metadata),
         createdAt: l.createdAt.toISOString(),
       })),
     ),

@@ -108,10 +108,10 @@ export default function Dashboard() {
             ) : activity && activity.length > 0 ? (
               <div className="space-y-4">
                 {activity.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4 text-sm">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                    <div>
-                      <p className="font-medium">{item.description}</p>
+                  <div key={item.id} className="flex items-start gap-4 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium break-words [overflow-wrap:anywhere]">{item.description}</p>
                       <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
