@@ -8,9 +8,90 @@ import {
   atsEntryFromUrl,
   directoryProviderKey,
   directoryProviderKeys,
+  filterByEmployerLocation,
   makeDirectoryEmployerProvider,
   selectDirectoryEmployers,
 } from "./engine";
+import type { NormalizedVacancy } from "../vacancies/types";
+
+function vacancy(overrides: Partial<NormalizedVacancy>): NormalizedVacancy {
+  return {
+    title: "Software Engineer",
+    companyName: "Acme",
+    locationText: null,
+    remoteType: null,
+    employmentType: null,
+    salaryText: null,
+    descriptionText: null,
+    skills: [],
+    postedAt: null,
+    applyUrl: "https://acme.jobs/role",
+    sourceType: "direct_employer",
+    sourceProvider: "basic_html",
+    sourceUrl: "https://acme.jobs/role",
+    ...overrides,
+  };
+}
+
+describe("filterByEmployerLocation", () => {
+  it("passes everything through when no locationIncludes is set", () => {
+    const warnings: string[] = [];
+    const jobs = [vacancy({ locationText: "Tallinn" })];
+    expect(filterByEmployerLocation(jobs, undefined, warnings, "Acme")).toEqual(jobs);
+    expect(filterByEmployerLocation(jobs, [], warnings, "Acme")).toEqual(jobs);
+    expect(warnings).toEqual([]);
+  });
+
+  it("keeps jobs matching location text, URL slugs, or title", () => {
+    const warnings: string[] = [];
+    const jobs = [
+      vacancy({ locationText: "London, United Kingdom" }),
+      vacancy({
+        locationText: null,
+        sourceUrl: "https://wise.jobs/senior-engineer-in-london-4321",
+        applyUrl: "https://wise.jobs/senior-engineer-in-london-4321",
+      }),
+      vacancy({ title: "Payments Lead (London)" }),
+      vacancy({ locationText: "Austin, TX" }),
+      vacancy({
+        locationText: null,
+        sourceUrl: "https://wise.jobs/analyst-in-tallinn-9876",
+        applyUrl: "https://wise.jobs/analyst-in-tallinn-9876",
+      }),
+    ];
+    const kept = filterByEmployerLocation(
+      jobs,
+      ["london", "united kingdom", "uk"],
+      warnings,
+      "Wise",
+    );
+    expect(kept).toHaveLength(3);
+    expect(warnings).toEqual(["Wise: location filter dropped 2 of 5 crawled jobs"]);
+  });
+
+  it("matches short needles like 'uk' only on token boundaries", () => {
+    const warnings: string[] = [];
+    const jobs = [
+      vacancy({ locationText: "Remote, UK" }),
+      vacancy({ locationText: "Kuala Lumpur", title: "Kuka Robotics Integrator" }),
+      vacancy({
+        locationText: null,
+        sourceUrl: "https://acme.jobs/role?ref=zukx91",
+        applyUrl: "https://acme.jobs/role?ref=zukx91",
+      }),
+      vacancy({
+        locationText: null,
+        sourceUrl: "https://acme.jobs/uk/engineering-lead",
+        applyUrl: "https://acme.jobs/uk/engineering-lead",
+      }),
+    ];
+    const kept = filterByEmployerLocation(jobs, ["uk"], warnings, "Acme");
+    expect(kept.map((v) => v.locationText ?? v.sourceUrl)).toEqual([
+      "Remote, UK",
+      "https://acme.jobs/uk/engineering-lead",
+    ]);
+  });
+});
 
 describe("atsEntryFromUrl", () => {
   const opts = { company: "Acme", sectorTag: "banking" };

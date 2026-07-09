@@ -1,0 +1,265 @@
+Please implement recruiter filtering for VacancyMatch / Talent Matcher so that jobs from recruitment firms can be excluded from search results by default.
+
+GOAL
+
+- Prefer direct employer jobs.
+- Hide (or downrank) jobs posted by recruitment agencies like Eames, IPS, Hays, Robert Walters, etc.
+- Keep recruiter jobs in the database but clearly tagged as recruiter-sourced, with an optional UI toggle to include them.
+
+INPUTS
+
+Use the recruiter lists provided in this prompt as seed data — they cover Banking, Pensions, Asset Management, Accountancy & Finance, and IT & Technology recruitment firms.
+
+Examples (non-exhaustive):
+
+- Banking / FS recruiters:
+  - Hays Banking & Financial Services
+  - Robert Walters
+  - Morgan McKinley
+  - Michael Page / Page Personnel
+  - Reed
+  - Randstad
+  - Hudson
+  - Walker Hamill
+  - Goodman Masson
+  - Selby Jennings (Phaidon)
+  - Robert Half
+  - Barclay Simpson
+  - People First Banking
+  - Market Talent
+  - Taylor Root
+  - Bruin Financial
+  - Eames Consulting
+  - IPS Group
+  - McGregor Boyall
+  - HFG (High Finance Group)
+  - Pure Search
+  - Dartmouth Partners
+  - Mason Blake
+  - Blackwood Group
+  - Emerald Group
+  - PER / Alto Partners
+  - Norman Broadbent / Sheffield Haworth
+  - and others listed.
+
+- Pensions recruiters:
+  - Pension Careers
+  - Zatori Consulting
+  - BranWell Ford
+  - Alexander Lloyd
+  - abenefit2u
+  - BWD Search & Selection
+  - Star Actuarial Futures
+  - Pensions Talent / Pensions People
+  - Oliver James Associates
+  - Hays Pensions
+  - Reed Pensions & Benefits
+  - etc.
+
+- Asset management recruiters:
+  - Hays Financial Markets / Investment Management
+  - Robert Walters
+  - Morgan McKinley
+  - Selby Jennings
+  - Walker Hamill
+  - Goodman Masson
+  - Bruin Financial
+  - Eames Consulting
+  - Dartmouth Partners
+  - Mason Blake
+  - Blackwood Group
+  - Emerald Group
+  - PER / Alto Partners
+  - Norman Broadbent / Sheffield Haworth
+  - etc.
+
+- Accountancy & Finance recruiters:
+  - Hays Accountancy & Finance
+  - Robert Walters
+  - Robert Half
+  - Michael Page / Page Personnel
+  - Reed Accountancy
+  - Nigel Wright
+  - Randstad
+  - Hudson
+  - Morgan McKinley
+  - Sellick Partnership
+  - Marks Sattin
+  - Brewer Morris
+  - Investigo
+  - Harvey Nash
+  - etc.
+
+- IT & Technology recruiters:
+  - Hays Technology
+  - Michael Page Technology
+  - Reed Technology
+  - Randstad Technologies
+  - Nigel Frank / Frank Recruitment Group
+  - Experis
+  - Modis / Akkodis
+  - Harvey Nash
+  - Explore Group
+  - Roc Search
+  - Mortimer Spinks
+  - Venturi
+  - Understanding Recruitment
+  - La Fosse Associates
+  - Hydrogen Group
+  - Lorien
+  - Computer Futures
+  - Austin Fraser
+  - etc.
+
+(You don’t need to hardcode every name in code comments; just make sure the main ones are captured in config.)
+
+====================================
+1. RECRUITER REGISTRY CONFIG
+====================================
+
+Create a recruiter registry config, e.g.:
+
+- src/config/recruiterFirms.ts
+
+Structure:
+
+- recruiter name (canonical)
+- aliases (common variations, e.g. “Hays”, “Hays Banking & Financial Services”)
+- domains (e.g. hays.co.uk, robertwalters.co.uk, morganmckinley.com, michaelpage.co.uk, reed.co.uk, randstad.co.uk, etc.)
+- sectors they mainly operate in (optional: banking, pensions, asset_management, accountancy_finance, it_tech)
+- notes (optional)
+
+Never hardcode logic around recruiters in multiple places — use this registry everywhere.
+
+====================================
+2. COMPANY CLASSIFICATION: DIRECT VS RECRUITER
+====================================
+
+Add/extend a company classification step so each company gets a `company_kind` like:
+
+- 'direct_employer'
+- 'recruitment_firm'
+- 'job_board'
+- 'unknown'
+
+Classification rules:
+
+1) Hard-match registry:
+
+- If company name or domain matches the recruiter registry, classify as 'recruitment_firm'.
+
+2) Website signals (for companies not in registry):
+
+- Use homepage/careers/about text snippets to detect recruiter phrases, e.g.:
+  - "recruitment agency"
+  - "staffing solutions"
+  - "employment agency"
+  - "executive search"
+  - "we are a recruitment consultancy"
+  - "temp and perm"
+  - "specialist recruiters"
+- If multiple strong signals are found, classify as 'recruitment_firm'.
+
+3) Job-post signals:
+
+- In job descriptions/company snippets, look for patterns like:
+  - "our client"
+  - "on behalf of our client"
+  - "we are recruiting for"
+  - "specialist recruitment consultancy"
+- If the employer name is absent/obscured but the posting entity is a recruiter, classify accordingly.
+
+4) Fallback:
+
+- If none of the above match, leave company_kind as 'direct_employer' or 'unknown' as appropriate.
+
+Ensure classification runs in the existing directory/ingestion pipeline so `company_kind` is stored with each job’s company reference.
+
+====================================
+3. SEARCH FILTERING BEHAVIOUR
+====================================
+
+Update search so that:
+
+- By default, search results exclude jobs where:
+  - company_kind = 'recruitment_firm'
+- Optionally, add a UI toggle:
+  - "Include recruitment firms" (or "Show recruiter jobs")
+  - When enabled, include recruiter jobs but **clearly label them** as recruiter-sourced (e.g. badge "Recruitment firm").
+
+Implementation:
+
+- In the job search query builder:
+  - add a default condition: `company_kind != 'recruitment_firm'`
+  - unless a query option `includeRecruiters = true` is set.
+- Ensure this applies consistently across:
+  - Job Search in the app
+  - Saved searches / alerts
+  - Any other recruiter-facing queries, unless explicitly overridden.
+
+Do NOT delete recruiter jobs; just filter them at query time.
+
+====================================
+4. DIAGNOSTICS & OVERRIDES
+====================================
+
+Add internal diagnostics so we can see and tune the classifier:
+
+- Extend existing coverage/scorecard endpoints with:
+  - counts of companies by company_kind:
+    - direct_employer
+    - recruitment_firm
+    - job_board
+    - unknown
+  - counts of jobs by company_kind per industry.
+
+Add a small override mechanism:
+
+- src/config/recruiterOverrides.ts (or similar), allowing:
+  - force_direct_employer for specific names/domains that look recruiter-like but are actually employers.
+  - force_recruitment_firm for edge cases not caught by rules.
+
+This gives you a safety valve for false positives/negatives.
+
+====================================
+5. TESTS & SAFETY
+====================================
+
+Add tests for:
+
+- recruiter registry matching (names + domains).
+- company_kind classification based on:
+  - registry matches
+  - website signals
+  - job-post "our client" signals.
+- search filtering:
+  - recruiter jobs excluded by default.
+  - recruiter jobs included when the toggle/flag is set.
+- diagnostics shapes:
+  - company_kind counts appear in coverage/scorecard endpoints.
+
+Constraints:
+
+- Do not change auth, billing, matching, or ranking logic beyond adding the recruiter filter condition.
+- Keep all classifier rules config-driven where possible (registry + simple signal lists).
+
+Run:
+
+- full typecheck
+- full test suite
+- live smoke:
+  - at least a few known recruiter firms (e.g. Eames, IPS, Hays, Robert Walters) correctly classified and filtered.
+  - a few known direct employers (e.g. Hiscox, QBE, Barclays, BlackRock, Microsoft) unaffected.
+
+====================================
+6. REPORT BACK
+====================================
+
+When done, please report:
+
+- How many companies are classified as recruitment_firm vs direct_employer vs job_board vs unknown.
+- Example recruiter firms filtered (e.g. Eames, IPS, Hays, Robert Walters).
+- Before/after:
+  - share of recruiter jobs in search results for Insurance, Banking, Asset Management, Accountancy & Finance, and IT & Tech.
+- Any override entries added for misclassified companies.
+- Typecheck/test outcomes.

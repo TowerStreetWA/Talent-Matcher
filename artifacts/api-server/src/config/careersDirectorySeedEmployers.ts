@@ -153,11 +153,12 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
     },
     {
       name: "OakNorth",
-      careersUrl: "https://www.oaknorth.co.uk/careers/",
+      careersUrl: "https://jobs.ashbyhq.com/oaknorth",
       segment: "commercial_lender",
-      platformHint: "careers_page",
+      platformHint: "ashby",
       sectorTag: "banking",
-      notes: "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl",
+      locationIncludes: ["london","manchester","united kingdom","uk"],
+      notes: "Ashby board token oaknorth (probed July 2026); board is global (NY/Gurugram) so UK locationIncludes applied",
     },
     {
       name: "Shawbrook Bank",
@@ -765,7 +766,8 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "fintech",
       platformHint: "careers_page",
       sectorTag: "it_tech",
-      notes: "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl",
+      locationIncludes: ["london","united kingdom","uk"],
+      notes: "wise.jobs crawls fine but is a global board with no structured locations; UK locationIncludes matches URL slugs like -in-london- (crawler-path filter)",
     },
     {
       name: "Checkout.com",
@@ -860,11 +862,12 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
     },
     {
       name: "Endava",
-      careersUrl: "https://careers.endava.com",
+      careersUrl: "https://careers.smartrecruiters.com/Endava",
       segment: "consultancy",
-      platformHint: "careers_page",
+      platformHint: "smartrecruiters",
       sectorTag: "it_tech",
-      notes: "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl",
+      locationIncludes: ["london","united kingdom","uk"],
+      notes: "SmartRecruiters company Endava (234 global postings, probed July 2026); UK locationIncludes applied; own careers site is a static shell with no listings",
     },
     {
       name: "FDM Group",

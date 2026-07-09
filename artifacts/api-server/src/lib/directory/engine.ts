@@ -288,6 +288,47 @@ async function fetchViaAts(
 }
 
 /**
+ * Applies an employer's `locationIncludes` filter to crawler/Firecrawl
+ * vacancies. ATS fetchers filter on structured location fields internally,
+ * but crawled pages often lack them — global boards (e.g. wise.jobs) would
+ * otherwise pollute UK search with unlocated foreign postings. Location is
+ * matched case-insensitively across the location text, title, and job URL
+ * (many boards encode location in URL slugs like `-in-london-`). Needles of
+ * three characters or fewer (e.g. "uk") match only on token boundaries so
+ * they cannot fire inside unrelated words like "Kuka" or URL hashes.
+ */
+export function filterByEmployerLocation(
+  vacancies: NormalizedVacancy[],
+  locationIncludes: string[] | undefined,
+  warnings: string[],
+  employerName: string,
+): NormalizedVacancy[] {
+  if (!locationIncludes?.length || vacancies.length === 0) return vacancies;
+  const matchers = locationIncludes.map((raw) => {
+    const needle = raw.toLowerCase();
+    if (needle.length > 3) {
+      return (haystack: string) => haystack.includes(needle);
+    }
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`);
+    return (haystack: string) => re.test(haystack);
+  });
+  const kept = vacancies.filter((v) => {
+    const haystack = [v.locationText, v.title, v.sourceUrl, v.applyUrl]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return matchers.some((matches) => matches(haystack));
+  });
+  if (kept.length < vacancies.length) {
+    warnings.push(
+      `${employerName}: location filter dropped ${vacancies.length - kept.length} of ${vacancies.length} crawled jobs`,
+    );
+  }
+  return kept;
+}
+
+/**
  * Provider for a single directory employer. One runVacancyIngestion per
  * employer keeps funnel metrics per employer while all jobs of a segment
  * share the same job_sources row (`<prefix>_<segment>`).
@@ -375,7 +416,7 @@ export function makeDirectoryEmployerProvider(
         return done([], { path: null, outcome: "blocked_url", jobs: 0, detail: null });
       }
       if (crawl.outcome === "html_jobs_found") {
-        const vacancies: NormalizedVacancy[] = crawl.jobs.map((job) => ({
+        const allVacancies: NormalizedVacancy[] = crawl.jobs.map((job) => ({
           title: job.title,
           companyName: employer.name,
           locationText: job.locationText,
@@ -390,9 +431,15 @@ export function makeDirectoryEmployerProvider(
           sourceProvider: "basic_html",
           sourceUrl: job.applyUrl,
         }));
+        const vacancies = filterByEmployerLocation(
+          allVacancies,
+          employer.locationIncludes,
+          warnings,
+          employer.name,
+        );
         return done(vacancies, {
           path: "basic_html",
-          outcome: "jobs_found",
+          outcome: vacancies.length > 0 ? "jobs_found" : "no_jobs",
           jobs: vacancies.length,
           detail: crawl.evidence.join(","),
         });
@@ -418,9 +465,15 @@ export function makeDirectoryEmployerProvider(
         });
       }
       try {
-        const vacancies = await fetchSiteVacancies(
+        const fetched = await fetchSiteVacancies(
           { company: employer.name, careersUrl: url, maxJobs: DIRECTORY_SITE_MAX_JOBS },
           warnings,
+        );
+        const vacancies = filterByEmployerLocation(
+          fetched,
+          employer.locationIncludes,
+          warnings,
+          employer.name,
         );
         return done(vacancies, {
           path: "firecrawl",

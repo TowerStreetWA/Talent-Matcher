@@ -96,9 +96,15 @@
         },
         {
           "name": "OakNorth",
-          "careersUrl": "https://www.oaknorth.co.uk/careers/",
+          "careersUrl": "https://jobs.ashbyhq.com/oaknorth",
           "segment": "commercial_lender",
-          "notes": "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl"
+          "notes": "Ashby board token oaknorth (probed July 2026); board is global (NY/Gurugram) so UK locationIncludes applied",
+          "locationIncludes": [
+            "london",
+            "manchester",
+            "united kingdom",
+            "uk"
+          ]
         },
         {
           "name": "Shawbrook Bank",
@@ -557,7 +563,12 @@
           "name": "Wise",
           "careersUrl": "https://www.wise.jobs",
           "segment": "fintech",
-          "notes": "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl"
+          "notes": "wise.jobs crawls fine but is a global board with no structured locations; UK locationIncludes matches URL slugs like -in-london- (crawler-path filter)",
+          "locationIncludes": [
+            "london",
+            "united kingdom",
+            "uk"
+          ]
         },
         {
           "name": "Checkout.com",
@@ -646,9 +657,14 @@
         },
         {
           "name": "Endava",
-          "careersUrl": "https://careers.endava.com",
+          "careersUrl": "https://careers.smartrecruiters.com/Endava",
           "segment": "consultancy",
-          "notes": "No public ATS board found (probed greenhouse/lever/ashby/workable/smartrecruiters); own JS-heavy careers portal — needs Firecrawl"
+          "notes": "SmartRecruiters company Endava (234 global postings, probed July 2026); UK locationIncludes applied; own careers site is a static shell with no listings",
+          "locationIncludes": [
+            "london",
+            "united kingdom",
+            "uk"
+          ]
         },
         {
           "name": "FDM Group",
