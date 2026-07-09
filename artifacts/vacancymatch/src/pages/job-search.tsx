@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Switch } from "@/components/ui/switch";
+import { setSkylineCity } from "@/components/skyline-backdrop";
 import { ClassificationTags } from "@/components/classification-tags";
 import { CompanyMonogram } from "@/components/company-monogram";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -153,6 +154,15 @@ export default function JobSearch() {
   useEffect(() => {
     setPage(1);
   }, [debouncedQ, debouncedLocation, sector, source, families, includeRecruiters]);
+
+  // Dark-mode skyline backdrop: show Paris when searching French locations.
+  useEffect(() => {
+    const loc = location.toLowerCase();
+    setSkylineCity(
+      loc.includes("paris") || loc.includes("france") ? "paris" : "london",
+    );
+    return () => setSkylineCity("london");
+  }, [location]);
 
   const familyParams = sector !== "all" ? { sector } : undefined;
   const { data: familyCatalog } = useListJobSearchFamilies(familyParams, {
@@ -504,7 +514,7 @@ export default function JobSearch() {
             key={s.value}
             variant={sector === s.value ? "default" : "outline"}
             size="sm"
-            className="h-7 rounded-full text-xs"
+            className={`h-7 rounded-full text-xs filter-chip ${sector === s.value ? "filter-chip-active" : ""}`}
             onClick={() => changeSector(sector === s.value ? "all" : s.value)}
             data-testid={`chip-sector-${s.value}`}
           >
@@ -534,7 +544,7 @@ export default function JobSearch() {
               key={f.key}
               variant={families.includes(f.key) ? "default" : "outline"}
               size="sm"
-              className="h-7 rounded-full text-xs"
+              className={`h-7 rounded-full text-xs filter-chip ${families.includes(f.key) ? "filter-chip-active" : ""}`}
               onClick={() => toggleFamily(f.key)}
               data-testid={`chip-family-${f.key}`}
             >

@@ -156,68 +156,69 @@
   --radius: 0.5rem;
 }
 
-/* ── Dark mode — "Refined signal" (green-tinted charcoal, mint, amber) ── */
+/* ── Dark mode — "Onyx + emerald" (neutral charcoal, emerald accent, amber highlight) ── */
 .dark,
 [data-theme="dark"] {
-  --bg-canvas: #0E1512;
-  --bg-sidebar: #0A0F0C;
-  --bg-card: #18211D;
-  --text-primary: #F2F7F4;
-  --text-secondary: #8FA69B;
-  --text-placeholder: #6B8177;
-  --accent-brand: #2BD9A0;
-  --accent-contrast: #04342C;
-  --accent-soft: rgba(43, 217, 160, 0.14);
+  --bg-canvas: #101113;
+  --bg-sidebar: #0A0B0C;
+  --bg-card: #1A1C1F;
+  --text-primary: #ECEEEF;
+  --text-secondary: #8A8F95;
+  --text-placeholder: #5F646B;
+  --accent-brand: #2BC98F;
+  --accent-contrast: #06251A;
+  --accent-soft: rgba(43, 201, 143, 0.13);
+  --border-strong: #3A3E44;
 
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
-  --border: #26332C;
-  --input: #26332C;
+  --border: #2C2F33;
+  --input: #2C2F33;
   --ring: var(--accent-brand);
 
   --card: var(--bg-card);
   --card-foreground: var(--text-primary);
-  --card-border: #26332C;
+  --card-border: #2C2F33;
 
   --popover: var(--bg-card);
   --popover-foreground: var(--text-primary);
-  --popover-border: #26332C;
+  --popover-border: #2C2F33;
 
   --primary: var(--accent-brand);
   --primary-foreground: var(--accent-contrast);
 
-  --secondary: #26332C;
+  --secondary: #24262A;
   --secondary-foreground: var(--text-primary);
 
-  --muted: #18211D;
+  --muted: #1A1C1F;
   --muted-foreground: var(--text-secondary);
 
   --accent: var(--accent-soft);
   --accent-foreground: var(--accent-brand);
 
   --destructive: #E24B4A;
-  --destructive-foreground: #F2F7F4;
+  --destructive-foreground: #ECEEEF;
 
   --highlight: #F0B429;
-  --highlight-soft: rgba(240, 180, 41, 0.14);
+  --highlight-soft: rgba(240, 180, 41, 0.13);
   --highlight-soft-foreground: #F0B429;
-  --success: #2BD9A0;
+  --success: #2BC98F;
   --warning: #F0B429;
 
-  --badge-outline: #26332C;
+  --badge-outline: #2C2F33;
 
-  --chart-1: #2BD9A0;
+  --chart-1: #2BC98F;
   --chart-2: #F0B429;
   --chart-3: #AFA9EC;
   --chart-4: #85B7EB;
-  --chart-5: #8FA69B;
+  --chart-5: #8A8F95;
 
   --sidebar: var(--bg-sidebar);
-  --sidebar-foreground: #8FA69B;
-  --sidebar-border: #26332C;
+  --sidebar-foreground: #8A8F95;
+  --sidebar-border: #2C2F33;
   --sidebar-primary: var(--accent-soft);
   --sidebar-primary-foreground: var(--accent-brand);
-  --sidebar-accent: rgba(242, 247, 244, 0.05);
+  --sidebar-accent: rgba(236, 238, 239, 0.05);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-ring: var(--accent-brand);
 
@@ -232,6 +233,33 @@
   --chip-asset-fg: #AFA9EC;
   --chip-accountancy-bg: rgba(151, 196, 89, 0.12);
   --chip-accountancy-fg: #C0DD97;
+}
+
+/* Dark-mode-only filter chip styling (sector/family chips on Job Search).
+   Light mode keeps the default Button variants untouched. */
+.dark .filter-chip,
+[data-theme="dark"] .filter-chip {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.dark .filter-chip:hover,
+[data-theme="dark"] .filter-chip:hover {
+  background-color: var(--bg-card);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.dark .filter-chip-active,
+[data-theme="dark"] .filter-chip-active {
+  background-color: var(--accent-soft);
+  border: 1px solid rgba(43, 201, 143, 0.3);
+  color: var(--accent-brand);
+}
+.dark .filter-chip-active:hover,
+[data-theme="dark"] .filter-chip-active:hover {
+  background-color: var(--accent-soft);
+  border-color: rgba(43, 201, 143, 0.3);
+  color: var(--accent-brand);
 }
 
 @layer base {

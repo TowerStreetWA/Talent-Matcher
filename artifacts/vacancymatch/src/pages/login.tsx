@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SkylineBackdrop } from "@/components/skyline-backdrop";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -47,8 +48,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <SkylineBackdrop />
+      <div className="w-full max-w-sm space-y-6 relative z-[1]">
         <div className="flex flex-col items-center gap-2">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
             <Target size={20} strokeWidth={3} />
