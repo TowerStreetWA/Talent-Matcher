@@ -1,6 +1,7 @@
 import { z } from "zod/v4";
 import type { AtsEmployerConfig } from "../../../config/atsEmployers";
 import { resolveAtsMaxJobs } from "../../../config/atsEmployers";
+import { validateResearchUrl } from "../../firecrawl";
 import { IngestionError, type NormalizedVacancy } from "../types";
 import {
   clampText,
@@ -423,6 +424,270 @@ export async function fetchTeamtailor(
       sourceUrl: link,
     });
     taken += 1;
+  }
+}
+
+// ----------------------------------------------------------- Greenhouse ----
+
+const greenhouseJobSchema = z
+  .object({
+    title: z.string().nullish(),
+    absolute_url: z.string().nullish(),
+    location: z.object({ name: z.string().nullish() }).loose().nullish(),
+    updated_at: z.string().nullish(),
+    first_published: z.string().nullish(),
+    content: z.string().nullish(),
+  })
+  .loose();
+
+const greenhouseResponseSchema = z
+  .object({ jobs: z.array(greenhouseJobSchema).nullish() })
+  .loose();
+
+export async function fetchGreenhouse(
+  entry: AtsEmployerConfig,
+  ctx: AtsFetcherContext,
+): Promise<void> {
+  const cap = resolveAtsMaxJobs(entry);
+  // US-hosted boards live on boards-api.greenhouse.io; EU data residency
+  // tenants on boards-api.eu.greenhouse.io. Same shape — try US then EU.
+  const hosts = ["boards-api.greenhouse.io", "boards-api.eu.greenhouse.io"];
+  let payload: unknown = null;
+  for (const host of hosts) {
+    const response = await fetchAtsResponse(
+      "Greenhouse",
+      `https://${host}/v1/boards/${encodeURIComponent(entry.token)}/jobs?content=true`,
+    );
+    if (response.status === 404) continue;
+    if (!response.ok) {
+      throw new IngestionError("upstream", `Greenhouse error (HTTP ${response.status})`);
+    }
+    try {
+      payload = await response.json();
+    } catch {
+      throw new IngestionError("upstream", "Greenhouse returned invalid JSON");
+    }
+    break;
+  }
+  if (payload === null) {
+    throw new IngestionError(
+      "upstream",
+      `Greenhouse board "${entry.token}" not found for ${entry.company} (404 on US and EU hosts)`,
+    );
+  }
+  const parsed = greenhouseResponseSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new IngestionError(
+      "upstream",
+      `Greenhouse returned an unexpected shape for ${entry.company}`,
+    );
+  }
+  let taken = 0;
+  for (const job of parsed.data.jobs ?? []) {
+    if (taken >= cap) break;
+    if (!job.title) {
+      ctx.warnings.push(`Greenhouse/${entry.company}: skipped a posting without a title`);
+      continue;
+    }
+    const location = job.location?.name ?? null;
+    if (!matchesLocationFilter(location, entry.locationIncludes)) continue;
+    // `content` is entity-escaped HTML (&lt;p&gt;…) — decode, then strip tags.
+    const description = job.content ? stripHtml(decodeEntities(job.content)) : null;
+    pushVacancy(ctx, entry, "ats_greenhouse", {
+      title: job.title,
+      companyName: entry.company,
+      locationText: location,
+      remoteType: location && /remote/i.test(location) ? "remote" : null,
+      employmentType: null,
+      salaryText: null,
+      descriptionText: clampText(description),
+      postedAt: parseDateLoose(job.first_published ?? job.updated_at ?? null),
+      applyUrl: job.absolute_url ?? null,
+      sourceUrl: job.absolute_url ?? null,
+    });
+    taken += 1;
+  }
+}
+
+// ---------------------------------------------------------------- iCIMS ----
+
+// iCIMS portals fingerprint the TLS client against the claimed browser and
+// answer HTTP 405 to Chrome-claiming user agents coming from non-Chrome
+// clients (Node/undici). A Firefox UA passes; keep accept-encoding explicit
+// so undici's compressed default never enters the fingerprint.
+const BROWSER_HEADERS = {
+  "user-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0",
+  accept: "text/html,application/xhtml+xml",
+  "accept-encoding": "identity",
+};
+
+const ICIMS_MAX_PAGES = 5;
+
+/**
+ * iCIMS exposes no public JSON feed, but every portal serves a stable
+ * server-rendered iframe search page: anchors with class iCIMS_Anchor,
+ * title="{id} - {title}", href .../jobs/{id}/{slug}/job, plus a
+ * "Search Results Page X of Y" header and ?pr={page} pagination.
+ */
+export async function fetchIcims(entry: AtsEmployerConfig, ctx: AtsFetcherContext): Promise<void> {
+  const cap = resolveAtsMaxJobs(entry);
+  const base = `https://${encodeURIComponent(entry.token)}.icims.com`;
+  const seenIds = new Set<string>();
+  let taken = 0;
+  for (let page = 0; page < ICIMS_MAX_PAGES && taken < cap; page++) {
+    const response = await fetchAtsResponse(
+      "iCIMS",
+      `${base}/jobs/search?ss=1&in_iframe=1&pr=${page}`,
+      { headers: BROWSER_HEADERS },
+    );
+    if (!response.ok) {
+      throw new IngestionError("upstream", `iCIMS error (HTTP ${response.status})`);
+    }
+    const html = await response.text();
+
+    // Each posting is an <li class="iCIMS_JobCardItem"> card: the
+    // "Job Locations" sr-only label + location span come BEFORE the
+    // iCIMS_Anchor title link, so parse card-by-card, not anchor-to-anchor.
+    const cards = html.split(/<li\b[^>]*class="[^"]*iCIMS_JobCardItem[^"]*"[^>]*>/i).slice(1);
+    if (cards.length === 0) break;
+
+    let newOnPage = 0;
+    for (const card of cards) {
+      if (taken >= cap) break;
+      const tag = card.match(/<a\b[^>]*class="[^"]*iCIMS_Anchor[^"]*"[^>]*>/i)?.[0];
+      if (!tag || !/\/jobs\/\d+\//.test(tag)) continue;
+      const href = tag.match(/href="([^"]+)"/i)?.[1];
+      const titleAttr = tag.match(/title="([^"]*)"/i)?.[1];
+      if (!href) continue;
+      const idMatch = href.match(/\/jobs\/(\d+)\//);
+      const jobId = idMatch?.[1];
+      if (!jobId || seenIds.has(jobId)) continue;
+      seenIds.add(jobId);
+      newOnPage += 1;
+      const title = titleAttr
+        ? decodeEntities(titleAttr.replace(/^\d+\s*[-–]\s*/, "").trim())
+        : null;
+      if (!title) {
+        ctx.warnings.push(`iCIMS/${entry.company}: skipped a posting without a title`);
+        continue;
+      }
+      const location =
+        card.match(/Job Locations?\s*<\/span>\s*<span[^>]*>\s*([^<]+)/i)?.[1]?.trim() ?? null;
+      const posted =
+        card.match(/Posted Date\s*<\/span>\s*<span[^>]*>\s*([^<]+)/i)?.[1]?.trim() ?? null;
+      if (!matchesLocationFilter(location, entry.locationIncludes)) continue;
+      let cleanUrl: string;
+      try {
+        const u = new URL(href, base);
+        u.search = "";
+        cleanUrl = u.toString();
+      } catch {
+        cleanUrl = href;
+      }
+      pushVacancy(ctx, entry, "ats_icims", {
+        title,
+        companyName: entry.company,
+        locationText: location ? decodeEntities(location) : null,
+        remoteType: location && /remote/i.test(location) ? "remote" : null,
+        employmentType: null,
+        salaryText: null,
+        descriptionText: null,
+        postedAt: parseDateLoose(posted),
+        applyUrl: cleanUrl,
+        sourceUrl: cleanUrl,
+      });
+      taken += 1;
+    }
+    if (newOnPage === 0) break;
+  }
+}
+
+// ------------------------------------------------------- SuccessFactors ----
+
+const SF_PAGE_SIZE = 25;
+const SF_MAX_PAGES = 4;
+
+/**
+ * SuccessFactors RMK career sites (e.g. https://jobs.sap.com) are
+ * server-rendered: /search/?q=&startrow={n} pages contain
+ * <a class="jobTitle-link" href="/job/{slug}/{id}/">Title</a> rows with
+ * <span class="jobLocation"> values. `entry.token` holds the site base URL
+ * (custom domains — there is no shared platform host). Career Site Builder
+ * portals (careerN.successfactors.com) are JS-only and not supported here.
+ */
+export async function fetchSuccessFactors(
+  entry: AtsEmployerConfig,
+  ctx: AtsFetcherContext,
+): Promise<void> {
+  let baseUrl: URL;
+  try {
+    baseUrl = validateResearchUrl(entry.token);
+  } catch {
+    throw new IngestionError(
+      "config",
+      `SuccessFactors entry for ${entry.company} needs a public career-site URL as its token`,
+    );
+  }
+  const base = baseUrl.origin;
+  const cap = resolveAtsMaxJobs(entry);
+  const query = encodeURIComponent(entry.searchQuery ?? "");
+  const seenHrefs = new Set<string>();
+  let taken = 0;
+  for (let page = 0; page < SF_MAX_PAGES && taken < cap; page++) {
+    const response = await fetchAtsResponse(
+      "SuccessFactors",
+      `${base}/search/?q=${query}&sortColumn=referencedate&sortDirection=desc&startrow=${page * SF_PAGE_SIZE}`,
+      { headers: BROWSER_HEADERS },
+    );
+    if (!response.ok) {
+      throw new IngestionError("upstream", `SuccessFactors error (HTTP ${response.status})`);
+    }
+    const html = await response.text();
+    let newOnPage = 0;
+    // Rows repeat per breakpoint (desktop + mobile) — dedupe by href.
+    for (const row of html.split(/<tr\b/i)) {
+      if (taken >= cap) break;
+      const tag = row.match(/<a\b[^>]*jobTitle-link[^>]*>/i)?.[0];
+      if (!tag) continue;
+      const href = tag.match(/href="([^"]+)"/i)?.[1];
+      if (!href || seenHrefs.has(href)) continue;
+      const afterTag = row.slice(row.indexOf(tag) + tag.length);
+      const closeIdx = afterTag.indexOf("</a>");
+      const title =
+        closeIdx > 0 ? decodeEntities(afterTag.slice(0, closeIdx).replace(/<[^>]+>/g, "").trim()) : "";
+      seenHrefs.add(href);
+      newOnPage += 1;
+      if (!title) {
+        ctx.warnings.push(`SuccessFactors/${entry.company}: skipped a posting without a title`);
+        continue;
+      }
+      const locationRaw = [...row.matchAll(/<span class="jobLocation[^"]*"[^>]*>\s*([^<]*?)\s*</gi)]
+        .map((m) => m[1]!.trim())
+        .find((v) => v.length > 0);
+      const location = locationRaw ? decodeEntities(locationRaw) : null;
+      if (!matchesLocationFilter(location, entry.locationIncludes)) continue;
+      const posted = row.match(/<span class="jobDate[^"]*"[^>]*>\s*([^<]+)/i)?.[1]?.trim() ?? null;
+      let jobUrl: string;
+      try {
+        jobUrl = new URL(href, base).toString();
+      } catch {
+        continue;
+      }
+      pushVacancy(ctx, entry, "ats_successfactors", {
+        title,
+        companyName: entry.company,
+        locationText: location,
+        remoteType: location && /remote/i.test(location) ? "remote" : null,
+        employmentType: null,
+        salaryText: null,
+        descriptionText: null,
+        postedAt: parseDateLoose(posted),
+        applyUrl: jobUrl,
+        sourceUrl: jobUrl,
+      });
+      taken += 1;
+    }
+    if (newOnPage === 0) break;
   }
 }
 

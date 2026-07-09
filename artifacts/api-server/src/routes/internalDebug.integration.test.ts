@@ -46,6 +46,11 @@ const get = async (cookie?: string): Promise<Response> =>
     headers: cookie ? { cookie } : {},
   });
 
+const getScorecards = async (cookie?: string): Promise<Response> =>
+  fetch(`${baseUrl}/api/internal/debug/sector-scorecards`, {
+    headers: cookie ? { cookie } : {},
+  });
+
 beforeAll(async () => {
   ownerCookie = await sessionFor("owner@demo.test");
   viewerCookie = await sessionFor("viewer@demo.test");
@@ -149,5 +154,80 @@ describe("GET /api/internal/debug/underwriting-count (integration)", () => {
     expect(
       body.boards_underwriting.reed + body.boards_underwriting.adzuna,
     ).toBeLessThanOrEqual(body.active_canonical_underwriting);
+  });
+});
+
+interface SectorScorecardRow {
+  industry: string;
+  directories: string[];
+  seeded_employers: number;
+  careers_page_detected: number;
+  actively_posting_employers: number;
+  ats_resolved_employers: number;
+  basic_html_employers: number;
+  firecrawl_employers: number;
+  needs_firecrawl_employers: number;
+  unsupported_ats_employers: number;
+  zero_job_employers: number;
+  active_canonical_jobs: number;
+  direct_employer_jobs: number;
+  coverage_status: string;
+  best_next_gain: string;
+  segments: Array<{ segment: string; active_jobs: number; seeded_employers: number }> | null;
+}
+
+describe("GET /api/internal/debug/sector-scorecards (integration)", () => {
+  it("requires authentication and rejects viewers", async () => {
+    expect((await getScorecards()).status).toBe(401);
+    expect((await getScorecards(viewerCookie)).status).toBe(403);
+  });
+
+  it("returns one scorecard per directory industry with rule outputs", async () => {
+    const res = await getScorecards(ownerCookie);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { industries: SectorScorecardRow[] };
+
+    const industries = body.industries.map((i) => i.industry).sort();
+    expect(industries).toEqual([
+      "accountancy_finance",
+      "asset_management",
+      "banking",
+      "insurance",
+      "it_tech",
+      "pensions",
+    ]);
+
+    for (const card of body.industries) {
+      expect(card.seeded_employers).toBeGreaterThan(0);
+      // employer partitions must be internally consistent
+      expect(card.actively_posting_employers + card.zero_job_employers).toBe(
+        card.seeded_employers,
+      );
+      expect(card.careers_page_detected).toBeLessThanOrEqual(card.seeded_employers);
+      expect(card.ats_resolved_employers).toBeLessThanOrEqual(card.seeded_employers);
+      expect(card.direct_employer_jobs).toBeLessThanOrEqual(card.active_canonical_jobs);
+      expect(["healthy", "developing", "thin"]).toContain(card.coverage_status);
+      expect([
+        "add more ATS employers",
+        "support remaining ATS providers",
+        "top up Firecrawl for JS-heavy sites",
+        "expand seed list",
+      ]).toContain(card.best_next_gain);
+    }
+
+    // Insurance carries segment detail (config segment keys); others do not.
+    const insurance = body.industries.find((i) => i.industry === "insurance")!;
+    expect(insurance.segments?.map((s) => s.segment).sort()).toEqual([
+      "broker",
+      "company_market",
+      "lloyds_syndicate",
+      "mga_coverholder",
+    ]);
+    for (const seg of insurance.segments!) {
+      expect(seg.seeded_employers).toBeGreaterThan(0);
+      expect(seg.active_jobs).toBeGreaterThanOrEqual(0);
+    }
+    const banking = body.industries.find((i) => i.industry === "banking")!;
+    expect(banking.segments).toBeNull();
   });
 });

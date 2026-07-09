@@ -11,9 +11,12 @@ import {
 } from "../types";
 import {
   fetchAshby,
+  fetchGreenhouse,
+  fetchIcims,
   fetchLever,
   fetchRecruitee,
   fetchSmartRecruiters,
+  fetchSuccessFactors,
   fetchTeamtailor,
   fetchWorkable,
   fetchWorkday,
@@ -37,6 +40,9 @@ const FETCHERS: Record<AtsPlatform, PlatformFetcher> = {
   recruitee: fetchRecruitee,
   teamtailor: fetchTeamtailor,
   workday: fetchWorkday,
+  greenhouse: fetchGreenhouse,
+  icims: fetchIcims,
+  successfactors: fetchSuccessFactors,
 };
 
 export const ATS_PLATFORMS = Object.keys(FETCHERS) as AtsPlatform[];

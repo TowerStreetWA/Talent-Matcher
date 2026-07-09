@@ -64,7 +64,18 @@ describe("ats providers", () => {
 
   it("exposes one provider per platform with ats_-prefixed provider keys", () => {
     expect(ATS_PLATFORMS.sort()).toEqual(
-      ["ashby", "lever", "recruitee", "smartrecruiters", "teamtailor", "workable", "workday"].sort(),
+      [
+        "ashby",
+        "greenhouse",
+        "icims",
+        "lever",
+        "recruitee",
+        "smartrecruiters",
+        "successfactors",
+        "teamtailor",
+        "workable",
+        "workday",
+      ].sort(),
     );
     for (const platform of ATS_PLATFORMS) {
       const provider = makeAtsProvider(platform);
@@ -303,6 +314,128 @@ describe("ats providers", () => {
       /^https:\/\/aviva\.wd1\.myworkdayjobs\.com\/en-US\/External\/job\/London-UK\//,
     );
     expect(result.vacancies[0]?.sourceProvider).toBe("ats_workday");
+  });
+
+  it("normalizes Greenhouse jobs, decoding entity-escaped content, and falls back to the EU host on 404", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({}) })
+      .mockResolvedValueOnce(
+        jsonResponse({
+          jobs: [
+            {
+              title: "Backend Engineer",
+              absolute_url: "https://job-boards.greenhouse.io/monzo/jobs/1",
+              location: { name: "London, UK" },
+              first_published: "2026-06-15T10:00:00-04:00",
+              updated_at: "2026-07-01T10:00:00-04:00",
+              content: "&lt;p&gt;Build &amp;amp; ship&lt;/p&gt;",
+            },
+            {
+              title: "US Role",
+              absolute_url: "https://job-boards.greenhouse.io/monzo/jobs/2",
+              location: { name: "New York" },
+            },
+            { absolute_url: "https://job-boards.greenhouse.io/monzo/jobs/3" },
+          ],
+        }),
+      );
+
+    const result = await makeAtsProvider("greenhouse").fetchVacancies({ companies: ["Monzo"] });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("boards-api.greenhouse.io");
+    expect(String(fetchMock.mock.calls[1]?.[0])).toContain("boards-api.eu.greenhouse.io");
+    expect(result.vacancies.map((v) => v.title)).toEqual(["Backend Engineer"]);
+    const v = result.vacancies[0]!;
+    expect(v.locationText).toBe("London, UK");
+    expect(v.descriptionText).toBe("Build & ship");
+    expect(v.sourceUrl).toBe("https://job-boards.greenhouse.io/monzo/jobs/1");
+    expect(v.sourceProvider).toBe("ats_greenhouse");
+    expect(v.postedAt?.toISOString()).toBe("2026-06-15T14:00:00.000Z");
+    expect(result.warnings.some((w) => w.includes("without a title"))).toBe(true);
+  });
+
+  it("parses iCIMS portal HTML pages (cards, locations, pagination)", async () => {
+    const page = (rows: string) => `
+      <h2 class="iCIMS_SubHeader iCIMS_SubHeader_Jobs"> Search Results </h2>
+      <ul class="iCIMS_JobsList">${rows}</ul>`;
+    // Real portals put the Job Locations label + value BEFORE the title anchor.
+    const card = (id: number, title: string, loc: string) => `
+      <li class="iCIMS_JobCardItem">
+        <div class="row">
+          <span class="sr-only field-label">Job Locations</span>
+          <span >
+            ${loc}</span>
+          <a href="https://careers-kingfisher2.icims.com/jobs/${id}/${title.toLowerCase().replace(/ /g, "-")}/job?in_iframe=1"
+             class="iCIMS_Anchor" title="${id} - ${title}"><h3>${title}</h3></a>
+        </div>
+      </li>`;
+    const pageOne = page(
+      card(101, "Lead Cloud Engineer", "UK-London") + card(102, "Paris Role", "FR-Paris"),
+    );
+    const pageTwo = page(card(103, "Senior Quality Engineer", "UK-London"));
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => pageOne })
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => pageTwo })
+      // portal repeats the last page when ?pr= runs past the end → 0 new → stop
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => pageTwo });
+
+    const result = await makeAtsProvider("icims").fetchVacancies({ companies: ["Kingfisher"] });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
+      "careers-kingfisher2.icims.com/jobs/search?ss=1&in_iframe=1&pr=0",
+    );
+    expect(result.vacancies.map((v) => v.title)).toEqual([
+      "Lead Cloud Engineer",
+      "Senior Quality Engineer",
+    ]);
+    const v = result.vacancies[0]!;
+    expect(v.locationText).toBe("UK-London");
+    // query string stripped from the canonical job URL
+    expect(v.sourceUrl).toBe(
+      "https://careers-kingfisher2.icims.com/jobs/101/lead-cloud-engineer/job",
+    );
+    expect(v.sourceProvider).toBe("ats_icims");
+  });
+
+  it("parses SuccessFactors RMK pages, deduping desktop/mobile duplicate rows", async () => {
+    const html = `
+      <table><tbody>
+        <tr class="data-row">
+          <td><a href="/job/London-Platform-Engineer-1010/111/" class="jobTitle-link">Platform Engineer</a>
+            <span class="jobLocation visible-phone"> </span>
+            <span class="jobLocation"> London, GB </span></td>
+        </tr>
+        <tr class="data-row-mobile">
+          <td><a class="jobTitle-link" href="/job/London-Platform-Engineer-1010/111/">Platform Engineer</a>
+            <span class="jobLocation"> London, GB </span></td>
+        </tr>
+        <tr class="data-row">
+          <td><a href="/job/Berlin-Dev-Manager-2020/222/" class="jobTitle-link">Dev Manager &amp; Lead</a>
+            <span class="jobLocation"> Berlin, DE </span></td>
+        </tr>
+      </tbody></table>`;
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => html })
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => "<p>no rows</p>" });
+
+    const result = await makeAtsProvider("successfactors").fetchVacancies({
+      companies: ["SAP"],
+    });
+
+    // Location filter (london/uk/gb) keeps only the London row; the mobile
+    // duplicate is dropped by href dedupe, Berlin by the filter.
+    expect(result.vacancies.map((v) => v.title)).toEqual(["Platform Engineer"]);
+    const v = result.vacancies[0]!;
+    expect(v.locationText).toBe("London, GB");
+    expect(v.sourceUrl).toBe("https://jobs.sap.com/job/London-Platform-Engineer-1010/111/");
+    expect(v.sourceProvider).toBe("ats_successfactors");
+    // SAP's config entry sets searchQuery "London" (global board — newest-first
+    // worldwide pages would otherwise contain zero UK rows).
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
+      "https://jobs.sap.com/search/?q=London&sortColumn=referencedate&sortDirection=desc&startrow=0",
+    );
   });
 
   it("continues past a failing employer board (warning, not fatal)", async () => {

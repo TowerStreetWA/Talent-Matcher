@@ -1,6 +1,6 @@
 import type { AtsEmployerConfig } from "../../config/atsEmployers";
 import { validateResearchUrl } from "../firecrawl";
-import { atsEntryFromUrl } from "./engine";
+import { atsEntryFromUrl, successFactorsEntryFromUrl } from "./engine";
 
 /**
  * Careers→board resolution: given an employer careers URL (often a JS-heavy
@@ -17,7 +17,7 @@ export type ResolutionOutcome =
   | "careers_url_is_board" // careers URL itself parses as an ATS board
   | "redirected_to_board" // final URL after redirects is an ATS board
   | "board_link_in_html" // HTML references a supported ATS board
-  | "unsupported_ats" // detected a known-but-unsupported ATS (e.g. Greenhouse, iCIMS)
+  | "unsupported_ats" // detected a known-but-unsupported ATS (e.g. Taleo, SuccessFactors CSB)
   | "no_board_detected" // fetched OK, nothing recognisable found
   | "blocked_url" // SSRF guard: non-http(s), private/internal host, or redirect to one
   | "fetch_failed"; // network error / timeout / non-2xx
@@ -58,14 +58,30 @@ function cacheKey(url: string): string {
   return url.toLowerCase().replace(/\/+$/, "");
 }
 
-/** ATS platforms we can detect in HTML but have no structured fetcher for. */
+/**
+ * ATS platforms we can detect in HTML but have no structured fetcher for.
+ * Greenhouse/iCIMS/SuccessFactors-RMK moved out of this list in July 2026 —
+ * they now have first-class fetchers. The remaining detection-only entries
+ * are here because their public surfaces are JS-only or session-gated:
+ *  - successfactors_csb: Career Site Builder portals (careerN.successfactors.
+ *    com/eu) render entirely client-side from an authenticated OData API
+ *  - taleo: portals are JS shells over a session-token API
+ *  - oracle_cloud / avature / eightfold: JS-only SPAs, no stable public JSON
+ *  - personio / bamboohr / rippling / jazzhr / comeet: hosted boards exist
+ *    but are low-volume in our sectors; detection first, fetchers when
+ *    scorecard data shows enough employers to justify them
+ */
 const UNSUPPORTED_ATS_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
-  { name: "greenhouse", pattern: /boards\.greenhouse\.io|job-boards(?:\.eu)?\.greenhouse\.io|greenhouse\.io\/embed/i },
-  { name: "icims", pattern: /\.icims\.com/i },
-  { name: "successfactors", pattern: /\.successfactors\.(?:com|eu)|careers\.\w+\.com\/sap/i },
+  { name: "successfactors_csb", pattern: /\.successfactors\.(?:com|eu)/i },
+  { name: "taleo", pattern: /\.taleo\.net/i },
   { name: "oracle_cloud", pattern: /\.oraclecloud\.com\/hcmUI/i },
   { name: "avature", pattern: /\.avature\.net/i },
   { name: "eightfold", pattern: /\.eightfold\.ai/i },
+  { name: "personio", pattern: /\.personio\.(?:de|com)/i },
+  { name: "bamboohr", pattern: /\.bamboohr\.com/i },
+  { name: "rippling", pattern: /ats\.rippling\.com/i },
+  { name: "jazzhr", pattern: /\.applytojob\.com/i },
+  { name: "comeet", pattern: /\.comeet\.co/i },
 ];
 
 /**
@@ -82,6 +98,10 @@ const BOARD_URL_PATTERN = new RegExp(
     String.raw`https?://jobs(?:\.eu)?\.lever\.co/[A-Za-z0-9-]+`,
     String.raw`https?://jobs\.ashbyhq\.com/[A-Za-z0-9%-]+`,
     String.raw`https?://(?:careers|jobs)\.smartrecruiters\.com/[A-Za-z0-9_-]+`,
+    // embed variant must precede the generic form so ?for= survives the match
+    String.raw`https?://(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io/embed/job_board\?for=[A-Za-z0-9_-]+`,
+    String.raw`https?://(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io/[A-Za-z0-9_-]+`,
+    String.raw`https?://[a-z0-9-]+\.icims\.com`,
   ].join("|"),
   "gi",
 );
@@ -205,15 +225,32 @@ export async function resolveCareersBoard(
   const hit = cache.get(key);
   if (hit && Date.now() - hit.checkedAt.getTime() <= CACHE_TTL_MS) {
     // Re-bind company/sector for this caller: cache stores URL-level facts.
-    return hit.entry
-      ? { ...hit, entry: hit.boardUrl ? atsEntryFromUrl(hit.boardUrl, opts) : hit.entry }
-      : hit;
+    return hit.entry ? { ...hit, entry: rebindEntry(hit, opts) } : hit;
   }
 
   const resolution = await resolveUncached(careersUrl, opts);
   cache.set(key, resolution);
   return resolution;
 }
+
+/**
+ * Re-derive a cached entry with this caller's company/sector. SuccessFactors
+ * boards aren't URL-recognisable (employer-owned domains), so they rebind via
+ * the dedicated helper; everything else re-parses the board URL.
+ */
+function rebindEntry(
+  hit: BoardResolution,
+  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+): AtsEmployerConfig | null {
+  if (!hit.boardUrl) return hit.entry;
+  if (hit.entry?.platform === "successfactors") {
+    return successFactorsEntryFromUrl(hit.boardUrl, opts);
+  }
+  return atsEntryFromUrl(hit.boardUrl, opts);
+}
+
+/** Marker present in every server-rendered SuccessFactors RMK career site. */
+const RMK_MARKER = /class="jobTitle-link"/;
 
 async function resolveUncached(
   careersUrl: string,
@@ -274,7 +311,23 @@ async function resolveUncached(
     }
   }
 
-  // 3. Known-but-unsupported ATS — worth surfacing in diagnostics.
+  // 3. Page itself is a server-rendered SuccessFactors RMK career site
+  //    (employer-owned domain, so URL parsing alone can't spot it).
+  if (RMK_MARKER.test(page.html)) {
+    const entry = successFactorsEntryFromUrl(page.finalUrl, opts);
+    if (entry) {
+      return {
+        outcome: "board_link_in_html",
+        entry,
+        boardUrl: entry.token,
+        finalUrl: page.finalUrl,
+        unsupportedAts: null,
+        checkedAt,
+      };
+    }
+  }
+
+  // 4. Known-but-unsupported ATS — worth surfacing in diagnostics.
   const unsupported =
     detectUnsupportedAts(page.finalUrl) ?? detectUnsupportedAts(page.html);
   return {

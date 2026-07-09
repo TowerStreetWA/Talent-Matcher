@@ -1,9 +1,12 @@
 import type { AtsEmployerConfig, AtsPlatform } from "../../config/atsEmployers";
 import {
   fetchAshby,
+  fetchGreenhouse,
+  fetchIcims,
   fetchLever,
   fetchRecruitee,
   fetchSmartRecruiters,
+  fetchSuccessFactors,
   fetchTeamtailor,
   fetchWorkable,
   fetchWorkday,
@@ -172,7 +175,60 @@ export function atsEntryFromUrl(
   ) {
     return { ...base, platform: "smartrecruiters", token: pathSegments[0] };
   }
+  // boards.greenhouse.io/{token}, job-boards[.eu].greenhouse.io/{token},
+  // or the embed form .../embed/job_board?for={token}
+  if (
+    host === "boards.greenhouse.io" ||
+    host === "job-boards.greenhouse.io" ||
+    host === "boards.eu.greenhouse.io" ||
+    host === "job-boards.eu.greenhouse.io"
+  ) {
+    const token =
+      pathSegments[0] === "embed"
+        ? url.searchParams.get("for")
+        : pathSegments[0];
+    if (token && token !== "v1" && token !== "embed") {
+      return { ...base, platform: "greenhouse", token: token.toLowerCase() };
+    }
+    return null;
+  }
+  // {tenant}.icims.com — the tenant subdomain is the portal token; the
+  // fetcher reads the server-rendered /jobs/search iframe page.
+  if (
+    host.endsWith(".icims.com") &&
+    labels.length >= 3 &&
+    !["www", "media", "cdn", "jobs", "status", "help", "care", "community"].includes(labels[0]!)
+  ) {
+    return { ...base, platform: "icims", token: labels[0]! };
+  }
   return null;
+}
+
+/**
+ * Build a SuccessFactors RMK entry from a career-site URL. RMK sites live on
+ * employer-owned domains (e.g. https://jobs.sap.com) so they cannot be
+ * recognised from the URL alone — callers use this when the platform is
+ * already known (directory platformHint, RMK HTML sniff, cached resolution).
+ * The entry token is the site's base origin.
+ */
+export function successFactorsEntryFromUrl(
+  rawUrl: string,
+  opts: { company: string; sectorTag?: string | null; maxJobs?: number },
+): AtsEmployerConfig | null {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  return {
+    company: opts.company,
+    maxJobs: opts.maxJobs ?? DIRECTORY_ATS_MAX_JOBS,
+    sectorTag: opts.sectorTag ?? null,
+    platform: "successfactors",
+    token: url.origin,
+  };
 }
 
 type AtsFetcher = (entry: AtsEmployerConfig, ctx: AtsFetcherContext) => Promise<void>;
@@ -185,6 +241,9 @@ export const DIRECTORY_ATS_FETCHERS: Record<AtsPlatform, AtsFetcher> = {
   recruitee: fetchRecruitee,
   teamtailor: fetchTeamtailor,
   workday: fetchWorkday,
+  greenhouse: fetchGreenhouse,
+  icims: fetchIcims,
+  successfactors: fetchSuccessFactors,
 };
 
 function reattribute(
@@ -237,7 +296,10 @@ export function makeDirectoryEmployerProvider(
 
       // 1. Directory says the careers URL is itself an ATS board.
       if (employer.platformHint !== "careers_page") {
-        const entry = atsEntryFromUrl(url, atsOpts);
+        const entry =
+          employer.platformHint === "successfactors"
+            ? successFactorsEntryFromUrl(url, atsOpts)
+            : atsEntryFromUrl(url, atsOpts);
         if (entry && entry.platform === employer.platformHint) {
           const vacancies = await fetchViaAts(entry, warnings);
           return done(vacancies, {

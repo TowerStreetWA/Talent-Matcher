@@ -1,0 +1,88 @@
+# Prompt for Replit Agent — VacancyMatch light/dark theme
+# Light = "Light editorial" (ivory/green/terracotta) · Dark = "Refined signal" (charcoal/mint/amber)
+
+Copy everything below the line and paste it into Replit Agent.
+
+---
+
+Add a light/dark theme system to my VacancyMatch app. Do not change any functionality, routing, or data logic — this is purely a visual re-skin. Implement it as follows:
+
+## 1. Theme architecture
+
+- Refactor ALL hardcoded colours into CSS custom properties defined on `:root` (light) and `[data-theme="dark"]` (dark). Every component must read colours only from these variables.
+- Add a sun/moon theme toggle button in the top bar next to the user avatar. Persist the choice in `localStorage` and default to the user's `prefers-color-scheme`.
+- Apply `data-theme` on the `<html>` element before first paint (inline script in the document head) to avoid a flash of the wrong theme.
+
+## 2. Light mode — "Light editorial" (warm ivory, forest green, terracotta)
+
+```css
+:root {
+  --bg-canvas: #FAF7F2;      /* page background — warm paper white */
+  --bg-sidebar: #F2EDE3;     /* sidebar background */
+  --bg-card: #FFFFFF;        /* cards, inputs, panels */
+  --border: #E5DFD3;         /* hairline borders */
+  --text-primary: #1C1B18;   /* headings and body — warm ink */
+  --text-secondary: #6E6A5F; /* muted labels, metadata */
+  --text-placeholder: #A39E92;
+  --accent: #0F6E56;         /* primary buttons, active nav — forest green */
+  --accent-contrast: #FAF7F2;/* text on accent */
+  --accent-soft: rgba(15,110,86,0.10); /* active-nav tint */
+  --highlight: #D85A30;      /* terracotta — "new/recently posted" markers */
+  --highlight-soft: #FAECE7; /* terracotta tint bg (text: #712B13) */
+  --success: #0F6E56;
+  --warning: #BA7517;
+  --danger: #A32D2D;
+}
+```
+
+- Active sidebar item: `--accent-soft` background with `--accent` icon/text.
+- Primary buttons (Save search, Add candidate): forest green `--accent` background with ivory text.
+- Terracotta is reserved for freshness/emphasis only: "new/recently posted" markers with a flame or clock icon, alert counts. Never use it for large surfaces.
+- Logo mark: green square, same as dark mode — the accent stays green in both themes for brand consistency.
+
+## 3. Dark mode — "Refined signal" (green-tinted charcoal, mint, amber)
+
+```css
+[data-theme="dark"] {
+  --bg-canvas: #0E1512;      /* page background — green-tinted charcoal, NOT flat grey */
+  --bg-sidebar: #0A0F0C;
+  --bg-card: #18211D;
+  --border: #26332C;
+  --text-primary: #F2F7F4;
+  --text-secondary: #8FA69B;
+  --text-placeholder: #6B8177;
+  --accent: #2BD9A0;         /* mint — primary buttons, active nav */
+  --accent-contrast: #04342C;/* text on accent */
+  --highlight: #F0B429;      /* amber — "recently posted", alerts, freshness */
+  --highlight-soft: rgba(240,180,41,0.14);
+  --success: #2BD9A0;
+  --warning: #F0B429;
+  --danger: #E24B4A;
+}
+```
+
+- Active sidebar item: `rgba(43,217,160,0.14)` background with mint text.
+- Primary buttons: mint background with dark green text (`--accent-contrast`).
+- Amber is reserved for time/freshness signals ("3 min ago", "Recently posted", alert badges).
+
+## 4. Component styling (both modes)
+
+- **Typography:** keep the current sans-serif for UI, but render page titles (h1 like "Job Search", "Dashboard", "Candidates") in a serif stack: `Georgia, 'Times New Roman', serif`, weight 500. Everything else stays sans.
+- **Sector chips** (Insurance, Banking, Pensions, Asset Management, Accountancy & Finance, IT & Tech): give each sector its own tinted pill instead of the current uniform outline style:
+  - Insurance: teal tint (light: bg #E1F5EE / text #085041; dark: bg rgba(93,202,165,0.15) / text #5DCAA5)
+  - Banking: blue tint (light: #E6F1FB / #0C447C; dark: rgba(133,183,235,0.12) / #85B7EB)
+  - Pensions: amber tint (light: #FAEEDA / #633806; dark: rgba(250,199,117,0.12) / #FAC775)
+  - Asset Management: purple tint (light: #EEEDFE / #3C3489; dark: rgba(175,169,236,0.12) / #AFA9EC)
+  - Accountancy & Finance: green tint (light: #EAF3DE / #27500A; dark: rgba(151,196,89,0.12) / #C0DD97)
+  - IT & Tech: blue tint (same as Banking)
+- **Badges:** "Direct employer" uses the success tint; "Recently posted" / relative timestamps use the highlight (terracotta in light, amber in dark) tint with a small clock icon.
+- **Job cards:** add a 40px rounded-square company monogram (first letters of company name) on the left of each job card, using one of the sector tint pairs above. Keep existing card content and the View details button.
+- **Dashboard stat cards:** make "Live Jobs" the emphasised card — value in `--highlight` colour with a 1px `--highlight` border; the other three stay neutral.
+- **Focus/hover states:** cards get `--border` → slightly stronger border on hover; inputs get a subtle focus ring in the accent colour.
+
+## 5. Acceptance checks
+
+- No remaining hardcoded hex colours in components — everything via the CSS variables.
+- Toggle switches instantly with no flash on reload, in every page: Dashboard, Upload CV, Candidates, Matches, Live Jobs, Job Search, Sources, Alerts, Team, Compliance, Billing.
+- All text meets WCAG AA contrast in both modes (check secondary text on cards especially).
+- Charts, status pills ("active"), and empty states also respect the theme variables.

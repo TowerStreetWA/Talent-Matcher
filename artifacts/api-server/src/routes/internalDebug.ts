@@ -6,6 +6,7 @@ import { normalizeQuery } from "../lib/search/normalize";
 import { classifyJobForDisplay } from "../lib/search/classification";
 import { runJobSearchPipeline } from "./jobs";
 import {
+  CAREERS_DIRECTORIES,
   CAREERS_DIRECTORY_KEYS,
   directoryByKey,
   LONDON_INSURANCE_DIRECTORY,
@@ -18,6 +19,10 @@ import {
 import { cachedResolution } from "../lib/directory/resolveCareersBoard";
 import { firecrawlUnavailability } from "../lib/firecrawl";
 import { ingestionPathRecord } from "../lib/directory/ingestionPathRegistry";
+import {
+  buildIndustryScorecard,
+  collectEmployerSignals,
+} from "../lib/directory/sectorScorecard";
 
 /**
  * Internal-only, read-only diagnostics. Deliberately NOT part of the public
@@ -349,6 +354,134 @@ router.get("/internal/debug/careers-directory-coverage", async (req, res) => {
       zero_job_employers: (payload.employers_with_zero_jobs as unknown[]).length,
     },
     "Careers-directory coverage diagnostics computed",
+  );
+  res.json(payload);
+});
+
+/**
+ * Sector scorecards: one row per directory industry with coverage quality,
+ * ingestion-path mix, gaps, and a rule-based "what to do next" summary.
+ * Insurance additionally carries per-segment detail. Signals come from the
+ * process-local board-resolution cache + ingestion-path registry (advisory:
+ * cold processes under-report detection, never over-report). Tenant-scoped,
+ * read-only, admin+ only (/internal guard).
+ */
+router.get("/internal/debug/sector-scorecards", async (req, res) => {
+  const tenantId = tenantOf(req);
+  const activeCanonical = and(
+    eq(jobsTable.tenantId, tenantId),
+    eq(jobsTable.status, "active"),
+    eq(jobsTable.isCanonical, true),
+  );
+  const allProviders = CAREERS_DIRECTORIES.flatMap((d) => directoryProviderKeys(d));
+
+  const [classifyRows, providerRows, companyRows] = await Promise.all([
+    // Sector is computed at query time (taxonomy is config-only) — one
+    // classify pass over the active+canonical set covers every industry.
+    db
+      .select({
+        title: jobsTable.title,
+        companyName: jobsTable.companyName,
+        industry: jobsTable.industry,
+        descriptionText: jobsTable.descriptionText,
+        skills: jobsTable.skills,
+        sourceProvider: jobsTable.sourceProvider,
+        sourceType: jobsTable.sourceType,
+        sectorTag: jobsTable.sectorTag,
+      })
+      .from(jobsTable)
+      .where(activeCanonical),
+    db
+      .select({ sourceProvider: jobsTable.sourceProvider, value: count() })
+      .from(jobsTable)
+      .where(and(activeCanonical, inArray(jobsTable.sourceProvider, allProviders)))
+      .groupBy(jobsTable.sourceProvider),
+    db
+      .select({ companyName: jobsTable.companyName, sourceProvider: jobsTable.sourceProvider })
+      .from(jobsTable)
+      .where(
+        and(
+          eq(jobsTable.tenantId, tenantId),
+          eq(jobsTable.status, "active"),
+          inArray(jobsTable.sourceProvider, allProviders),
+        ),
+      )
+      .groupBy(jobsTable.companyName, jobsTable.sourceProvider),
+  ]);
+
+  // Industry job totals via the display classifier, with sectorTag fallback —
+  // same effective-sector rule the coverage endpoint uses.
+  const jobsByIndustry = new Map<string, { total: number; directEmployer: number }>();
+  for (const row of classifyRows) {
+    const c = classifyJobForDisplay(row);
+    const sector = row.sectorTag ?? c?.sector ?? null;
+    if (!sector) continue;
+    const bucket = jobsByIndustry.get(sector) ?? { total: 0, directEmployer: 0 };
+    bucket.total += 1;
+    if (row.sourceType === "direct_employer") bucket.directEmployer += 1;
+    jobsByIndustry.set(sector, bucket);
+  }
+
+  const segmentJobs = new Map<string, number>();
+  for (const row of providerRows) {
+    if (row.sourceProvider) segmentJobs.set(row.sourceProvider, row.value);
+  }
+
+  // Company names posting via each directory's providers, for the loose
+  // "actively posting" employer match (same normalization as coverage).
+  const companiesByDirectory = new Map<string, string[]>();
+  for (const directory of CAREERS_DIRECTORIES) {
+    const providers = new Set(directoryProviderKeys(directory));
+    companiesByDirectory.set(
+      directory.key,
+      companyRows
+        .filter((r) => r.sourceProvider && providers.has(r.sourceProvider))
+        .map((r) => normalizeCompany(r.companyName ?? ""))
+        .filter((n) => n.length > 0),
+    );
+  }
+
+  const byIndustry = new Map<string, typeof CAREERS_DIRECTORIES>();
+  for (const directory of CAREERS_DIRECTORIES) {
+    byIndustry.set(directory.industry, [
+      ...(byIndustry.get(directory.industry) ?? []),
+      directory,
+    ]);
+  }
+
+  const industries = [...byIndustry.entries()].map(([industry, directories]) => {
+    const jobStats = jobsByIndustry.get(industry) ?? { total: 0, directEmployer: 0 };
+    return buildIndustryScorecard({
+      industry,
+      directories: directories.map((config) => {
+        const jobCompanies = companiesByDirectory.get(config.key) ?? [];
+        return {
+          config,
+          signals: collectEmployerSignals(config, (employer) => {
+            const n = normalizeCompany(employer.name);
+            return jobCompanies.some((jc) => companiesMatch(n, jc));
+          }),
+        };
+      }),
+      activeCanonicalJobs: jobStats.total,
+      directEmployerJobs: jobStats.directEmployer,
+      segmentJobs,
+      includeSegments: industry === "insurance",
+    });
+  });
+
+  const payload = { industries };
+  req.log.info(
+    {
+      event: "debug_sector_scorecards",
+      industries: industries.map((i) => ({
+        industry: i.industry,
+        coverage_status: i.coverage_status,
+        best_next_gain: i.best_next_gain,
+        active_canonical_jobs: i.active_canonical_jobs,
+      })),
+    },
+    "Sector scorecards computed",
   );
   res.json(payload);
 });

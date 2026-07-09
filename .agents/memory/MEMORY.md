@@ -20,3 +20,4 @@
 - [Prod SQL silent errors](prod-sql-silent-errors.md) — production read-only SQL returns success with empty "START TRANSACTION ROLLBACK" on errors; verify column names via information_schema first.
 - [Prod data population](prod-data-population.md) — prod DB is separate; ingestion must run against the published domain; deployment secrets can lag workspace secrets; "newest-N then filter" pipelines lose recall as volume grows.
 - [SSRF guards for server fetches](ssrf-server-fetches.md) — redirect:"follow" bypasses URL validation; validate the initial URL AND every redirect hop manually before fetching config/admin-supplied URLs.
+- [ATS HTML fetcher quirks](ats-html-fetchers.md) — iCIMS 405s Chrome UAs from Node (use Firefox UA, test in Node not curl); parse per-card not anchor-to-anchor; global boards need a q= bias or location filters yield 0.

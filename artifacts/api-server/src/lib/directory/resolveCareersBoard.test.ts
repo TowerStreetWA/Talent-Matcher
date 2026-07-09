@@ -58,12 +58,24 @@ describe("detectBoardUrlsInHtml", () => {
 });
 
 describe("detectUnsupportedAts", () => {
-  it("detects greenhouse and icims", () => {
-    expect(detectUnsupportedAts('href="https://boards.greenhouse.io/monzo"')).toBe(
-      "greenhouse",
+  it("detects detection-only platforms and CSB portals", () => {
+    expect(detectUnsupportedAts("https://career5.successfactors.eu/career?company=x")).toBe(
+      "successfactors_csb",
     );
-    expect(detectUnsupportedAts("https://careers-acme.icims.com/jobs")).toBe("icims");
+    expect(detectUnsupportedAts("https://acme.taleo.net/careersection/ex/jobsearch.ftl")).toBe(
+      "taleo",
+    );
+    expect(detectUnsupportedAts("https://acme.jobs.personio.de")).toBe("personio");
+    expect(detectUnsupportedAts("https://acme.bamboohr.com/careers")).toBe("bamboohr");
+    expect(detectUnsupportedAts("https://ats.rippling.com/acme/jobs")).toBe("rippling");
+    expect(detectUnsupportedAts("https://acme.applytojob.com/apply")).toBe("jazzhr");
+    expect(detectUnsupportedAts("https://www.comeet.co/jobs/acme/11.22A")).toBe("comeet");
     expect(detectUnsupportedAts("plain html")).toBeNull();
+  });
+
+  it("no longer flags greenhouse or icims (now first-class)", () => {
+    expect(detectUnsupportedAts('href="https://boards.greenhouse.io/monzo"')).toBeNull();
+    expect(detectUnsupportedAts("https://careers-acme.icims.com/jobs")).toBeNull();
   });
 });
 
@@ -117,7 +129,7 @@ describe("resolveCareersBoard", () => {
     expect(r.boardUrl).toBe("https://jobs.ashbyhq.com/acme");
   });
 
-  it("reports unsupported ATS platforms", async () => {
+  it("resolves greenhouse board links in HTML (incl. embed form)", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
@@ -128,8 +140,79 @@ describe("resolveCareersBoard", () => {
       ),
     );
     const r = await resolveCareersBoard("https://monzo.com/careers", opts);
+    expect(r.outcome).toBe("board_link_in_html");
+    expect(r.entry).toMatchObject({ platform: "greenhouse", token: "monzo" });
+
+    clearResolutionCache();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        fakeResponse({
+          url: "https://acme.com/careers",
+          html: '<iframe src="https://boards.greenhouse.io/embed/job_board?for=acmeco"></iframe>',
+        }),
+      ),
+    );
+    const embed = await resolveCareersBoard("https://acme.com/careers", opts);
+    expect(embed.entry).toMatchObject({ platform: "greenhouse", token: "acmeco" });
+  });
+
+  it("resolves icims portal links in HTML", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        fakeResponse({
+          url: "https://kingfisher.com/careers",
+          html: '<a href="https://careers-kingfisher2.icims.com/jobs/search">Search jobs</a>',
+        }),
+      ),
+    );
+    const r = await resolveCareersBoard("https://kingfisher.com/careers", opts);
+    expect(r.outcome).toBe("board_link_in_html");
+    expect(r.entry).toMatchObject({ platform: "icims", token: "careers-kingfisher2" });
+  });
+
+  it("sniffs SuccessFactors RMK career sites from page HTML and rebinds from cache", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        fakeResponse({
+          url: "https://jobs.sap.com",
+          html: '<table><tr><td><a class="jobTitle-link" href="/job/Berlin-Dev-1/123/">Dev</a></td></tr></table>',
+        }),
+      ),
+    );
+    const r = await resolveCareersBoard("https://jobs.sap.com", opts);
+    expect(r.outcome).toBe("board_link_in_html");
+    expect(r.entry).toMatchObject({
+      platform: "successfactors",
+      token: "https://jobs.sap.com",
+      company: "Acme",
+    });
+    expect(r.boardUrl).toBe("https://jobs.sap.com");
+
+    // Cache-hit path must not lose the entry (token is not URL-parseable).
+    const again = await resolveCareersBoard("https://jobs.sap.com", { company: "SAP" });
+    expect(again.entry).toMatchObject({
+      platform: "successfactors",
+      token: "https://jobs.sap.com",
+      company: "SAP",
+    });
+  });
+
+  it("reports unsupported ATS platforms", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        fakeResponse({
+          url: "https://acme.com/careers",
+          html: '<a href="https://acme.taleo.net/careersection/2/jobsearch.ftl">Roles</a>',
+        }),
+      ),
+    );
+    const r = await resolveCareersBoard("https://acme.com/careers", opts);
     expect(r.outcome).toBe("unsupported_ats");
-    expect(r.unsupportedAts).toBe("greenhouse");
+    expect(r.unsupportedAts).toBe("taleo");
     expect(r.entry).toBeNull();
   });
 
