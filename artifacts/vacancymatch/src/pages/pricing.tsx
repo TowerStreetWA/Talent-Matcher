@@ -25,7 +25,7 @@ export default function Pricing() {
   const content = (
     <div className="space-y-8">
       <div className="text-center space-y-3">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+        <h1 className="font-serif text-3xl md:text-4xl font-medium tracking-tight">
           Simple, per-user pricing
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">

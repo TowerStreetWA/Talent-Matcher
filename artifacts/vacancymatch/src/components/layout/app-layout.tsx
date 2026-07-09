@@ -12,10 +12,13 @@ import {
   CreditCard,
   Search,
   LogOut,
-  UserPlus
+  UserPlus,
+  Sun,
+  Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -35,6 +38,7 @@ const navItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout, isLoggingOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const isAdmin = user?.role === "admin" || user?.role === "owner";
   const visibleNavItems = navItems.filter(
     (item) => !item.adminOnly || isAdmin,
@@ -108,6 +112,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              data-testid="button-theme-toggle"
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </Button>
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground">
               {initials}
             </div>

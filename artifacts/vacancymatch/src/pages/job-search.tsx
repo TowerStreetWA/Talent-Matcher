@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ClassificationTags } from "@/components/classification-tags";
+import { CompanyMonogram } from "@/components/company-monogram";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
@@ -345,7 +346,7 @@ export default function JobSearch() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Job Search</h1>
+        <h1 className="font-serif text-3xl font-medium tracking-tight">Job Search</h1>
         <p className="text-muted-foreground mt-1">
           Search live vacancies by title, location, and sector — ranked by relevance.
         </p>
@@ -650,11 +651,16 @@ export default function JobSearch() {
               }}
             >
               <CardContent className="p-6 flex flex-col md:flex-row gap-6">
+                <CompanyMonogram
+                  companyName={job.companyName}
+                  sector={job.sector}
+                  className="hidden md:flex"
+                />
                 <div className="flex-1 space-y-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       {job.sourceType === "direct_employer" && (
-                        <Badge variant="outline" className="text-xs font-normal border-primary/40 text-primary">
+                        <Badge variant="outline" className="text-xs font-normal border-transparent bg-success/10 text-success">
                           Direct employer
                         </Badge>
                       )}
@@ -680,12 +686,13 @@ export default function JobSearch() {
                       )}
                       <ClassificationTags
                         sectorLabel={job.sectorLabel ?? sectorLabel(job.sector)}
+                        sector={job.sector}
                         familyLabels={job.familyLabels}
                         familyKeys={job.families}
                         onFamilyClick={(key) => applyFamilyFromCard(job.sector, key)}
                       />
                       {job.postedAt && (
-                        <span className="text-xs flex items-center gap-1 text-muted-foreground">
+                        <span className="text-xs inline-flex items-center gap-1 rounded-md bg-highlight-soft px-1.5 py-0.5 text-highlight-soft-foreground">
                           <Clock className="w-3 h-3" />
                           {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
                         </span>

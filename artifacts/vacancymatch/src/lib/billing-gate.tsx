@@ -192,7 +192,6 @@ export function BillingGateProvider({ children }: { children: React.ReactNode })
               <Button
                 onClick={startTrial}
                 disabled={!trialPlan || checkout.isPending}
-                className="bg-[#FF6B35] text-[#050505] hover:bg-[#FF6B35]/90 glow-conversion"
               >
                 {checkout.isPending
                   ? "Redirecting…"

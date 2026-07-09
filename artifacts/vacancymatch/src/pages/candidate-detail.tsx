@@ -174,7 +174,7 @@ export default function CandidateDetail() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 border rounded-xl shadow-sm">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">{candidate.firstName} {candidate.lastName}</h1>
+            <h1 className="font-serif text-3xl font-medium tracking-tight">{candidate.firstName} {candidate.lastName}</h1>
             <Badge variant={candidate.status === 'active' ? 'default' : 'secondary'}>{candidate.status}</Badge>
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -287,8 +287,8 @@ export default function CandidateDetail() {
 
                       {(match.matchedSkills.length > 0 || (match.missingSkills && match.missingSkills.length > 0)) && (
                         <div className="flex flex-wrap gap-2 pt-2">
-                          {match.matchedSkills.map(s => <Badge key={s} variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 font-normal"><Check className="w-3 h-3 mr-1" />{s}</Badge>)}
-                          {match.missingSkills?.map(s => <Badge key={s} variant="secondary" className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 font-normal"><X className="w-3 h-3 mr-1" />{s}</Badge>)}
+                          {match.matchedSkills.map(s => <Badge key={s} variant="secondary" className="bg-success/10 text-success font-normal"><Check className="w-3 h-3 mr-1" />{s}</Badge>)}
+                          {match.missingSkills?.map(s => <Badge key={s} variant="secondary" className="bg-destructive/10 text-destructive font-normal"><X className="w-3 h-3 mr-1" />{s}</Badge>)}
                         </div>
                       )}
                     </div>

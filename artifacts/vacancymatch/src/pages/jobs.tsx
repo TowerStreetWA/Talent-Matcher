@@ -18,6 +18,7 @@ import { ResearchUrlDialog } from "@/components/research-url-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
 import { ClassificationTags } from "@/components/classification-tags";
+import { CompanyMonogram } from "@/components/company-monogram";
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
@@ -64,7 +65,7 @@ export default function Jobs() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Live Jobs Market</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight">Live Jobs Market</h1>
           <p className="text-muted-foreground mt-1">Search active vacancies across connected sources.</p>
         </div>
         <ResearchUrlDialog />
@@ -216,6 +217,11 @@ export default function Jobs() {
             >
               <CardContent className="p-0">
                 <div className="p-6 flex flex-col md:flex-row gap-6">
+                  <CompanyMonogram
+                    companyName={job.companyName}
+                    sector={job.classification?.sector}
+                    className="hidden md:flex"
+                  />
                   <div className="flex-1 space-y-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -225,7 +231,7 @@ export default function Jobs() {
                         {job.sourceType === "direct_employer" && (
                           <Badge
                             variant="outline"
-                            className="text-xs font-normal border-primary/40 text-primary"
+                            className="text-xs font-normal border-transparent bg-success/10 text-success"
                             data-testid={`badge-direct-employer-${job.id}`}
                           >
                             Direct employer
@@ -252,12 +258,13 @@ export default function Jobs() {
                         {job.classification && (
                           <ClassificationTags
                             sectorLabel={job.classification.sectorLabel}
+                            sector={job.classification.sector}
                             familyLabels={job.classification.familyLabels}
                             familyKeys={job.classification.families}
                           />
                         )}
                         {job.postedAt && (
-                          <span className="text-xs flex items-center gap-1 text-muted-foreground">
+                          <span className="text-xs inline-flex items-center gap-1 rounded-md bg-highlight-soft px-1.5 py-0.5 text-highlight-soft-foreground">
                             <Clock className="w-3 h-3" />
                             {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
                           </span>

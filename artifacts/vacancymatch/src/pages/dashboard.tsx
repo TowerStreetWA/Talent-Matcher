@@ -21,7 +21,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="font-serif text-3xl font-medium tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground mt-1">Market and pipeline overview.</p>
       </div>
 
@@ -54,13 +54,13 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-highlight">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Live Jobs</CardTitle>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <Briefcase className="h-4 w-4 text-highlight" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary.activeJobCount}</div>
+              <div className="text-2xl font-bold text-highlight">{summary.activeJobCount}</div>
               {summary.activeJobCount === 0 && (
                 <ZeroCta href="/sources" label="Connect a job source" />
               )}

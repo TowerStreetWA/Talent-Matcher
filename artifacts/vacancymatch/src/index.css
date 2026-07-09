@@ -3,59 +3,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-card-border: hsl(var(--card-border));
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-border: var(--card-border);
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-popover-border: hsl(var(--popover-border));
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover-border: var(--popover-border);
 
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-primary-border: var(--primary-border);
 
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary-border: var(--secondary-border);
 
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-muted-border: var(--muted-border);
 
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-accent-border: var(--accent-border);
 
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-border: var(--destructive-border);
 
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-highlight-soft-foreground: var(--highlight-soft-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-placeholder: var(--text-placeholder);
 
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-primary-border: var(--sidebar-primary-border);
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-accent-border: var(--sidebar-accent-border);
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
@@ -67,95 +74,164 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ── Light mode — "Light editorial" (warm ivory, forest green, terracotta) ── */
 :root {
-  --background: 0 0% 2%;
-  --foreground: 0 0% 98%;
-  --border: 240 6% 15%;
-  --input: 240 6% 15%;
-  --ring: 167 100% 30%;
+  --bg-canvas: #FAF7F2;
+  --bg-sidebar: #F2EDE3;
+  --bg-card: #FFFFFF;
+  --text-primary: #1C1B18;
+  --text-secondary: #6E6A5F;
+  --text-placeholder: #A39E92;
+  --accent-brand: #0F6E56;
+  --accent-contrast: #FAF7F2;
+  --accent-soft: rgba(15, 110, 86, 0.10);
 
-  --card: 240 6% 10%;
-  --card-foreground: 0 0% 98%;
-  --card-border: 240 6% 15%;
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --border: #E5DFD3;
+  --input: #E5DFD3;
+  --ring: var(--accent-brand);
 
-  --popover: 240 6% 10%;
-  --popover-foreground: 0 0% 98%;
-  --popover-border: 240 6% 15%;
+  --card: var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --card-border: #E5DFD3;
 
-  --primary: 167 100% 40%;
-  --primary-foreground: 0 0% 2%;
+  --popover: var(--bg-card);
+  --popover-foreground: var(--text-primary);
+  --popover-border: #E5DFD3;
 
-  --secondary: 240 6% 15%;
-  --secondary-foreground: 0 0% 98%;
+  --primary: var(--accent-brand);
+  --primary-foreground: var(--accent-contrast);
 
-  --muted: 240 6% 10%;
-  --muted-foreground: 240 5% 65%;
+  --secondary: #F2EDE3;
+  --secondary-foreground: var(--text-primary);
 
-  --accent: 167 100% 10%;
-  --accent-foreground: 167 100% 50%;
+  --muted: #F2EDE3;
+  --muted-foreground: var(--text-secondary);
 
-  --destructive: 16 100% 60%;
-  --destructive-foreground: 0 0% 98%;
+  --accent: var(--accent-soft);
+  --accent-foreground: var(--accent-brand);
 
-  --chart-1: 167 100% 50%;
-  --chart-2: 16 100% 60%;
-  --chart-3: 274 100% 74%;
-  --chart-4: 240 5% 65%;
-  --chart-5: 0 0% 98%;
+  --destructive: #A32D2D;
+  --destructive-foreground: #FAF7F2;
 
-  --sidebar: 0 0% 2%;
-  --sidebar-foreground: 240 5% 65%;
-  --sidebar-border: 240 6% 15%;
-  --sidebar-primary: 167 100% 40%;
-  --sidebar-primary-foreground: 0 0% 2%;
-  --sidebar-accent: 240 6% 10%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 167 100% 50%;
+  --highlight: #D85A30;
+  --highlight-soft: #FAECE7;
+  --highlight-soft-foreground: #712B13;
+  --success: #0F6E56;
+  --warning: #8A5410;
+
+  --badge-outline: #E5DFD3;
+
+  --chart-1: #0F6E56;
+  --chart-2: #D85A30;
+  --chart-3: #3C3489;
+  --chart-4: #BA7517;
+  --chart-5: #6E6A5F;
+
+  --sidebar: var(--bg-sidebar);
+  --sidebar-foreground: #4C483E;
+  --sidebar-border: #E5DFD3;
+  --sidebar-primary: var(--accent-soft);
+  --sidebar-primary-foreground: var(--accent-brand);
+  --sidebar-accent: rgba(28, 27, 24, 0.05);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-ring: var(--accent-brand);
+
+  /* Sector chip tints */
+  --chip-insurance-bg: #E1F5EE;
+  --chip-insurance-fg: #085041;
+  --chip-banking-bg: #E6F1FB;
+  --chip-banking-fg: #0C447C;
+  --chip-pensions-bg: #FAEEDA;
+  --chip-pensions-fg: #633806;
+  --chip-asset-bg: #EEEDFE;
+  --chip-asset-fg: #3C3489;
+  --chip-accountancy-bg: #EAF3DE;
+  --chip-accountancy-fg: #27500A;
 
   --app-font-sans: 'Plus Jakarta Sans', sans-serif;
-  --app-font-serif: Georgia, serif;
+  --app-font-serif: Georgia, 'Times New Roman', serif;
   --app-font-mono: 'JetBrains Mono', monospace;
   --radius: 0.5rem;
 }
 
-.dark {
-  --background: 0 0% 2%;
-  --foreground: 0 0% 98%;
-  --border: 240 6% 15%;
-  --input: 240 6% 15%;
-  --ring: 167 100% 30%;
+/* ── Dark mode — "Refined signal" (green-tinted charcoal, mint, amber) ── */
+.dark,
+[data-theme="dark"] {
+  --bg-canvas: #0E1512;
+  --bg-sidebar: #0A0F0C;
+  --bg-card: #18211D;
+  --text-primary: #F2F7F4;
+  --text-secondary: #8FA69B;
+  --text-placeholder: #6B8177;
+  --accent-brand: #2BD9A0;
+  --accent-contrast: #04342C;
+  --accent-soft: rgba(43, 217, 160, 0.14);
 
-  --card: 240 6% 10%;
-  --card-foreground: 0 0% 98%;
-  --card-border: 240 6% 15%;
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --border: #26332C;
+  --input: #26332C;
+  --ring: var(--accent-brand);
 
-  --popover: 240 6% 10%;
-  --popover-foreground: 0 0% 98%;
-  --popover-border: 240 6% 15%;
+  --card: var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --card-border: #26332C;
 
-  --primary: 167 100% 40%;
-  --primary-foreground: 0 0% 2%;
+  --popover: var(--bg-card);
+  --popover-foreground: var(--text-primary);
+  --popover-border: #26332C;
 
-  --secondary: 240 6% 15%;
-  --secondary-foreground: 0 0% 98%;
+  --primary: var(--accent-brand);
+  --primary-foreground: var(--accent-contrast);
 
-  --muted: 240 6% 10%;
-  --muted-foreground: 240 5% 65%;
+  --secondary: #26332C;
+  --secondary-foreground: var(--text-primary);
 
-  --accent: 167 100% 10%;
-  --accent-foreground: 167 100% 50%;
+  --muted: #18211D;
+  --muted-foreground: var(--text-secondary);
 
-  --destructive: 16 100% 60%;
-  --destructive-foreground: 0 0% 98%;
+  --accent: var(--accent-soft);
+  --accent-foreground: var(--accent-brand);
 
-  --sidebar: 0 0% 2%;
-  --sidebar-foreground: 240 5% 65%;
-  --sidebar-border: 240 6% 15%;
-  --sidebar-primary: 167 100% 40%;
-  --sidebar-primary-foreground: 0 0% 2%;
-  --sidebar-accent: 240 6% 10%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 167 100% 50%;
+  --destructive: #E24B4A;
+  --destructive-foreground: #F2F7F4;
+
+  --highlight: #F0B429;
+  --highlight-soft: rgba(240, 180, 41, 0.14);
+  --highlight-soft-foreground: #F0B429;
+  --success: #2BD9A0;
+  --warning: #F0B429;
+
+  --badge-outline: #26332C;
+
+  --chart-1: #2BD9A0;
+  --chart-2: #F0B429;
+  --chart-3: #AFA9EC;
+  --chart-4: #85B7EB;
+  --chart-5: #8FA69B;
+
+  --sidebar: var(--bg-sidebar);
+  --sidebar-foreground: #8FA69B;
+  --sidebar-border: #26332C;
+  --sidebar-primary: var(--accent-soft);
+  --sidebar-primary-foreground: var(--accent-brand);
+  --sidebar-accent: rgba(242, 247, 244, 0.05);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-ring: var(--accent-brand);
+
+  /* Sector chip tints */
+  --chip-insurance-bg: rgba(93, 202, 165, 0.15);
+  --chip-insurance-fg: #5DCAA5;
+  --chip-banking-bg: rgba(133, 183, 235, 0.12);
+  --chip-banking-fg: #85B7EB;
+  --chip-pensions-bg: rgba(250, 199, 117, 0.12);
+  --chip-pensions-fg: #FAC775;
+  --chip-asset-bg: rgba(175, 169, 236, 0.12);
+  --chip-asset-fg: #AFA9EC;
+  --chip-accountancy-bg: rgba(151, 196, 89, 0.12);
+  --chip-accountancy-fg: #C0DD97;
 }
 
 @layer base {
@@ -166,18 +242,57 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-placeholder);
+  }
 }
 
 @layer utilities {
+  /* Serif page titles (h1) per theme spec */
+  .page-title {
+    font-family: var(--app-font-serif);
+    font-weight: 500;
+  }
+
+  /* Sector chip tints — keys match FinSector values */
+  .chip-sector-insurance {
+    background-color: var(--chip-insurance-bg);
+    color: var(--chip-insurance-fg);
+    border-color: transparent;
+  }
+  .chip-sector-banking,
+  .chip-sector-it_tech {
+    background-color: var(--chip-banking-bg);
+    color: var(--chip-banking-fg);
+    border-color: transparent;
+  }
+  .chip-sector-pensions {
+    background-color: var(--chip-pensions-bg);
+    color: var(--chip-pensions-fg);
+    border-color: transparent;
+  }
+  .chip-sector-asset_management {
+    background-color: var(--chip-asset-bg);
+    color: var(--chip-asset-fg);
+    border-color: transparent;
+  }
+  .chip-sector-accountancy_finance {
+    background-color: var(--chip-accountancy-bg);
+    color: var(--chip-accountancy-fg);
+    border-color: transparent;
+  }
+
   .glow-primary {
-    box-shadow: 0 0 22px -6px hsl(167 100% 45% / 0.5);
+    box-shadow: 0 0 22px -6px color-mix(in srgb, var(--primary) 45%, transparent);
   }
 
   .glow-score {
-    text-shadow: 0 0 18px hsl(167 100% 45% / 0.4);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--primary) 35%, transparent);
   }
 
   .glow-conversion {
-    box-shadow: 0 0 20px -6px hsl(16 100% 60% / 0.55);
+    box-shadow: 0 0 20px -6px color-mix(in srgb, var(--highlight) 50%, transparent);
   }
 }

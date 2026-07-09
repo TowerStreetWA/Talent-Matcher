@@ -116,16 +116,16 @@ export default function Billing() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
+        <h1 className="font-serif text-3xl font-medium tracking-tight">Billing</h1>
         <p className="text-muted-foreground mt-1">
           Manage your subscription and plan for {user?.tenantName ?? "your workspace"}.
         </p>
       </div>
 
       {checkoutResult === "success" && (
-        <Card className="border-green-500/40 bg-green-500/5">
+        <Card className="border-success/40 bg-success/5">
           <CardContent className="flex items-center gap-3 py-4 text-sm">
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
             <span>
               Checkout complete. Your subscription will activate within a few moments once Stripe
               confirms it.
@@ -134,9 +134,9 @@ export default function Billing() {
         </Card>
       )}
       {checkoutResult === "canceled" && (
-        <Card className="border-amber-500/40 bg-amber-500/5">
+        <Card className="border-warning/40 bg-warning/5">
           <CardContent className="flex items-center gap-3 py-4 text-sm">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
             <span>Checkout was canceled. You have not been charged.</span>
           </CardContent>
         </Card>

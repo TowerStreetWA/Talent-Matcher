@@ -36,7 +36,7 @@ export default function Matches() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Global Matches</h1>
+        <h1 className="font-serif text-3xl font-medium tracking-tight">Global Matches</h1>
         <p className="text-muted-foreground mt-1">Review all active matches across your pipeline.</p>
       </div>
 
@@ -169,6 +169,7 @@ export default function Matches() {
                       <ClassificationTags
                         className="mt-2"
                         sectorLabel={match.job.classification.sectorLabel}
+                        sector={match.job.classification.sector}
                         familyLabels={match.job.classification.familyLabels}
                         familyKeys={match.job.classification.families}
                       />

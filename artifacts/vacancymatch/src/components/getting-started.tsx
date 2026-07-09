@@ -176,11 +176,7 @@ export default function GettingStarted() {
                 <Button
                   size="sm"
                   onClick={step.action}
-                  className={`shrink-0 ${
-                    step.key === "trial"
-                      ? "bg-[#FF6B35] text-[#050505] hover:bg-[#FF6B35]/90 glow-conversion"
-                      : ""
-                  }`}
+                  className="shrink-0"
                 >
                   {step.actionLabel}
                 </Button>

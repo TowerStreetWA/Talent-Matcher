@@ -53,7 +53,7 @@ export default function Login() {
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
             <Target size={20} strokeWidth={3} />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">VacancyMatch</h1>
+          <h1 className="font-serif text-xl font-medium tracking-tight">VacancyMatch</h1>
           <p className="text-sm text-muted-foreground">
             AI-powered candidate-to-job matching
           </p>

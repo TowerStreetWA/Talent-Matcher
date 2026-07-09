@@ -73,7 +73,7 @@ export default function Sources() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Job Sources</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight">Job Sources</h1>
           <p className="text-muted-foreground mt-1">Manage integration health and sync status.</p>
         </div>
         
@@ -163,12 +163,12 @@ export default function Sources() {
                     <CardTitle className="flex items-center gap-2 flex-wrap">
                       {source.name}
                       {source.healthStatus === 'healthy' ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        <CheckCircle2 className="w-4 h-4 text-success" />
                       ) : source.healthStatus === 'error' ? (
                         <XCircle className="w-4 h-4 text-destructive" />
                       ) : null}
                       {source.isDemo && (
-                        <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400 text-[10px]" data-testid={`badge-demo-${source.id}`}>
+                        <Badge variant="outline" className="border-warning text-warning text-[10px]" data-testid={`badge-demo-${source.id}`}>
                           Demo data
                         </Badge>
                       )}

@@ -22,7 +22,7 @@ export default function Admin() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Compliance & Admin</h1>
+        <h1 className="font-serif text-3xl font-medium tracking-tight">Compliance & Admin</h1>
         <p className="text-muted-foreground mt-1">Audit logs, integration events, and compliance overview.</p>
       </div>
 
