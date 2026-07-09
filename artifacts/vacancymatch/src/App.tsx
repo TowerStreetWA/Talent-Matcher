@@ -23,6 +23,7 @@ import Signup from "@/pages/signup";
 import AcceptInvite from "@/pages/accept-invite";
 import Team from "@/pages/team";
 import Pricing from "@/pages/pricing";
+import Landing from "@/pages/landing";
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
@@ -70,6 +71,7 @@ function AuthGate() {
   if (!user) {
     return (
       <Switch>
+        <Route path="/" component={Landing} />
         <Route path="/signup" component={Signup} />
         <Route path="/accept-invite" component={AcceptInvite} />
         <Route path="/pricing" component={Pricing} />

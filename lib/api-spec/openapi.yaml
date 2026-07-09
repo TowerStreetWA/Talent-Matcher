@@ -1499,7 +1499,16 @@ components:
     BillingPlan:
       type: object
       required:
-        [key, label, summary, description, trialDays, features, contactOnly]
+        [
+          key,
+          label,
+          summary,
+          description,
+          trialDays,
+          features,
+          contactOnly,
+          pricingModel,
+        ]
       properties:
         key: { type: string }
         label: { type: string }
@@ -1507,6 +1516,10 @@ components:
         description: { type: string }
         trialDays: { type: integer }
         contactOnly: { type: boolean }
+        pricingModel:
+          type: string
+          enum: [per_user, seat_bundle]
+        bundleSeats: { type: ["integer", "null"] }
         features:
           type: array
           items: { type: string }
@@ -1514,6 +1527,10 @@ components:
         monthlyUnitAmount: { type: ["number", "null"] }
         annualPriceId: { type: ["string", "null"] }
         annualUnitAmount: { type: ["number", "null"] }
+        additionalSeatMonthlyPriceId: { type: ["string", "null"] }
+        additionalSeatMonthlyUnitAmount: { type: ["number", "null"] }
+        additionalSeatAnnualPriceId: { type: ["string", "null"] }
+        additionalSeatAnnualUnitAmount: { type: ["number", "null"] }
         currency: { type: ["string", "null"] }
     BillingState:
       type: object
@@ -1535,6 +1552,13 @@ components:
           type: string
           enum: [month, year]
           default: month
+        seats:
+          type: integer
+          minimum: 1
+          maximum: 500
+          description: >-
+            Seat count. Defaults to the plan's seat minimum. For Business,
+            billed as full 5-seat bundles plus additional seats.
     BillingUrl:
       type: object
       required: [url]

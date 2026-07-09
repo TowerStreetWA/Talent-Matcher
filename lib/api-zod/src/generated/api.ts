@@ -234,11 +234,17 @@ export const ListBillingPlansResponseItem = zod.object({
   "description": zod.string(),
   "trialDays": zod.number(),
   "contactOnly": zod.boolean(),
+  "pricingModel": zod.enum(['per_user', 'seat_bundle']),
+  "bundleSeats": zod.number().nullish(),
   "features": zod.array(zod.string()),
   "monthlyPriceId": zod.string().nullish(),
   "monthlyUnitAmount": zod.number().nullish(),
   "annualPriceId": zod.string().nullish(),
   "annualUnitAmount": zod.number().nullish(),
+  "additionalSeatMonthlyPriceId": zod.string().nullish(),
+  "additionalSeatMonthlyUnitAmount": zod.number().nullish(),
+  "additionalSeatAnnualPriceId": zod.string().nullish(),
+  "additionalSeatAnnualUnitAmount": zod.number().nullish(),
   "currency": zod.string().nullish()
 })
 export const ListBillingPlansResponse = zod.array(ListBillingPlansResponseItem)
@@ -263,10 +269,14 @@ export const GetBillingSubscriptionResponse = zod.object({
  */
 
 export const createBillingCheckoutBodyBillingIntervalDefault = `month`;
+export const createBillingCheckoutBodySeatsMax = 500;
+
+
 
 export const CreateBillingCheckoutBody = zod.object({
   "planKey": zod.string().min(1),
-  "billingInterval": zod.enum(['month', 'year']).default(createBillingCheckoutBodyBillingIntervalDefault)
+  "billingInterval": zod.enum(['month', 'year']).default(createBillingCheckoutBodyBillingIntervalDefault),
+  "seats": zod.number().min(1).max(createBillingCheckoutBodySeatsMax).optional().describe('Seat count. Defaults to the plan\'s seat minimum. For Business, billed as full 5-seat bundles plus additional seats.')
 })
 
 export const CreateBillingCheckoutResponse = zod.object({

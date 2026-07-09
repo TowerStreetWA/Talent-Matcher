@@ -250,6 +250,14 @@ export interface InviteCreated {
   emailSent: boolean;
 }
 
+export type BillingPlanPricingModel = typeof BillingPlanPricingModel[keyof typeof BillingPlanPricingModel];
+
+
+export const BillingPlanPricingModel = {
+  per_user: 'per_user',
+  seat_bundle: 'seat_bundle',
+} as const;
+
 export interface BillingPlan {
   key: string;
   label: string;
@@ -257,6 +265,9 @@ export interface BillingPlan {
   description: string;
   trialDays: number;
   contactOnly: boolean;
+  pricingModel: BillingPlanPricingModel;
+  /** @nullable */
+  bundleSeats?: number | null;
   features: string[];
   /** @nullable */
   monthlyPriceId?: string | null;
@@ -266,6 +277,14 @@ export interface BillingPlan {
   annualPriceId?: string | null;
   /** @nullable */
   annualUnitAmount?: number | null;
+  /** @nullable */
+  additionalSeatMonthlyPriceId?: string | null;
+  /** @nullable */
+  additionalSeatMonthlyUnitAmount?: number | null;
+  /** @nullable */
+  additionalSeatAnnualPriceId?: string | null;
+  /** @nullable */
+  additionalSeatAnnualUnitAmount?: number | null;
   /** @nullable */
   currency?: string | null;
 }
@@ -296,6 +315,12 @@ export interface CheckoutInput {
   /** @minLength 1 */
   planKey: string;
   billingInterval?: CheckoutInputBillingInterval;
+  /**
+     * Seat count. Defaults to the plan's seat minimum. For Business, billed as full 5-seat bundles plus additional seats.
+     * @minimum 1
+     * @maximum 500
+     */
+  seats?: number;
 }
 
 export interface BillingUrl {

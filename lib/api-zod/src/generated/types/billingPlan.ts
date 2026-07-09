@@ -5,6 +5,7 @@
  * VacancyMatch AI API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BillingPlanPricingModel } from './billingPlanPricingModel';
 
 export interface BillingPlan {
   key: string;
@@ -13,6 +14,9 @@ export interface BillingPlan {
   description: string;
   trialDays: number;
   contactOnly: boolean;
+  pricingModel: BillingPlanPricingModel;
+  /** @nullable */
+  bundleSeats?: number | null;
   features: string[];
   /** @nullable */
   monthlyPriceId?: string | null;
@@ -22,6 +26,14 @@ export interface BillingPlan {
   annualPriceId?: string | null;
   /** @nullable */
   annualUnitAmount?: number | null;
+  /** @nullable */
+  additionalSeatMonthlyPriceId?: string | null;
+  /** @nullable */
+  additionalSeatMonthlyUnitAmount?: number | null;
+  /** @nullable */
+  additionalSeatAnnualPriceId?: string | null;
+  /** @nullable */
+  additionalSeatAnnualUnitAmount?: number | null;
   /** @nullable */
   currency?: string | null;
 }

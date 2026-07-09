@@ -16,6 +16,7 @@ export * from './auditLog';
 export * from './authUser';
 export * from './authUserRole';
 export * from './billingPlan';
+export * from './billingPlanPricingModel';
 export * from './billingState';
 export * from './billingUrl';
 export * from './candidate';

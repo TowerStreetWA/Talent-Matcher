@@ -13,10 +13,16 @@ import {
 } from "./plans";
 
 export interface PlanWithPrice extends PlanDef {
+  /** Base price: per-user for per_user plans, per-bundle for seat_bundle. */
   monthlyPriceId: string | null;
   monthlyUnitAmount: number | null;
   annualPriceId: string | null;
   annualUnitAmount: number | null;
+  /** seat_bundle plans only: the per-additional-seat price. */
+  additionalSeatMonthlyPriceId: string | null;
+  additionalSeatMonthlyUnitAmount: number | null;
+  additionalSeatAnnualPriceId: string | null;
+  additionalSeatAnnualUnitAmount: number | null;
   currency: string | null;
 }
 
@@ -26,6 +32,7 @@ interface StripePriceRow {
   currency: string | null;
   recurring: { interval?: string } | null;
   plan_key: string | null;
+  price_component: string | null;
 }
 
 export async function listPlansWithPrices(): Promise<PlanWithPrice[]> {
@@ -35,7 +42,8 @@ export async function listPlansWithPrices(): Promise<PlanWithPrice[]> {
       pr.unit_amount,
       pr.currency,
       pr.recurring,
-      p.metadata->>'plan_key' AS plan_key
+      p.metadata->>'plan_key' AS plan_key,
+      pr.metadata->>'price_component' AS price_component
     FROM stripe.products p
     JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
     WHERE p.active = true AND p.metadata->>'plan_key' IS NOT NULL
@@ -43,51 +51,54 @@ export async function listPlansWithPrices(): Promise<PlanWithPrice[]> {
   `);
   const rows = result.rows as unknown as StripePriceRow[];
   // Only current-currency prices are offered for new checkouts; legacy
-  // (USD) prices stay attached to existing subscriptions only.
-  const monthlyByPlan = new Map<string, StripePriceRow>();
-  const annualByPlan = new Map<string, StripePriceRow>();
+  // (USD / superseded GBP) prices stay attached to existing
+  // subscriptions only. Prices are keyed by plan + interval + component:
+  // component null/"base"/"bundle" is the base price, "additional_seat"
+  // is the Business per-extra-seat price.
+  const baseByPlan = new Map<string, StripePriceRow>();
+  const seatByPlan = new Map<string, StripePriceRow>();
   for (const row of rows) {
     if (!row.plan_key || row.currency !== PLAN_CURRENCY) continue;
     const interval = row.recurring?.interval;
-    if (interval === "month" && !monthlyByPlan.has(row.plan_key)) {
-      monthlyByPlan.set(row.plan_key, row);
-    } else if (interval === "year" && !annualByPlan.has(row.plan_key)) {
-      annualByPlan.set(row.plan_key, row);
-    }
+    if (interval !== "month" && interval !== "year") continue;
+    const isSeat = row.price_component === "additional_seat";
+    const map = isSeat ? seatByPlan : baseByPlan;
+    const mapKey = `${row.plan_key}:${interval}`;
+    if (!map.has(mapKey)) map.set(mapKey, row);
   }
   return PLAN_ORDER.map((key) => {
     const plan = PLANS[key];
-    if (plan.contactOnly) {
-      // Contact-only tiers have no Stripe checkout; indicative "from"
-      // prices come straight from the pricing config.
-      return {
-        ...plan,
-        monthlyPriceId: null,
-        monthlyUnitAmount: plan.monthlyPencePerUser,
-        annualPriceId: null,
-        annualUnitAmount: plan.annualPencePerUser,
-        currency: PLAN_CURRENCY,
-      };
-    }
-    const monthly = monthlyByPlan.get(plan.key);
-    const annual = annualByPlan.get(plan.key);
+    const monthly = baseByPlan.get(`${plan.key}:month`);
+    const annual = baseByPlan.get(`${plan.key}:year`);
+    const seatMonthly = seatByPlan.get(`${plan.key}:month`);
+    const seatAnnual = seatByPlan.get(`${plan.key}:year`);
     return {
       ...plan,
       monthlyPriceId: monthly?.price_id ?? null,
       monthlyUnitAmount: monthly?.unit_amount ?? null,
       annualPriceId: annual?.price_id ?? null,
       annualUnitAmount: annual?.unit_amount ?? null,
+      additionalSeatMonthlyPriceId: seatMonthly?.price_id ?? null,
+      additionalSeatMonthlyUnitAmount: seatMonthly?.unit_amount ?? null,
+      additionalSeatAnnualPriceId: seatAnnual?.price_id ?? null,
+      additionalSeatAnnualUnitAmount: seatAnnual?.unit_amount ?? null,
       currency: monthly?.currency ?? annual?.currency ?? null,
     };
   });
+}
+
+export async function getPlanWithPrices(
+  planKey: string,
+): Promise<PlanWithPrice | null> {
+  const plans = await listPlansWithPrices();
+  return plans.find((p) => p.key === planKey) ?? null;
 }
 
 export async function getPriceIdForPlan(
   planKey: string,
   interval: BillingInterval = "month",
 ): Promise<string | null> {
-  const plans = await listPlansWithPrices();
-  const plan = plans.find((p) => p.key === planKey);
+  const plan = await getPlanWithPrices(planKey);
   if (!plan) return null;
   return interval === "year" ? plan.annualPriceId : plan.monthlyPriceId;
 }

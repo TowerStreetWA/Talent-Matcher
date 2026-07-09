@@ -20,9 +20,13 @@ import { format } from "date-fns";
 import {
   IntervalToggle,
   PlanCard,
-  enterpriseMailtoHref,
+  businessBreakdown,
+  additionalSeatAmountFor,
+  planAmountFor,
+  formatPlanPrice,
   type BillingIntervalChoice,
 } from "@/components/plan-cards";
+import { Input } from "@/components/ui/input";
 
 function statusBadge(status: string): { label: string; variant: "default" | "secondary" | "destructive" | "outline" } {
   switch (status) {
@@ -49,6 +53,7 @@ export default function Billing() {
   const [, setLocation] = useLocation();
   const canManage = user?.role === "owner" || user?.role === "admin";
   const [billingInterval, setBillingInterval] = React.useState<BillingIntervalChoice>("month");
+  const [businessSeats, setBusinessSeats] = React.useState(5);
 
   React.useEffect(() => {
     track("billing_page_viewed");
@@ -211,50 +216,109 @@ export default function Billing() {
           <IntervalToggle value={billingInterval} onChange={setBillingInterval} />
         </div>
         {loadingPlans ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
+          <div className="grid gap-6 md:grid-cols-3">
+            {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-80" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-3">
             {(plans ?? []).map((plan) => {
               const isCurrent = subscription?.planKey === plan.key && !restricted;
               const priceIdForInterval =
                 billingInterval === "year" ? plan.annualPriceId : plan.monthlyPriceId;
+              const isBundle = plan.pricingModel === "seat_bundle";
+              const bundleSeatSize = plan.bundleSeats ?? 5;
+              const breakdown = isBundle
+                ? businessBreakdown(businessSeats, bundleSeatSize)
+                : null;
+              const baseAmount = planAmountFor(plan, billingInterval);
+              const seatAmount = additionalSeatAmountFor(plan, billingInterval);
+              const bundleTotal =
+                breakdown && baseAmount != null
+                  ? breakdown.bundles * baseAmount +
+                    breakdown.additionalSeats * (seatAmount ?? 0)
+                  : null;
               return (
                 <PlanCard
                   key={plan.key}
                   plan={plan}
                   interval={billingInterval}
                   isCurrent={isCurrent}
-                  highlight={plan.key === "team"}
+                  highlight={plan.key === "professional"}
                   cta={
-                    plan.contactOnly ? (
-                      <Button asChild variant="outline" className="w-full">
-                        <a href={enterpriseMailtoHref()}>
-                          <Mail className="w-4 h-4 mr-2" /> Talk to us
-                        </a>
-                      </Button>
-                    ) : canManage ? (
-                      <Button
-                        className="w-full"
-                        variant={isCurrent ? "outline" : "default"}
-                        disabled={checkout.isPending || isCurrent || !priceIdForInterval}
-                        onClick={() =>
-                          checkout.mutate({
-                            data: { planKey: plan.key, billingInterval: billingInterval },
-                          })
-                        }
-                      >
-                        {isCurrent
-                          ? "Current plan"
-                          : checkout.isPending
-                            ? "Redirecting…"
-                            : plan.trialDays > 0 && status === "none"
-                              ? `Start ${plan.trialDays}-day free trial`
-                              : `Choose ${plan.label}`}
-                      </Button>
+                    canManage ? (
+                      <div className="space-y-3">
+                        {isBundle && (
+                          <div className="space-y-1.5">
+                            <label
+                              htmlFor="business-seats"
+                              className="text-xs font-medium text-muted-foreground"
+                            >
+                              Team size (seats)
+                            </label>
+                            <Input
+                              id="business-seats"
+                              type="number"
+                              min={bundleSeatSize}
+                              max={500}
+                              value={businessSeats}
+                              onChange={(e) => {
+                                const v = Number(e.target.value);
+                                if (Number.isFinite(v)) {
+                                  setBusinessSeats(Math.floor(v));
+                                }
+                              }}
+                              onBlur={() =>
+                                setBusinessSeats((s) =>
+                                  Math.min(500, Math.max(bundleSeatSize, s)),
+                                )
+                              }
+                            />
+                            {breakdown && bundleTotal != null && (
+                              <p className="text-xs text-muted-foreground">
+                                {breakdown.bundles} × {bundleSeatSize}-seat bundle
+                                {breakdown.bundles > 1 ? "s" : ""}
+                                {breakdown.additionalSeats > 0
+                                  ? ` + ${breakdown.additionalSeats} additional seat${breakdown.additionalSeats > 1 ? "s" : ""}`
+                                  : ""}{" "}
+                                ={" "}
+                                <span className="font-medium text-foreground">
+                                  {formatPlanPrice(bundleTotal, plan.currency)} /{" "}
+                                  {billingInterval === "year" ? "year" : "month"}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <Button
+                          className="w-full"
+                          variant={isCurrent ? "outline" : "default"}
+                          disabled={
+                            checkout.isPending ||
+                            isCurrent ||
+                            !priceIdForInterval ||
+                            (isBundle && businessSeats < bundleSeatSize)
+                          }
+                          onClick={() =>
+                            checkout.mutate({
+                              data: {
+                                planKey: plan.key,
+                                billingInterval: billingInterval,
+                                ...(isBundle ? { seats: businessSeats } : {}),
+                              },
+                            })
+                          }
+                        >
+                          {isCurrent
+                            ? "Current plan"
+                            : checkout.isPending
+                              ? "Redirecting…"
+                              : plan.trialDays > 0 && status === "none"
+                                ? `Start ${plan.trialDays}-day free trial`
+                                : `Choose ${plan.label}`}
+                        </Button>
+                      </div>
                     ) : (
                       <p className="text-xs text-muted-foreground">
                         Ask a workspace admin or owner to manage the subscription.

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   IntervalToggle,
   PlanCard,
-  enterpriseMailtoHref,
+  demoMailtoHref,
   type BillingIntervalChoice,
 } from "@/components/plan-cards";
 import { Target, Mail } from "lucide-react";
@@ -26,11 +26,13 @@ export default function Pricing() {
     <div className="space-y-8">
       <div className="text-center space-y-3">
         <h1 className="font-serif text-3xl md:text-4xl font-medium tracking-tight">
-          Simple, per-user pricing
+          Simple, transparent pricing
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Every self-serve plan starts with a 7-day free trial — no card
-          required. Prices are per user, per month, billed in GBP.
+          Three paid tiers, billed in GBP. Core and Professional are priced
+          per user; Business is priced per 5-seat bundle with additional
+          seats as you grow. Every plan starts with a 7-day free trial — no
+          card required.
         </p>
         <div className="pt-2">
           <IntervalToggle value={interval} onChange={setInterval} />
@@ -38,30 +40,21 @@ export default function Pricing() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
+        <div className="grid gap-6 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-96" />
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-3">
           {(plans ?? []).map((plan) => (
             <PlanCard
               key={plan.key}
               plan={plan}
               interval={interval}
-              highlight={plan.key === "team"}
+              highlight={plan.key === "professional"}
               cta={
-                plan.contactOnly ? (
-                  <Button asChild variant="outline" className="w-full">
-                    <a
-                      href={enterpriseMailtoHref()}
-                      onClick={() => track("enterprise_contact_clicked")}
-                    >
-                      <Mail className="w-4 h-4 mr-2" /> Talk to us
-                    </a>
-                  </Button>
-                ) : user ? (
+                user ? (
                   <Button asChild className="w-full">
                     <Link href="/billing">Choose {plan.label}</Link>
                   </Button>
@@ -78,11 +71,27 @@ export default function Pricing() {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">
-        Annual billing gives you 2 months free (pay for 10 months per year).
-        Enterprise pricing is quote-based and can include custom sources,
-        integrations, onboarding and compliance support.
-      </p>
+      <div className="text-xs text-muted-foreground text-center max-w-2xl mx-auto space-y-1">
+        <p>
+          Annual billing gives you 2 months free (pay for 10 months per year).
+        </p>
+        <p>
+          Business example: 10 users = 2 × 5-seat bundles = £900/month — or 1
+          bundle + 5 additional seats (£925/month) if you prefer to grow seat
+          by seat.
+        </p>
+        <p>
+          Questions about rollout, custom sources or larger teams?{" "}
+          <a
+            href={demoMailtoHref("Talent Matcher — pricing enquiry")}
+            className="underline hover:text-foreground"
+            onClick={() => track("pricing_contact_clicked")}
+          >
+            Get in touch
+          </a>
+          .
+        </p>
+      </div>
     </div>
   );
 
@@ -97,14 +106,16 @@ export default function Pricing() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Target className="w-5 h-5 text-primary" />
-            VacancyMatch AI
+            Talent Matcher
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
-              <Link href="/">Log in</Link>
+              <Link href="/login">Log in</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signup">Sign up</Link>
+              <a href={demoMailtoHref()}>
+                <Mail className="w-4 h-4 mr-2" /> Book a demo
+              </a>
             </Button>
           </div>
         </div>

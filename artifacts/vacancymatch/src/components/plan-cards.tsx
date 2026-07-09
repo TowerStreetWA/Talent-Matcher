@@ -8,20 +8,20 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Sparkles, Building2 } from "lucide-react";
+import { CheckCircle2, Sparkles, Building2, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type BillingIntervalChoice = "month" | "year";
 
-/** Enterprise is contact-only — no Stripe checkout. */
-export const ENTERPRISE_CONTACT_EMAIL = "sales@vacancymatch.ai";
+/** Demo/sales contact — used by the landing page and pricing footers. */
+export const SALES_CONTACT_EMAIL = "sales@talentmatcher.ai";
 
-export function enterpriseMailtoHref(): string {
-  const subject = encodeURIComponent("VacancyMatch AI — Enterprise enquiry");
+export function demoMailtoHref(subjectText = "Talent Matcher — demo request"): string {
+  const subject = encodeURIComponent(subjectText);
   const body = encodeURIComponent(
-    "Hi,\n\nWe're interested in the Enterprise plan. Our team size is roughly ___ and we'd like to discuss requirements and pricing.\n\nThanks,",
+    "Hi,\n\nWe'd like to see a demo of Talent Matcher. Our team size is roughly ___ and we mainly recruit in ___.\n\nThanks,",
   );
-  return `mailto:${ENTERPRISE_CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  return `mailto:${SALES_CONTACT_EMAIL}?subject=${subject}&body=${body}`;
 }
 
 export function formatPlanPrice(
@@ -44,6 +44,33 @@ export function planAmountFor(
     (interval === "year" ? plan.annualUnitAmount : plan.monthlyUnitAmount) ??
     null
   );
+}
+
+export function additionalSeatAmountFor(
+  plan: BillingPlan,
+  interval: BillingIntervalChoice,
+): number | null {
+  return (
+    (interval === "year"
+      ? plan.additionalSeatAnnualUnitAmount
+      : plan.additionalSeatMonthlyUnitAmount) ?? null
+  );
+}
+
+/**
+ * Recommended Business composition for a seat count: as many full
+ * bundles as fit plus 0-4 additional seats. Mirrors the server-side
+ * pricing config (computeBusinessSeatBreakdown).
+ */
+export function businessBreakdown(
+  seats: number,
+  bundleSeats: number,
+): { bundles: number; additionalSeats: number } {
+  const bundles = Math.max(1, Math.floor(seats / bundleSeats));
+  return {
+    bundles,
+    additionalSeats: Math.max(0, seats - bundles * bundleSeats),
+  };
 }
 
 export function IntervalToggle({
@@ -86,6 +113,12 @@ export function IntervalToggle({
   );
 }
 
+const PLAN_ICONS: Record<string, React.ReactNode> = {
+  core: <Sparkles className="w-4 h-4 text-primary" />,
+  professional: <Briefcase className="w-4 h-4 text-primary" />,
+  business: <Building2 className="w-4 h-4 text-primary" />,
+};
+
 export function PlanCard({
   plan,
   interval,
@@ -101,7 +134,9 @@ export function PlanCard({
 }) {
   const amount = planAmountFor(plan, interval);
   const priceText = formatPlanPrice(amount, plan.currency);
-  const isEnterprise = plan.contactOnly;
+  const isBundle = plan.pricingModel === "seat_bundle";
+  const seatAmount = additionalSeatAmountFor(plan, interval);
+  const periodLabel = interval === "year" ? "year" : "month";
 
   return (
     <Card
@@ -114,8 +149,7 @@ export function PlanCard({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-lg">
           <span className="flex items-center gap-2">
-            {plan.key === "solo" && <Sparkles className="w-4 h-4 text-primary" />}
-            {isEnterprise && <Building2 className="w-4 h-4 text-primary" />}
+            {PLAN_ICONS[plan.key]}
             {plan.label}
           </span>
           <span className="flex items-center gap-1.5">
@@ -128,31 +162,28 @@ export function PlanCard({
       <CardContent className="flex flex-col flex-1 space-y-4">
         <div>
           <div className="flex items-baseline gap-1 flex-wrap">
-            {isEnterprise && (
-              <span className="text-sm text-muted-foreground">from</span>
-            )}
             <span className="text-3xl font-bold">{priceText}</span>
             <span className="text-muted-foreground text-sm">
-              {isEnterprise
-                ? ` / ${interval === "year" ? "year" : "month"}`
-                : ` / user / ${interval === "year" ? "year" : "month"}`}
+              {isBundle
+                ? ` / ${periodLabel} for ${plan.bundleSeats ?? 5} seats`
+                : ` / user / ${periodLabel}`}
             </span>
           </div>
-          {!isEnterprise && interval === "year" && (
+          {isBundle && seatAmount != null && (
+            <p className="text-sm text-muted-foreground mt-1">
+              + {formatPlanPrice(seatAmount, plan.currency)} / {periodLabel} per
+              additional seat
+            </p>
+          )}
+          {interval === "year" && (
             <p className="text-sm text-muted-foreground mt-1">
               Billed annually — 2 months free vs monthly
             </p>
           )}
-          {isEnterprise ? (
+          {plan.trialDays > 0 && (
             <p className="text-sm text-muted-foreground mt-1">
-              Quote-based — talk to us
+              {plan.trialDays}-day free trial — no card required
             </p>
-          ) : (
-            plan.trialDays > 0 && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {plan.trialDays}-day free trial — no card required
-              </p>
-            )
           )}
         </div>
         <ul className="text-sm space-y-1.5 flex-1">

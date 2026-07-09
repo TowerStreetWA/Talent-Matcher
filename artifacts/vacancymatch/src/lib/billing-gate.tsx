@@ -91,10 +91,10 @@ export function BillingGateProvider({ children }: { children: React.ReactNode })
   const { data: plans } = useListBillingPlans({
     query: { enabled: open && !!user, queryKey: getListBillingPlansQueryKey() },
   });
-  // Prefer the entry tier (Solo) for the trial CTA; fall back to any
+  // Prefer the entry tier (Core) for the trial CTA; fall back to any
   // self-serve plan with a monthly price.
   const trialPlan =
-    plans?.find((p) => p.key === "solo" && p.trialDays > 0 && p.monthlyPriceId) ??
+    plans?.find((p) => p.key === "core" && p.trialDays > 0 && p.monthlyPriceId) ??
     plans?.find((p) => p.trialDays > 0 && p.monthlyPriceId) ??
     plans?.find((p) => p.monthlyPriceId);
 

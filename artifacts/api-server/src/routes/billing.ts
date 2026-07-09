@@ -10,12 +10,16 @@ import { getUncachableStripeClient } from "../lib/stripeClient";
 import {
   ensureStripeCustomer,
   getBillingRow,
-  getPriceIdForPlan,
+  getPlanWithPrices,
   listPlansWithPrices,
   syncTenantBilling,
   toBillingState,
 } from "../lib/billing/service";
-import { getPlan, type BillingInterval } from "../lib/billing/plans";
+import {
+  getPlan,
+  computeBusinessSeatBreakdown,
+  type BillingInterval,
+} from "../lib/billing/plans";
 import { requireRole, tenantOf, auditActor } from "../middlewares/auth";
 import { recordAudit } from "../lib/audit";
 import { sendEmail, checkoutStartedEmailHtml } from "../lib/email";
@@ -63,20 +67,58 @@ router.post(
     }
     if (plan.contactOnly) {
       res.status(400).json({
-        message:
-          "Enterprise pricing is quote-based. Contact us to set up your plan.",
+        message: "This plan is quote-based. Contact us to set up your plan.",
       });
       return;
     }
     const billingInterval: BillingInterval =
       parsed.data.billingInterval === "year" ? "year" : "month";
-    const priceId = await getPriceIdForPlan(plan.key, billingInterval);
-    if (!priceId) {
+    const seats = parsed.data.seats ?? plan.softCaps.seatMinimum;
+    if (!Number.isInteger(seats)) {
+      res.status(400).json({ message: "seats must be a whole number" });
+      return;
+    }
+    if (seats < plan.softCaps.seatMinimum) {
+      res.status(400).json({
+        message: `${plan.label} requires at least ${plan.softCaps.seatMinimum} seats.`,
+      });
+      return;
+    }
+
+    const priced = await getPlanWithPrices(plan.key);
+    const basePriceId =
+      billingInterval === "year" ? priced?.annualPriceId : priced?.monthlyPriceId;
+    if (!priced || !basePriceId) {
       res.status(400).json({
         message:
           "This plan has no Stripe price configured yet. Run the product seed script first.",
       });
       return;
+    }
+
+    let lineItems: Array<{ price: string; quantity: number }>;
+    if (plan.pricingModel === "seat_bundle") {
+      const breakdown = computeBusinessSeatBreakdown(seats);
+      lineItems = [{ price: basePriceId, quantity: breakdown.bundles }];
+      if (breakdown.additionalSeats > 0) {
+        const seatPriceId =
+          billingInterval === "year"
+            ? priced.additionalSeatAnnualPriceId
+            : priced.additionalSeatMonthlyPriceId;
+        if (!seatPriceId) {
+          res.status(400).json({
+            message:
+              "The additional-seat price is not configured yet. Run the product seed script first.",
+          });
+          return;
+        }
+        lineItems.push({
+          price: seatPriceId,
+          quantity: breakdown.additionalSeats,
+        });
+      }
+    } else {
+      lineItems = [{ price: basePriceId, quantity: seats }];
     }
 
     const auth = req.auth;
@@ -97,7 +139,7 @@ router.post(
       session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: "subscription",
-        line_items: [{ price: priceId, quantity: 1 }],
+        line_items: lineItems,
         success_url: `${appBaseUrl()}/billing?checkout=success`,
         cancel_url: `${appBaseUrl()}/billing?checkout=canceled`,
         subscription_data: {
@@ -105,6 +147,7 @@ router.post(
             tenant_slug: tenantSlug,
             plan_key: plan.key,
             billing_interval: billingInterval,
+            seats: String(seats),
           },
           ...(plan.trialDays > 0 ? { trial_period_days: plan.trialDays } : {}),
         },
@@ -143,7 +186,7 @@ router.post(
       action: "billing.checkout_created",
       entityType: "billing",
       entityId: session.id,
-      metadata: `Checkout session created for plan ${plan.key} (${billingInterval === "year" ? "annual" : "monthly"})${plan.trialDays > 0 ? ` with ${plan.trialDays}-day trial` : ""}`,
+      metadata: `Checkout session created for plan ${plan.key} (${billingInterval === "year" ? "annual" : "monthly"}, ${seats} seat${seats === 1 ? "" : "s"})${plan.trialDays > 0 ? ` with ${plan.trialDays}-day trial` : ""}`,
       ...auditActor(req),
     });
 

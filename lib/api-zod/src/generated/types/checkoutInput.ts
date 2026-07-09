@@ -11,4 +11,10 @@ export interface CheckoutInput {
   /** @minLength 1 */
   planKey: string;
   billingInterval?: CheckoutInputBillingInterval;
+  /**
+     * Seat count. Defaults to the plan's seat minimum. For Business, billed as full 5-seat bundles plus additional seats.
+     * @minimum 1
+     * @maximum 500
+     */
+  seats?: number;
 }
