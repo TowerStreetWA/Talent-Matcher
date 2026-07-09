@@ -1,0 +1,153 @@
+Please update Talent Matcher’s pricing configuration and create a simple SaaS landing page that showcases the product and the new paid-only tiers.
+
+GOAL
+
+1) Implement updated paid-only pricing in config.
+2) Build a classic SaaS marketing landing page for Talent Matcher with clear tier cards and feature highlights.
+
+====================================
+1. PRICING CONFIG UPDATE
+====================================
+
+Update the pricing model to THREE paid tiers, no free tier:
+
+- Core
+- Professional
+- Business
+
+Prices:
+
+- Core: **£120 / user / month**
+- Professional: **£220 / user / month**
+- Business:
+  - **£450 / month** for a **5-seat bundle**
+  - **£95 / month** for each **additional seat** beyond the bundle
+
+Behaviour:
+
+- Core and Professional priced per-user.
+- Business is primarily seat-bundle:
+  - base bundle: 5 seats at £450
+  - additional seats: £95 each
+- Example:
+  - 5 users → £450
+  - 6 users → £450 + £95 = £545
+  - 10 users → recommended 2 bundles = £900 (best value), but pricing code should allow either:
+    - 2 bundles, or
+    - 1 bundle + 5 extras (total £925) if explicitly requested.
+
+Make sure:
+
+- pricing values are stored centrally (e.g. config/pricing.ts or similar),
+- there’s a clean way to compute:
+  - per-user total for Core/Professional,
+  - per-tenant total for Business based on seats.
+
+====================================
+2. TIER DESCRIPTIONS & FEATURES
+====================================
+
+Use these descriptions for the landing page and any tooltip/hover copy:
+
+**Core – £120 / user / month**
+
+For individual recruiters and small boutiques.
+
+- Full job search across Insurance, Banking, Asset Management, Pensions, Accountancy & Finance, and IT & Technology.
+- Direct-employer-first results (recruitment firm jobs filtered by default).
+- Saved searches and email alerts.
+- Single user seat.
+
+**Professional – £220 / user / month**
+
+For agency desk leads and active recruiters working multiple markets.
+
+- Everything in Core.
+- Sector scorecards for Insurance, Banking, IT & Tech and other covered sectors.
+- Recruiter filtering toggle (include/exclude agency-posted roles).
+- More saved searches and alerts.
+- Better multi-sector workflow support.
+
+**Business – £450 / month for 5 seats, £95 / month per additional seat**
+
+For agencies rolling Talent Matcher out across multiple desks.
+
+- Everything in Professional for bundled team seats.
+- Shared saved searches, alerts, and employer watchlists across the team.
+- Custom target-employer lists and tenant-specific directory priorities.
+- Advanced coverage diagnostics and source metrics.
+- Priority support and configuration.
+
+====================================
+3. LANDING PAGE – CLASSIC SAAS STYLE
+====================================
+
+Create a simple marketing landing page for Talent Matcher with:
+
+1) Hero section:
+   - Clear headline, e.g. “Live market intelligence for specialist recruiters.”
+   - Subheadline explaining:
+     - direct-employer focus,
+     - sector coverage (Insurance, Banking, IT & Tech, etc.),
+     - and recruiter filtering.
+   - Primary call-to-action:
+     - “Book a demo” or “Start a pilot” (no self-serve sign-up needed yet).
+
+2) “How it works” / Features section:
+   - Bullets or cards for:
+     - Multi-source job discovery (ATS + boards + direct employers).
+     - Sector-specific employer directories and scorecards.
+     - Direct-employer-first search and recruiter filtering.
+     - Saved searches and alerts.
+     - UK-focused quality controls (filtering non-UK results where appropriate).
+
+3) Pricing section:
+   - Three tier cards laid out side-by-side:
+     - Core (£120/user/month),
+     - Professional (£220/user/month),
+     - Business (£450/month for 5 seats + £95/extra seat).
+   - Each card should show:
+     - Price,
+     - “Best for” description,
+     - 4–6 key feature bullets (based on the descriptions above).
+   - Add a small note under Business:
+     - “Example: 5 users = £450/month, 10 users (2 bundles) = £900/month.”
+
+4) Sector focus section:
+   - Short explanation of:
+     - Insurance, Banking, IT & Tech strength.
+     - How recent work has made Banking and IT & Tech “healthy” sectors (hundreds of direct-employer jobs, multiple ATS sources).
+
+5) Footer:
+   - Contact email / demo request link.
+   - Optional: small note that Talent Matcher is paid-only with no free tier.
+
+Implementation details:
+
+- Use a simple, responsive layout (hero + features + pricing + sectors + footer).
+- Do not implement actual payment logic; just display pricing and CTAs.
+- Use the central pricing config for any displayed prices (no hardcoding in the HTML/JS outside config if possible).
+
+====================================
+4. TESTS / CHECKS
+====================================
+
+- Ensure pricing computations for Business:
+  - correctly handle:
+    - 5-seat bundle,
+    - bundles + additional seats,
+    - per-tenant totals.
+- Verify the landing page:
+  - shows the right prices and tier descriptions,
+  - is responsive on mobile and desktop.
+- No changes to existing auth, search, ingestion, or matching.
+
+====================================
+5. REPORT BACK
+====================================
+
+When done, please report:
+
+- Where the new pricing values are configured.
+- How Business seat calculations work (bundle + additional seats).
+- A brief summary of the landing page structure and any reusable components created.
