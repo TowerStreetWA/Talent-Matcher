@@ -118,10 +118,6 @@ export default function Login() {
             Create a workspace
           </Link>
         </p>
-        <p className="text-xs text-center text-muted-foreground">
-          Demo accounts: owner@demo.test, admin@demo.test, recruiter@demo.test,
-          viewer@demo.test (password: demo1234)
-        </p>
       </div>
     </div>
   );
