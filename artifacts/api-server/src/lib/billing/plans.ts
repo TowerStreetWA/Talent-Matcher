@@ -90,7 +90,10 @@ export interface PlanDef {
   /** seat_bundle only: pence per additional seat per year. */
   additionalSeatAnnualPence: number | null;
   trialDays: number;
-  /** Contact-only tiers have no Stripe checkout. (None currently.) */
+  /**
+   * Contact-only tiers have no Stripe checkout and no public pricing —
+   * GET /billing/plans redacts their price IDs/amounts. (Business.)
+   */
   contactOnly: boolean;
   softCaps: PlanSoftCaps;
   featureFlags: PlanFeatureFlags;
@@ -130,8 +133,10 @@ export const PLANS: Record<PlanKey, PlanDef> = {
   core: {
     key: "core",
     label: "Core",
-    summary: "For individual recruiters and small boutiques",
-    description: "For individual recruiters and small boutiques.",
+    summary:
+      "Best for individual recruiters and small boutiques who want a better way to search the live market",
+    description:
+      "Best for individual recruiters and small boutiques who want a better way to search the live market.",
     pricingModel: "per_user",
     monthlyBasePence: CORE_MONTHLY_PENCE,
     annualBasePence: CORE_MONTHLY_PENCE * ANNUAL_MONTHS_CHARGED,
@@ -149,18 +154,19 @@ export const PLANS: Record<PlanKey, PlanDef> = {
     },
     featureFlags: { ...BASE_FLAGS },
     features: [
-      "Full job search across Insurance, Banking, Asset Management, Pensions, Accountancy & Finance, and IT & Technology",
-      "Direct-employer-first results (recruitment firm jobs filtered by default)",
-      "Saved searches and email alerts",
-      "Single user seat",
+      "Full sector search across covered markets",
+      "Direct-employer-first results",
+      "Saved searches and alerts",
+      "Single-seat access",
     ],
   },
   professional: {
     key: "professional",
     label: "Professional",
-    summary: "For agency desk leads and active recruiters working multiple markets",
+    summary:
+      "Best for active recruiters and desk leads who need market visibility as well as search",
     description:
-      "For agency desk leads and active recruiters working multiple markets.",
+      "Best for active recruiters and desk leads who need market visibility as well as search.",
     pricingModel: "per_user",
     monthlyBasePence: PROFESSIONAL_MONTHLY_PENCE,
     annualBasePence: PROFESSIONAL_MONTHLY_PENCE * ANNUAL_MONTHS_CHARGED,
@@ -185,18 +191,19 @@ export const PLANS: Record<PlanKey, PlanDef> = {
     },
     features: [
       "Everything in Core",
-      "Sector scorecards for Insurance, Banking, IT & Tech and other covered sectors",
-      "Recruiter filtering toggle (include/exclude agency-posted roles)",
-      "More saved searches and alerts",
-      "Better multi-sector workflow support",
+      "Sector scorecards",
+      "Recruiter filtering toggle",
+      "More alerts and saved searches",
+      "Broader multi-sector workflow support",
     ],
   },
   business: {
     key: "business",
     label: "Business",
-    summary: "For agencies rolling Talent Matcher out across multiple desks",
+    summary:
+      "Best for agencies rolling Talent Matcher out across multiple desks and wanting shared market intelligence across the business",
     description:
-      "For agencies rolling Talent Matcher out across multiple desks.",
+      "Best for agencies rolling Talent Matcher out across multiple desks and wanting shared market intelligence across the business. Team rollout pricing — contact us.",
     pricingModel: "seat_bundle",
     monthlyBasePence: BUSINESS_BUNDLE_MONTHLY_PENCE,
     annualBasePence: BUSINESS_BUNDLE_MONTHLY_PENCE * ANNUAL_MONTHS_CHARGED,
@@ -205,7 +212,10 @@ export const PLANS: Record<PlanKey, PlanDef> = {
     additionalSeatAnnualPence:
       BUSINESS_ADDITIONAL_SEAT_MONTHLY_PENCE * ANNUAL_MONTHS_CHARGED,
     trialDays: 7,
-    contactOnly: false,
+    // Team rollout pricing: not publicly priced or self-serve — sold via
+    // demo/contact. The seat-bundle rates above remain the internal
+    // commercial structure used for quotes and existing subscriptions.
+    contactOnly: true,
     softCaps: {
       seatMinimum: 5,
       matchRunsPerMonth: null,
@@ -230,11 +240,11 @@ export const PLANS: Record<PlanKey, PlanDef> = {
       accountManagement: true,
     },
     features: [
-      "Everything in Professional for bundled team seats",
-      "Shared saved searches, alerts, and employer watchlists across the team",
-      "Custom target-employer lists and tenant-specific directory priorities",
-      "Advanced coverage diagnostics and source metrics",
-      "Priority support and configuration",
+      "Everything in Professional",
+      "Shared alerts and watchlists",
+      "Custom target-employer lists",
+      "Advanced diagnostics and source metrics",
+      "Priority support",
     ],
   },
 };

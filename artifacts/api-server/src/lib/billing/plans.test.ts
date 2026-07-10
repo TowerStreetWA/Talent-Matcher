@@ -19,8 +19,12 @@ describe("pricing config", () => {
     expect(PLAN_ORDER).toEqual(["core", "professional", "business"]);
     for (const key of PLAN_ORDER) {
       expect(PLANS[key].monthlyBasePence).toBeGreaterThan(0);
-      expect(PLANS[key].contactOnly).toBe(false);
     }
+    // Core and Professional are self-serve; Business is team rollout
+    // pricing sold via demo/contact (no public price or checkout).
+    expect(PLANS.core.contactOnly).toBe(false);
+    expect(PLANS.professional.contactOnly).toBe(false);
+    expect(PLANS.business.contactOnly).toBe(true);
   });
 
   it("has the agreed GBP monthly prices (pence)", () => {

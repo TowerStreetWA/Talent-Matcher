@@ -161,29 +161,42 @@ export function PlanCard({
       </CardHeader>
       <CardContent className="flex flex-col flex-1 space-y-4">
         <div>
-          <div className="flex items-baseline gap-1 flex-wrap">
-            <span className="text-3xl font-bold">{priceText}</span>
-            <span className="text-muted-foreground text-sm">
-              {isBundle
-                ? ` / ${periodLabel} for ${plan.bundleSeats ?? 5} seats`
-                : ` / user / ${periodLabel}`}
-            </span>
-          </div>
-          {isBundle && seatAmount != null && (
-            <p className="text-sm text-muted-foreground mt-1">
-              + {formatPlanPrice(seatAmount, plan.currency)} / {periodLabel} per
-              additional seat
-            </p>
-          )}
-          {interval === "year" && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Billed annually — 2 months free vs monthly
-            </p>
-          )}
-          {plan.trialDays > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {plan.trialDays}-day free trial — no card required
-            </p>
+          {plan.contactOnly ? (
+            <>
+              <div className="flex items-baseline gap-1 flex-wrap">
+                <span className="text-2xl font-bold">Team rollout pricing</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Custom team pricing — book a demo to scope your rollout
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="flex items-baseline gap-1 flex-wrap">
+                <span className="text-3xl font-bold">{priceText}</span>
+                <span className="text-muted-foreground text-sm">
+                  {isBundle
+                    ? ` / ${periodLabel} for ${plan.bundleSeats ?? 5} seats`
+                    : ` / user / ${periodLabel}`}
+                </span>
+              </div>
+              {isBundle && seatAmount != null && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  + {formatPlanPrice(seatAmount, plan.currency)} / {periodLabel}{" "}
+                  per additional seat
+                </p>
+              )}
+              {interval === "year" && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Billed annually — 2 months free vs monthly
+                </p>
+              )}
+              {plan.trialDays > 0 && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {plan.trialDays}-day free trial — no card required
+                </p>
+              )}
+            </>
           )}
         </div>
         <ul className="text-sm space-y-1.5 flex-1">

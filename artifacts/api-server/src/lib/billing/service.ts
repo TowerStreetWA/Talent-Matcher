@@ -87,6 +87,27 @@ export async function listPlansWithPrices(): Promise<PlanWithPrice[]> {
   });
 }
 
+/**
+ * Redact commercial fields from contact-only plans for the public
+ * GET /billing/plans response: no price IDs, unit amounts, or bundle
+ * structure may be exposed. Non-contact-only plans pass through as-is.
+ */
+export function redactContactOnlyPlan(plan: PlanWithPrice): PlanWithPrice {
+  if (!plan.contactOnly) return plan;
+  return {
+    ...plan,
+    monthlyPriceId: null,
+    monthlyUnitAmount: null,
+    annualPriceId: null,
+    annualUnitAmount: null,
+    additionalSeatMonthlyPriceId: null,
+    additionalSeatMonthlyUnitAmount: null,
+    additionalSeatAnnualPriceId: null,
+    additionalSeatAnnualUnitAmount: null,
+    bundleSeats: null,
+  };
+}
+
 export async function getPlanWithPrices(
   planKey: string,
 ): Promise<PlanWithPrice | null> {

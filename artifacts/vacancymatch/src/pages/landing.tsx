@@ -173,9 +173,12 @@ export default function Landing() {
                 Simple, transparent pricing
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Core and Professional are priced per user. Business is priced
-                per 5-seat bundle with additional seats as you grow. Every plan
-                starts with a 7-day free trial.
+                Talent Matcher is a paid platform built for specialist
+                recruiters who need cleaner live vacancy coverage, stronger
+                direct-employer visibility, and ongoing market refresh across
+                key sectors. Core gives you search, Professional gives you
+                market visibility, and Business gives your wider team shared
+                intelligence and control.
               </p>
               <div className="pt-2">
                 <IntervalToggle value={interval} onChange={setInterval} />
@@ -215,9 +218,30 @@ export default function Landing() {
                 ))}
               </div>
             )}
+            <div className="rounded-lg border bg-background p-6 max-w-2xl mx-auto text-center space-y-2">
+              <p className="text-sm font-semibold">
+                Example pilot offer — 5-seat Professional pilot: £1,100 / month
+              </p>
+              <p className="text-sm text-muted-foreground">
+                A practical starting point for a specialist agency is a 5-seat
+                Professional pilot for Banking and Insurance teams — sector
+                scorecards, recruiter filtering, alerts, and multi-desk
+                visibility from day one, while keeping rollout manageable.
+              </p>
+              <Button asChild size="sm" variant="outline">
+                <a
+                  href={demoMailtoHref(
+                    "Talent Matcher — 5-seat Professional pilot",
+                  )}
+                  onClick={() => track("landing_pilot_clicked")}
+                >
+                  <Mail className="w-4 h-4 mr-2" /> Ask about the pilot
+                </a>
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">
-              Business example: 10 users = 2 × 5-seat bundles = £900/month.
-              Annual billing gives you 2 months free.
+              Annual billing gives you 2 months free (pay for 10 months per
+              year).
             </p>
           </div>
         </section>

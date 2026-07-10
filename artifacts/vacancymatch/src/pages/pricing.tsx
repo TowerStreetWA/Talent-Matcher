@@ -29,10 +29,12 @@ export default function Pricing() {
           Simple, transparent pricing
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Three paid tiers, billed in GBP. Core and Professional are priced
-          per user; Business is priced per 5-seat bundle with additional
-          seats as you grow. Every plan starts with a 7-day free trial — no
-          card required.
+          Talent Matcher is a paid platform built for specialist recruiters
+          who need cleaner live vacancy coverage, stronger direct-employer
+          visibility, and ongoing market refresh across key sectors. Pricing
+          reflects the depth of the source engine, employer-directory
+          coverage, and the operational work involved in keeping results
+          current.
         </p>
         <div className="pt-2">
           <IntervalToggle value={interval} onChange={setInterval} />
@@ -54,7 +56,18 @@ export default function Pricing() {
               interval={interval}
               highlight={plan.key === "professional"}
               cta={
-                user ? (
+                plan.contactOnly ? (
+                  <Button asChild variant="outline" className="w-full">
+                    <a
+                      href={demoMailtoHref(
+                        "Talent Matcher — Business team rollout enquiry",
+                      )}
+                      onClick={() => track("pricing_contact_clicked")}
+                    >
+                      <Mail className="w-4 h-4 mr-2" /> Talk to us
+                    </a>
+                  </Button>
+                ) : user ? (
                   <Button asChild className="w-full">
                     <Link href="/billing">Choose {plan.label}</Link>
                   </Button>
@@ -71,14 +84,36 @@ export default function Pricing() {
         </div>
       )}
 
+      <div className="rounded-lg border bg-muted/40 p-6 max-w-2xl mx-auto text-center space-y-2">
+        <p className="text-sm font-semibold">
+          Example pilot offer — 5-seat Professional pilot: £1,100 / month
+        </p>
+        <p className="text-sm text-muted-foreground">
+          A practical starting point for a specialist agency is a 5-seat
+          Professional pilot for Banking and Insurance teams. That gives
+          recruiters sector scorecards, recruiter filtering, alerts, and
+          multi-desk visibility from day one, while keeping rollout
+          manageable — a structured pilot for teams that want to test Talent
+          Matcher in live desk conditions before wider rollout.
+        </p>
+        <Button asChild size="sm" variant="outline">
+          <a
+            href={demoMailtoHref("Talent Matcher — 5-seat Professional pilot")}
+            onClick={() => track("pricing_pilot_clicked")}
+          >
+            <Mail className="w-4 h-4 mr-2" /> Ask about the pilot
+          </a>
+        </Button>
+      </div>
+
       <div className="text-xs text-muted-foreground text-center max-w-2xl mx-auto space-y-1">
         <p>
-          Annual billing gives you 2 months free (pay for 10 months per year).
+          The ladder is simple: Core gives you search, Professional gives you
+          market visibility, and Business gives your wider team shared
+          intelligence and control.
         </p>
         <p>
-          Business example: 10 users = 2 × 5-seat bundles = £900/month — or 1
-          bundle + 5 additional seats (£925/month) if you prefer to grow seat
-          by seat.
+          Annual billing gives you 2 months free (pay for 10 months per year).
         </p>
         <p>
           Questions about rollout, custom sources or larger teams?{" "}

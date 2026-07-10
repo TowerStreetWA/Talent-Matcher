@@ -12,6 +12,7 @@ import {
   getBillingRow,
   getPlanWithPrices,
   listPlansWithPrices,
+  redactContactOnlyPlan,
   syncTenantBilling,
   toBillingState,
 } from "../lib/billing/service";
@@ -43,7 +44,11 @@ function appBaseUrl(): string {
 
 publicBillingRouter.get("/billing/plans", async (_req, res): Promise<void> => {
   const plans = await listPlansWithPrices();
-  res.json(ListBillingPlansResponse.parse(plans));
+  // Contact-only tiers (Business: team rollout pricing) are not publicly
+  // priced — redact price IDs/amounts from this public endpoint. The
+  // internal seat-bundle rates stay in config for quotes and existing
+  // subscriptions.
+  res.json(ListBillingPlansResponse.parse(plans.map(redactContactOnlyPlan)));
 });
 
 router.get("/billing/subscription", async (req, res): Promise<void> => {
