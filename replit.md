@@ -82,7 +82,7 @@ Multi-tenant SaaS for recruiters: upload a CV, AI-parse it into a candidate prof
 - Sentry: `SENTRY_DSN` / `VITE_SENTRY_DSN` env vars; server init in `lib/sentry.ts` with PII scrubbing; `index.ts` is a bootstrap that inits Sentry then dynamically imports `start.ts` (ESM hoisting would load Express first). No-ops when DSN unset
 - PostHog: `src/lib/analytics.ts`, gated on `VITE_PUBLIC_POSTHOG_KEY`; host is https://eu.i.posthog.com (EU cloud account — US default silently fails)
 - AI: `lib/aiClient.ts` `chatCompletion()` — Replit integration primary, direct `OPENAI_API_KEY` fallback on retryable failures only; `AI_PROVIDER=direct` flips order. api-server must NOT depend on `openai` directly (pnpm peer-split breaks `instanceof`); import from `lib/integrations-openai-ai-server`
-- Firecrawl research: `lib/firecrawl.ts` raw-fetch wrapper (`FIRECRAWL_API_KEY`); `validateResearchUrl` is SSRF-safe; routes in `routes/research.ts` (scrape-url, extract-job); never log scraped content
+- Firecrawl research: `lib/firecrawl.ts` raw-fetch wrapper (`FIRECRAWL_API_KEY`); `validateResearchUrl` is SSRF-safe; routes in `routes/research.ts` (scrape-url, extract-job); never log scraped content. **Currently disabled to save credits**: `FIRECRAWL_DISABLED=true` (shared env, July 2026) — hard gate in `firecrawlScrape` blocks all callers; delete the env var + republish to re-enable when a client subscribes
 - Companies House: `lib/companiesHouse.ts` (`COMPANIES_HOUSE_API_KEY`, Basic auth, key trimmed); GET `/research/company` search + profile with SIC descriptions; display-only, never writes to jobs/tenants
 - Research + Companies House UI lives in `components/research-url-dialog.tsx` (Jobs page)
 

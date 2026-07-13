@@ -242,6 +242,17 @@ function apiKey(): string {
 async function firecrawlScrape(body: Record<string, unknown>): Promise<
   z.infer<typeof scrapeResponseSchema>
 > {
+  // Hard gate: every Firecrawl call in the app funnels through here, so
+  // FIRECRAWL_DISABLED=true guarantees zero credit spend regardless of
+  // which caller (research routes, employer-site crawl, directory
+  // fallback) initiated the request.
+  const unavailable = firecrawlUnavailability();
+  if (unavailable?.reason === "disabled") {
+    throw new FirecrawlError(
+      "config",
+      "Firecrawl is currently disabled to save credits (FIRECRAWL_DISABLED=true). Remove the flag to re-enable.",
+    );
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   let response: Response;
