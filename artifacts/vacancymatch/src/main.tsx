@@ -10,6 +10,12 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     environment: import.meta.env.MODE,
     tracesSampleRate: 0,
     sendDefaultPii: false,
+    // Disable DOM breadcrumb capture — Sentry's default click/mutation
+    // listeners try to JSON.stringify the target DOM element which contains
+    // __reactFiber circular references and throws a TypeError.
+    integrations: [
+      Sentry.breadcrumbsIntegration({ dom: false }),
+    ],
   });
 }
 
