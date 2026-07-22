@@ -97,10 +97,11 @@ function BrandMark() {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { user, logout, isLoggingOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [quickSearch, setQuickSearch] = useState("");
   const isAdmin = user?.role === "admin" || user?.role === "owner";
   const visibleNavItems = navItems.filter(
     (item) => !item.adminOnly || isAdmin,
@@ -190,10 +191,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu size={18} />
             </Button>
             <div className="hidden sm:flex items-center gap-4 text-muted-foreground w-full max-w-md">
-              <Search size={18} />
-              <input 
-                type="text" 
-                placeholder="Quick search..." 
+              <Search size={18} className="shrink-0" />
+              <input
+                type="text"
+                placeholder="Quick search jobs… (Enter)"
+                value={quickSearch}
+                onChange={(e) => setQuickSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && quickSearch.trim()) {
+                    navigate(`/job-search?q=${encodeURIComponent(quickSearch.trim())}`);
+                    setQuickSearch("");
+                  }
+                }}
                 className="bg-transparent border-none outline-none focus:ring-0 text-sm flex-1 placeholder:text-muted-foreground"
               />
             </div>
