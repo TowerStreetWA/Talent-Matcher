@@ -289,18 +289,20 @@ Analyse these job postings from the "${label}" sector. Each line is: "job title 
 
 ${lines}
 
-Group similar job titles into normalised role names (e.g. "Software Engineer", "Software Developer", "Full Stack Developer" → one normalised title like "Software Engineer").
+Instructions:
+1. Group similar job titles into normalised role names (e.g. "Software Engineer", "Software Developer", "Full Stack Developer" → "Software Engineer").
+2. For each normalised role, collect ALL distinct company names from the input that map to it — include every company, do not truncate or cap the list.
+3. Return a JSON array of the top 10 roles ranked by the number of distinct companies hiring for them, sorted highest first.
 
-Return ONLY a JSON array of the top 10 roles by number of distinct companies hiring, sorted highest first.
-Format: [{"title":"Normalised Role Name","companies":["Company A","Company B"]}]
-No other text, just the JSON array.`;
+Format (return ONLY the JSON array, no other text):
+[{"title":"Normalised Role Name","companies":["Company A","Company B","Company C"]}]`;
 
       try {
         const { completion } = await chatCompletion({
           model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
-          max_tokens: 2000,
+          max_tokens: 3000,
         });
 
         const text = completion.choices[0]?.message?.content ?? "[]";
