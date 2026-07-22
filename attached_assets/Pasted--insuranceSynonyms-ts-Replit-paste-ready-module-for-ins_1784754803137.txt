@@ -1,3 +1,6 @@
+// insuranceSynonyms.ts
+// Replit paste-ready module for insurance vacancy matching
+
 export type SynonymKind = 'business_line' | 'role' | 'abbreviation' | 'market_term';
 
 export type SynonymEntry = {
@@ -45,9 +48,7 @@ export const INSURANCE_SYNONYMS: SynonymEntry[] = [
   { canonical: 'Construction Insurance', kind: 'business_line', aliases: ['Construction', 'Contractors All Risks', 'CAR', 'Erection All Risks', 'EAR'], priority: 75 },
 ];
 
-// ── Internal index (built once at module load) ───────────────────────────
-
-const normalise = (value: string): string =>
+const normalise = (value: string) =>
   value
     .toLowerCase()
     .replace(/&/g, ' and ')
@@ -61,8 +62,6 @@ for (const entry of INSURANCE_SYNONYMS) {
   synonymIndex.set(normalise(entry.canonical), entry);
   for (const alias of entry.aliases) synonymIndex.set(normalise(alias), entry);
 }
-
-// ── Public API ───────────────────────────────────────────────────────────
 
 export function normaliseInsuranceTerm(term: string): string {
   const entry = synonymIndex.get(normalise(term));
@@ -97,9 +96,7 @@ export function extractInsuranceMatches(text: string): SynonymEntry[] {
 
 export function replaceInsuranceTerms(text: string): string {
   let output = text;
-  const allTerms = INSURANCE_SYNONYMS
-    .flatMap((entry) => [entry.canonical, ...entry.aliases])
-    .sort((a, b) => b.length - a.length);
+  const allTerms = INSURANCE_SYNONYMS.flatMap((entry) => [entry.canonical, ...entry.aliases]).sort((a, b) => b.length - a.length);
 
   for (const term of allTerms) {
     const canonical = normaliseInsuranceTerm(term);
@@ -114,7 +111,7 @@ export function replaceInsuranceTerms(text: string): string {
 export function buildInsuranceHintBlock(): string {
   const grouped = INSURANCE_SYNONYMS.reduce<Record<string, string[]>>((acc, entry) => {
     if (!acc[entry.kind]) acc[entry.kind] = [];
-    (acc[entry.kind] as string[]).push(`${entry.canonical}: ${entry.aliases.join(', ')}`);
+    acc[entry.kind].push(`${entry.canonical}: ${entry.aliases.join(', ')}`);
     return acc;
   }, {});
 
@@ -123,7 +120,6 @@ export function buildInsuranceHintBlock(): string {
     .join('\n\n');
 }
 
-/** @deprecated Use buildInsuranceHintBlock() */
 export function insuranceSynonymPromptHint(): string {
   return buildInsuranceHintBlock();
 }
@@ -135,3 +131,8 @@ export function debugInsuranceSynonyms() {
     hintBlock: buildInsuranceHintBlock(),
   };
 }
+
+// Example usage:
+// console.log(normaliseInsuranceTerm('A&H Underwriter'));
+// console.log(normaliseInsuranceTerm('CRPI'));
+// console.log(extractInsuranceMatches('Experienced A&H Underwriter with D&O and CGL exposure'));
