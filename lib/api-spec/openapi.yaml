@@ -1365,6 +1365,197 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
+
+  /candidates/{id}/spec-lists:
+    get:
+      operationId: listSpecLists
+      tags: [candidates]
+      summary: List spec lists for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Spec lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecList"
+    post:
+      operationId: createSpecList
+      tags: [candidates]
+      summary: Create a spec list for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecListCreateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecListDetail"
+        "404":
+          description: Candidate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+
+  /spec-lists/{id}:
+    get:
+      operationId: getSpecList
+      tags: [candidates]
+      summary: Get a spec list with its items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Spec list with items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecListDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteSpecList
+      tags: [candidates]
+      summary: Delete a spec list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+
+  /spec-lists/{id}/items:
+    post:
+      operationId: addSpecListItem
+      tags: [candidates]
+      summary: Add a vacancy to a spec list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecListItemAddInput"
+      responses:
+        "201":
+          description: Item added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecListItemDto"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "409":
+          description: Vacancy already in list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+
+  /spec-lists/{id}/items/{itemId}:
+    patch:
+      operationId: updateSpecListItem
+      tags: [candidates]
+      summary: Update note or status on a spec list item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecListItemUpdateInput"
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecListItemDto"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: removeSpecListItem
+      tags: [candidates]
+      summary: Remove a vacancy from a spec list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+
 components:
   schemas:
     HealthStatus:
@@ -2272,3 +2463,61 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/UserUsageRow"
+    SpecList:
+      type: object
+      required: [id, candidateId, createdBy, createdAt, updatedAt, itemCount]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        createdBy: { type: string }
+        title: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        itemCount: { type: integer }
+    SpecListItemDto:
+      type: object
+      required: [id, specListId, vacancyId, status, sortOrder, jobTitle, companyName]
+      properties:
+        id: { type: string }
+        specListId: { type: string }
+        vacancyId: { type: string }
+        note: { type: ["string", "null"] }
+        status: { type: string, enum: [proposed, sent, candidate_approved, candidate_declined] }
+        statusUpdatedAt: { type: ["string", "null"] }
+        sortOrder: { type: integer }
+        jobTitle: { type: string }
+        companyName: { type: string }
+        locationText: { type: ["string", "null"] }
+        applyUrl: { type: ["string", "null"] }
+        salaryText: { type: ["string", "null"] }
+    SpecListDetail:
+      type: object
+      required: [id, candidateId, createdBy, createdAt, updatedAt, items]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        createdBy: { type: string }
+        title: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecListItemDto"
+    SpecListCreateInput:
+      type: object
+      properties:
+        title: { type: string }
+    SpecListItemAddInput:
+      type: object
+      required: [vacancyId]
+      properties:
+        vacancyId: { type: string }
+        note: { type: string }
+        sortOrder: { type: integer }
+    SpecListItemUpdateInput:
+      type: object
+      properties:
+        note: { type: ["string", "null"] }
+        status: { type: string, enum: [proposed, sent, candidate_approved, candidate_declined] }
+        sortOrder: { type: integer }

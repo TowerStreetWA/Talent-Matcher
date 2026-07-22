@@ -1766,3 +1766,172 @@ export const GetResearchCompanyProfileResponse = zod.object({
 })
 
 
+/**
+ * @summary List spec lists for a candidate
+ */
+export const ListSpecListsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListSpecListsResponseItem = zod.object({
+  "id": zod.string(),
+  "candidateId": zod.string(),
+  "createdBy": zod.string(),
+  "title": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "itemCount": zod.number()
+})
+export const ListSpecListsResponse = zod.array(ListSpecListsResponseItem)
+
+
+/**
+ * @summary Create a spec list for a candidate
+ */
+export const CreateSpecListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CreateSpecListBody = zod.object({
+  "title": zod.string().optional()
+})
+
+export const CreateSpecListResponse = zod.object({
+  "id": zod.string(),
+  "candidateId": zod.string(),
+  "createdBy": zod.string(),
+  "title": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "specListId": zod.string(),
+  "vacancyId": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'sent', 'candidate_approved', 'candidate_declined']),
+  "statusUpdatedAt": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "jobTitle": zod.string(),
+  "companyName": zod.string(),
+  "locationText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "salaryText": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Get a spec list with its items
+ */
+export const GetSpecListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetSpecListResponse = zod.object({
+  "id": zod.string(),
+  "candidateId": zod.string(),
+  "createdBy": zod.string(),
+  "title": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "specListId": zod.string(),
+  "vacancyId": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'sent', 'candidate_approved', 'candidate_declined']),
+  "statusUpdatedAt": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "jobTitle": zod.string(),
+  "companyName": zod.string(),
+  "locationText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "salaryText": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Delete a spec list
+ */
+export const DeleteSpecListParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteSpecListResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Add a vacancy to a spec list
+ */
+export const AddSpecListItemParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AddSpecListItemBody = zod.object({
+  "vacancyId": zod.string(),
+  "note": zod.string().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const AddSpecListItemResponse = zod.object({
+  "id": zod.string(),
+  "specListId": zod.string(),
+  "vacancyId": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'sent', 'candidate_approved', 'candidate_declined']),
+  "statusUpdatedAt": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "jobTitle": zod.string(),
+  "companyName": zod.string(),
+  "locationText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "salaryText": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update note or status on a spec list item
+ */
+export const UpdateSpecListItemParams = zod.object({
+  "id": zod.coerce.string(),
+  "itemId": zod.coerce.string()
+})
+
+export const UpdateSpecListItemBody = zod.object({
+  "note": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'sent', 'candidate_approved', 'candidate_declined']).optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateSpecListItemResponse = zod.object({
+  "id": zod.string(),
+  "specListId": zod.string(),
+  "vacancyId": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.enum(['proposed', 'sent', 'candidate_approved', 'candidate_declined']),
+  "statusUpdatedAt": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "jobTitle": zod.string(),
+  "companyName": zod.string(),
+  "locationText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "salaryText": zod.string().nullish()
+})
+
+
+/**
+ * @summary Remove a vacancy from a spec list
+ */
+export const RemoveSpecListItemParams = zod.object({
+  "id": zod.coerce.string(),
+  "itemId": zod.coerce.string()
+})
+
+export const RemoveSpecListItemResponse = zod.object({
+  "message": zod.string()
+})
+
+

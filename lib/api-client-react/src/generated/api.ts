@@ -76,6 +76,12 @@ import type {
   SearchResearchCompaniesParams,
   SearchSuggestion,
   SignupInput,
+  SpecList,
+  SpecListCreateInput,
+  SpecListDetail,
+  SpecListItemAddInput,
+  SpecListItemDto,
+  SpecListItemUpdateInput,
   TeamInvite,
   TeamMember,
   UpdateTeamMemberInput,
@@ -4526,4 +4532,515 @@ export function useGetResearchCompanyProfile<TData = Awaited<ReturnType<typeof g
 
 
 
+
+export const getListSpecListsUrl = (id: string,) => {
+
+
+
+
+  return `/api/candidates/${id}/spec-lists`
+}
+
+/**
+ * @summary List spec lists for a candidate
+ */
+export const listSpecLists = async (id: string, options?: RequestInit): Promise<SpecList[]> => {
+
+  return customFetch<SpecList[]>(getListSpecListsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSpecListsQueryKey = (id: string,) => {
+    return [
+    `/api/candidates/${id}/spec-lists`
+    ] as const;
+    }
+
+
+export const getListSpecListsQueryOptions = <TData = Awaited<ReturnType<typeof listSpecLists>>, TError = ErrorType<unknown>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecLists>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSpecListsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpecLists>>> = ({ signal }) => listSpecLists(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSpecLists>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSpecListsQueryResult = NonNullable<Awaited<ReturnType<typeof listSpecLists>>>
+export type ListSpecListsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List spec lists for a candidate
+ */
+
+export function useListSpecLists<TData = Awaited<ReturnType<typeof listSpecLists>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecLists>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSpecListsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSpecListUrl = (id: string,) => {
+
+
+
+
+  return `/api/candidates/${id}/spec-lists`
+}
+
+/**
+ * @summary Create a spec list for a candidate
+ */
+export const createSpecList = async (id: string,
+    specListCreateInput: SpecListCreateInput, options?: RequestInit): Promise<SpecListDetail> => {
+
+  return customFetch<SpecListDetail>(getCreateSpecListUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(specListCreateInput)
+  }
+);}
+
+
+
+
+export const getCreateSpecListMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecList>>, TError,{id: string;data: BodyType<SpecListCreateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSpecList>>, TError,{id: string;data: BodyType<SpecListCreateInput>}, TContext> => {
+
+const mutationKey = ['createSpecList'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSpecList>>, {id: string;data: BodyType<SpecListCreateInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createSpecList(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSpecListMutationResult = NonNullable<Awaited<ReturnType<typeof createSpecList>>>
+    export type CreateSpecListMutationBody = BodyType<SpecListCreateInput>
+    export type CreateSpecListMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Create a spec list for a candidate
+ */
+export const useCreateSpecList = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecList>>, TError,{id: string;data: BodyType<SpecListCreateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSpecList>>,
+        TError,
+        {id: string;data: BodyType<SpecListCreateInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSpecListMutationOptions(options));
+    }
+
+export const getGetSpecListUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-lists/${id}`
+}
+
+/**
+ * @summary Get a spec list with its items
+ */
+export const getSpecList = async (id: string, options?: RequestInit): Promise<SpecListDetail> => {
+
+  return customFetch<SpecListDetail>(getGetSpecListUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSpecListQueryKey = (id: string,) => {
+    return [
+    `/api/spec-lists/${id}`
+    ] as const;
+    }
+
+
+export const getGetSpecListQueryOptions = <TData = Awaited<ReturnType<typeof getSpecList>>, TError = ErrorType<ApiMessage>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSpecList>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSpecListQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSpecList>>> = ({ signal }) => getSpecList(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSpecList>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSpecListQueryResult = NonNullable<Awaited<ReturnType<typeof getSpecList>>>
+export type GetSpecListQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary Get a spec list with its items
+ */
+
+export function useGetSpecList<TData = Awaited<ReturnType<typeof getSpecList>>, TError = ErrorType<ApiMessage>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSpecList>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSpecListQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeleteSpecListUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-lists/${id}`
+}
+
+/**
+ * @summary Delete a spec list
+ */
+export const deleteSpecList = async (id: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getDeleteSpecListUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSpecListMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecList>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSpecList>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteSpecList'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSpecList>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSpecList(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSpecListMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSpecList>>>
+
+    export type DeleteSpecListMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a spec list
+ */
+export const useDeleteSpecList = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecList>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSpecList>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSpecListMutationOptions(options));
+    }
+
+export const getAddSpecListItemUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-lists/${id}/items`
+}
+
+/**
+ * @summary Add a vacancy to a spec list
+ */
+export const addSpecListItem = async (id: string,
+    specListItemAddInput: SpecListItemAddInput, options?: RequestInit): Promise<SpecListItemDto> => {
+
+  return customFetch<SpecListItemDto>(getAddSpecListItemUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(specListItemAddInput)
+  }
+);}
+
+
+
+
+export const getAddSpecListItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSpecListItem>>, TError,{id: string;data: BodyType<SpecListItemAddInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addSpecListItem>>, TError,{id: string;data: BodyType<SpecListItemAddInput>}, TContext> => {
+
+const mutationKey = ['addSpecListItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addSpecListItem>>, {id: string;data: BodyType<SpecListItemAddInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  addSpecListItem(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddSpecListItemMutationResult = NonNullable<Awaited<ReturnType<typeof addSpecListItem>>>
+    export type AddSpecListItemMutationBody = BodyType<SpecListItemAddInput>
+    export type AddSpecListItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Add a vacancy to a spec list
+ */
+export const useAddSpecListItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSpecListItem>>, TError,{id: string;data: BodyType<SpecListItemAddInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addSpecListItem>>,
+        TError,
+        {id: string;data: BodyType<SpecListItemAddInput>},
+        TContext
+      > => {
+      return useMutation(getAddSpecListItemMutationOptions(options));
+    }
+
+export const getUpdateSpecListItemUrl = (id: string,
+    itemId: string,) => {
+
+
+
+
+  return `/api/spec-lists/${id}/items/${itemId}`
+}
+
+/**
+ * @summary Update note or status on a spec list item
+ */
+export const updateSpecListItem = async (id: string,
+    itemId: string,
+    specListItemUpdateInput: SpecListItemUpdateInput, options?: RequestInit): Promise<SpecListItemDto> => {
+
+  return customFetch<SpecListItemDto>(getUpdateSpecListItemUrl(id,itemId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(specListItemUpdateInput)
+  }
+);}
+
+
+
+
+export const getUpdateSpecListItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecListItem>>, TError,{id: string;itemId: string;data: BodyType<SpecListItemUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSpecListItem>>, TError,{id: string;itemId: string;data: BodyType<SpecListItemUpdateInput>}, TContext> => {
+
+const mutationKey = ['updateSpecListItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSpecListItem>>, {id: string;itemId: string;data: BodyType<SpecListItemUpdateInput>}> = (props) => {
+          const {id,itemId,data} = props ?? {};
+
+          return  updateSpecListItem(id,itemId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSpecListItemMutationResult = NonNullable<Awaited<ReturnType<typeof updateSpecListItem>>>
+    export type UpdateSpecListItemMutationBody = BodyType<SpecListItemUpdateInput>
+    export type UpdateSpecListItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update note or status on a spec list item
+ */
+export const useUpdateSpecListItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecListItem>>, TError,{id: string;itemId: string;data: BodyType<SpecListItemUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSpecListItem>>,
+        TError,
+        {id: string;itemId: string;data: BodyType<SpecListItemUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSpecListItemMutationOptions(options));
+    }
+
+export const getRemoveSpecListItemUrl = (id: string,
+    itemId: string,) => {
+
+
+
+
+  return `/api/spec-lists/${id}/items/${itemId}`
+}
+
+/**
+ * @summary Remove a vacancy from a spec list
+ */
+export const removeSpecListItem = async (id: string,
+    itemId: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getRemoveSpecListItemUrl(id,itemId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getRemoveSpecListItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeSpecListItem>>, TError,{id: string;itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeSpecListItem>>, TError,{id: string;itemId: string}, TContext> => {
+
+const mutationKey = ['removeSpecListItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeSpecListItem>>, {id: string;itemId: string}> = (props) => {
+          const {id,itemId} = props ?? {};
+
+          return  removeSpecListItem(id,itemId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveSpecListItemMutationResult = NonNullable<Awaited<ReturnType<typeof removeSpecListItem>>>
+
+    export type RemoveSpecListItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Remove a vacancy from a spec list
+ */
+export const useRemoveSpecListItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeSpecListItem>>, TError,{id: string;itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeSpecListItem>>,
+        TError,
+        {id: string;itemId: string},
+        TContext
+      > => {
+      return useMutation(getRemoveSpecListItemMutationOptions(options));
+    }
 

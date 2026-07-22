@@ -1,0 +1,30 @@
+Add a new feature to the Vacancy Tracker app: "Candidate Spec Lists" — a business development tool that lets a recruiter build a shortlist of live vacancies/companies for a specific registered candidate, to send to that candidate and get their approval before formally working the job ("job on").
+
+IMPORTANT GUARDRAILS — read before making changes:
+- This must be purely additive. Do not modify, rename, or refactor any existing database tables, models, routes, components, or business logic currently used by the vacancy tracker.
+- Do not change existing candidate or vacancy schemas — only ADD new tables/fields as described below.
+- Do not touch existing navigation, dashboards, or workflows unless adding a new link/entry point to this feature.
+- If you need to add a relation to an existing table (e.g. candidates or vacancies), use a new foreign key/join table rather than altering the existing table structure.
+- After building, run/verify that existing pages and existing functionality still load and work exactly as before.
+
+FEATURE SPEC:
+
+1. Data model (new tables, don't alter existing ones):
+   - spec_lists: id, candidate_id (FK to existing candidates table), created_by (recruiter/user id), title (optional label, e.g. "July shortlist"), created_at, updated_at.
+   - spec_list_items: id, spec_list_id (FK to spec_lists), vacancy_id (FK to existing vacancies/jobs table), note (free text — recruiter's pitch/comment on why this job fits), status (enum: proposed, sent, candidate_approved, candidate_declined), status_updated_at, sort_order.
+
+2. Backend/API:
+   - Create a spec list for a candidate.
+   - Add/remove jobs to/from a spec list.
+   - Update note and status per item.
+   - Get all spec lists for a candidate, and get a single spec list with its items (joined with vacancy/company details for display).
+
+3. UI:
+   - On a candidate's profile/detail page, add a new "Spec List" tab or section (don't alter existing tabs/sections). Show existing spec lists for that candidate, with an option to create a new one.
+   - Within a spec list: ability to search/add vacancies from the existing vacancy list, add a short note per job, reorder items, and set/update each item's status (proposed / sent / approved / declined).
+   - A "Generate candidate-ready summary" view or export — a clean, formatted list (job title, company, note) suitable for copying into an email or exporting, so the recruiter can send it to the candidate.
+   - Simple status badges/colors so a recruiter can see at a glance which items are approved ("job on") vs still pending.
+
+4. Keep styling consistent with the existing app's design system/components — reuse existing UI components (buttons, cards, tables) rather than introducing new styling patterns.
+
+After implementing, please summarize exactly which files were added vs modified, and confirm no existing routes, components, or database migrations for pre-existing tables were changed.

@@ -9,8 +9,13 @@ import {
   useUpdateMatch,
   usePushMatchToCrm,
   useCreateAlertRule,
+  useListSpecLists,
+  useCreateSpecList,
+  useAddSpecListItem,
   getGetCandidateQueryKey,
-  getListCandidateMatchesQueryKey
+  getListCandidateMatchesQueryKey,
+  getListSpecListsQueryKey,
+  getGetSpecListQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -37,8 +42,11 @@ import {
   Pencil,
   Save,
   Clock,
-  Download
+  Download,
+  ListPlus,
+  Plus,
 } from "lucide-react";
+import SpecListsTab from "@/components/SpecListsTab";
 import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
@@ -72,6 +80,12 @@ export default function CandidateDetail() {
   const updateMatch = useUpdateMatch();
   const pushCrm = usePushMatchToCrm();
   const createAlert = useCreateAlertRule();
+  const addSpecListItem = useAddSpecListItem();
+  const createSpecList = useCreateSpecList();
+
+  const { data: specLists } = useListSpecLists(id, {
+    query: { enabled: !!id, queryKey: getListSpecListsQueryKey(id) },
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
@@ -79,6 +93,9 @@ export default function CandidateDetail() {
   const [crmName, setCrmName] = useState("");
   const [crmNote, setCrmNote] = useState("");
   const [pushMatchId, setPushMatchId] = useState<string | null>(null);
+
+  const [addToListVacancyId, setAddToListVacancyId] = useState<string | null>(null);
+  const [newListTitle, setNewListTitle] = useState("");
 
   const handleEditStart = () => {
     if (candidate) {
@@ -217,6 +234,7 @@ export default function CandidateDetail() {
       <Tabs defaultValue="matches" className="w-full">
         <TabsList>
           <TabsTrigger value="matches">Ranked Matches</TabsTrigger>
+          <TabsTrigger value="spec-lists">Spec Lists</TabsTrigger>
           <TabsTrigger value="profile">Profile & Skills</TabsTrigger>
         </TabsList>
 
@@ -333,12 +351,28 @@ export default function CandidateDetail() {
                       <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:bg-destructive/10" onClick={() => handleMatchStatus(match.id, 'dismissed')}>
                         <X className="w-4 h-4 mr-2" /> Dismiss
                       </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setAddToListVacancyId(match.jobId ?? null);
+                          setNewListTitle("");
+                        }}
+                      >
+                        <ListPlus className="w-4 h-4 mr-2" /> Add to List
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="spec-lists" className="mt-6">
+          <SpecListsTab candidateId={id} />
         </TabsContent>
 
         <TabsContent value="profile" className="mt-6">
@@ -429,6 +463,132 @@ export default function CandidateDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add to Spec List dialog */}
+      <Dialog
+        open={!!addToListVacancyId}
+        onOpenChange={(open) => !open && setAddToListVacancyId(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add to Spec List</DialogTitle>
+            <DialogDescription>
+              Choose an existing list or create a new one.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {specLists && specLists.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Existing lists</p>
+                {specLists.map((list) => (
+                  <Button
+                    key={list.id}
+                    variant="outline"
+                    className="w-full justify-between"
+                    disabled={addSpecListItem.isPending}
+                    onClick={() => {
+                      if (!addToListVacancyId) return;
+                      addSpecListItem.mutate(
+                        { id: list.id, data: { vacancyId: addToListVacancyId } },
+                        {
+                          onSuccess: () => {
+                            toast({ title: `Added to "${list.title || "Untitled List"}"` });
+                            queryClient.invalidateQueries({
+                              queryKey: getGetSpecListQueryKey(list.id),
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: getListSpecListsQueryKey(id),
+                            });
+                            setAddToListVacancyId(null);
+                          },
+                          onError: () => {
+                            toast({
+                              title: "Could not add vacancy",
+                              description: "It may already be in this list.",
+                              variant: "destructive",
+                            });
+                          },
+                        }
+                      );
+                    }}
+                  >
+                    <span className="truncate">{list.title || "Untitled List"}</span>
+                    <Badge variant="secondary" className="ml-2 shrink-0 text-xs">
+                      {list.itemCount}
+                    </Badge>
+                  </Button>
+                ))}
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Create new list</p>
+              <div className="flex gap-2">
+                <Input
+                  value={newListTitle}
+                  onChange={(e) => setNewListTitle(e.target.value)}
+                  placeholder="List title (optional)"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && addToListVacancyId) {
+                      createSpecList.mutate(
+                        { id, data: { title: newListTitle.trim() || undefined } },
+                        {
+                          onSuccess: (created) => {
+                            queryClient.invalidateQueries({
+                              queryKey: getListSpecListsQueryKey(id),
+                            });
+                            addSpecListItem.mutate(
+                              { id: created.id, data: { vacancyId: addToListVacancyId! } },
+                              {
+                                onSuccess: () => {
+                                  toast({ title: `Added to "${created.title || "New List"}"` });
+                                  queryClient.invalidateQueries({
+                                    queryKey: getGetSpecListQueryKey(created.id),
+                                  });
+                                  setAddToListVacancyId(null);
+                                },
+                              }
+                            );
+                          },
+                        }
+                      );
+                    }
+                  }}
+                />
+                <Button
+                  disabled={createSpecList.isPending || addSpecListItem.isPending}
+                  onClick={() => {
+                    if (!addToListVacancyId) return;
+                    createSpecList.mutate(
+                      { id, data: { title: newListTitle.trim() || undefined } },
+                      {
+                        onSuccess: (created) => {
+                          queryClient.invalidateQueries({
+                            queryKey: getListSpecListsQueryKey(id),
+                          });
+                          addSpecListItem.mutate(
+                            { id: created.id, data: { vacancyId: addToListVacancyId! } },
+                            {
+                              onSuccess: () => {
+                                toast({ title: `Added to "${created.title || "New List"}"` });
+                                queryClient.invalidateQueries({
+                                  queryKey: getGetSpecListQueryKey(created.id),
+                                });
+                                setAddToListVacancyId(null);
+                              },
+                            }
+                          );
+                        },
+                      }
+                    );
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Create
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1003,6 +1003,85 @@ export interface UsageReport {
   byUser: UserUsageRow[];
 }
 
+export interface SpecList {
+  id: string;
+  candidateId: string;
+  createdBy: string;
+  /** @nullable */
+  title?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  itemCount: number;
+}
+
+export type SpecListItemDtoStatus = typeof SpecListItemDtoStatus[keyof typeof SpecListItemDtoStatus];
+
+
+export const SpecListItemDtoStatus = {
+  proposed: 'proposed',
+  sent: 'sent',
+  candidate_approved: 'candidate_approved',
+  candidate_declined: 'candidate_declined',
+} as const;
+
+export interface SpecListItemDto {
+  id: string;
+  specListId: string;
+  vacancyId: string;
+  /** @nullable */
+  note?: string | null;
+  status: SpecListItemDtoStatus;
+  /** @nullable */
+  statusUpdatedAt?: string | null;
+  sortOrder: number;
+  jobTitle: string;
+  companyName: string;
+  /** @nullable */
+  locationText?: string | null;
+  /** @nullable */
+  applyUrl?: string | null;
+  /** @nullable */
+  salaryText?: string | null;
+}
+
+export interface SpecListDetail {
+  id: string;
+  candidateId: string;
+  createdBy: string;
+  /** @nullable */
+  title?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: SpecListItemDto[];
+}
+
+export interface SpecListCreateInput {
+  title?: string;
+}
+
+export interface SpecListItemAddInput {
+  vacancyId: string;
+  note?: string;
+  sortOrder?: number;
+}
+
+export type SpecListItemUpdateInputStatus = typeof SpecListItemUpdateInputStatus[keyof typeof SpecListItemUpdateInputStatus];
+
+
+export const SpecListItemUpdateInputStatus = {
+  proposed: 'proposed',
+  sent: 'sent',
+  candidate_approved: 'candidate_approved',
+  candidate_declined: 'candidate_declined',
+} as const;
+
+export interface SpecListItemUpdateInput {
+  /** @nullable */
+  note?: string | null;
+  status?: SpecListItemUpdateInputStatus;
+  sortOrder?: number;
+}
+
 export type LookupInviteParams = {
 token: string;
 };

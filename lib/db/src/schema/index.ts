@@ -13,3 +13,4 @@ export * from "./tenantBilling";
 export * from "./invites";
 export * from "./savedJobSearches";
 export * from "./searchEvents";
+export * from "./specLists";
