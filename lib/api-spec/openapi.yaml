@@ -1117,6 +1117,43 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Match"
+  /dashboard/industry-counts:
+    get:
+      operationId: getIndustryCounts
+      tags: [dashboard]
+      summary: Active job counts grouped by industry sector
+      responses:
+        "200":
+          description: Industry counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IndustryCount"
+  /dashboard/role-analysis:
+    get:
+      operationId: getRoleAnalysis
+      tags: [dashboard]
+      summary: AI-powered top roles by industry (cached daily)
+      responses:
+        "200":
+          description: Role analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleAnalysis"
+    post:
+      operationId: refreshRoleAnalysis
+      tags: [dashboard]
+      summary: Force-refresh the role analysis cache
+      responses:
+        "200":
+          description: Fresh role analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleAnalysis"
   /crm-sync-events:
     get:
       operationId: listCrmSyncEvents
@@ -2108,6 +2145,51 @@ components:
         minScore: { type: number }
         frequency: { type: string }
         isActive: { type: boolean }
+    IndustryCount:
+      type: object
+      required: [sector, label, count]
+      properties:
+        sector: { type: string }
+        label: { type: string }
+        count: { type: integer }
+    CompanyHiring:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+    RoleEntry:
+      type: object
+      required: [title, count, companies]
+      properties:
+        title: { type: string }
+        count: { type: integer }
+        companies:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompanyHiring"
+    IndustrySectorRoles:
+      type: object
+      required: [sector, label, roles]
+      properties:
+        sector: { type: string }
+        label: { type: string }
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleEntry"
+    RoleAnalysis:
+      type: object
+      required: [sectors, status]
+      properties:
+        sectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/IndustrySectorRoles"
+        lastUpdatedAt:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [ready, analysing, empty]
     DashboardSummary:
       type: object
       required:

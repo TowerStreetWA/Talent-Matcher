@@ -13,7 +13,7 @@ import UploadCv from "@/pages/upload-cv";
 import Candidates from "@/pages/candidates";
 import CandidateDetail from "@/pages/candidate-detail";
 import Matches from "@/pages/matches";
-import Jobs from "@/pages/jobs";
+import TopRoles from "@/pages/top-roles";
 import JobSearch from "@/pages/job-search";
 import Sources from "@/pages/sources";
 import Alerts from "@/pages/alerts";
@@ -43,7 +43,10 @@ function Router() {
         <Route path="/candidates" component={Candidates} />
         <Route path="/candidates/:id" component={CandidateDetail} />
         <Route path="/matches" component={Matches} />
-        <Route path="/jobs" component={Jobs} />
+        <Route path="/top-roles" component={TopRoles} />
+        <Route path="/jobs">
+          <Redirect to="/top-roles" replace />
+        </Route>
         <Route path="/job-search" component={JobSearch} />
         <Route path="/sources" component={Sources} />
         <Route path="/alerts" component={Alerts} />

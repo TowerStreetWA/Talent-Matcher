@@ -45,6 +45,7 @@ import type {
   ExtractedJob,
   GetUsageReportParams,
   HealthStatus,
+  IndustryCount,
   InviteCreated,
   InvitePreview,
   Job,
@@ -66,6 +67,7 @@ import type {
   RequestUploadUrlInput,
   RequestUploadUrlResult,
   ResearchUrlInput,
+  RoleAnalysis,
   SavedJobSearch,
   SavedJobSearchInput,
   SavedJobSearchUpdate,
@@ -3761,6 +3763,230 @@ export function useGetTopMatches<TData = Awaited<ReturnType<typeof getTopMatches
 
 
 
+
+export const getGetIndustryCountsUrl = () => {
+
+
+
+
+  return `/api/dashboard/industry-counts`
+}
+
+/**
+ * @summary Active job counts grouped by industry sector
+ */
+export const getIndustryCounts = async ( options?: RequestInit): Promise<IndustryCount[]> => {
+
+  return customFetch<IndustryCount[]>(getGetIndustryCountsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetIndustryCountsQueryKey = () => {
+    return [
+    `/api/dashboard/industry-counts`
+    ] as const;
+    }
+
+
+export const getGetIndustryCountsQueryOptions = <TData = Awaited<ReturnType<typeof getIndustryCounts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIndustryCounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetIndustryCountsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIndustryCounts>>> = ({ signal }) => getIndustryCounts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIndustryCounts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetIndustryCountsQueryResult = NonNullable<Awaited<ReturnType<typeof getIndustryCounts>>>
+export type GetIndustryCountsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Active job counts grouped by industry sector
+ */
+
+export function useGetIndustryCounts<TData = Awaited<ReturnType<typeof getIndustryCounts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIndustryCounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetIndustryCountsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRoleAnalysisUrl = () => {
+
+
+
+
+  return `/api/dashboard/role-analysis`
+}
+
+/**
+ * @summary AI-powered top roles by industry (cached daily)
+ */
+export const getRoleAnalysis = async ( options?: RequestInit): Promise<RoleAnalysis> => {
+
+  return customFetch<RoleAnalysis>(getGetRoleAnalysisUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRoleAnalysisQueryKey = () => {
+    return [
+    `/api/dashboard/role-analysis`
+    ] as const;
+    }
+
+
+export const getGetRoleAnalysisQueryOptions = <TData = Awaited<ReturnType<typeof getRoleAnalysis>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRoleAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRoleAnalysisQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRoleAnalysis>>> = ({ signal }) => getRoleAnalysis({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRoleAnalysis>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRoleAnalysisQueryResult = NonNullable<Awaited<ReturnType<typeof getRoleAnalysis>>>
+export type GetRoleAnalysisQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary AI-powered top roles by industry (cached daily)
+ */
+
+export function useGetRoleAnalysis<TData = Awaited<ReturnType<typeof getRoleAnalysis>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRoleAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRoleAnalysisQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefreshRoleAnalysisUrl = () => {
+
+
+
+
+  return `/api/dashboard/role-analysis`
+}
+
+/**
+ * @summary Force-refresh the role analysis cache
+ */
+export const refreshRoleAnalysis = async ( options?: RequestInit): Promise<RoleAnalysis> => {
+
+  return customFetch<RoleAnalysis>(getRefreshRoleAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRefreshRoleAnalysisMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshRoleAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshRoleAnalysis>>, TError,void, TContext> => {
+
+const mutationKey = ['refreshRoleAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshRoleAnalysis>>, void> = () => {
+
+
+          return  refreshRoleAnalysis(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshRoleAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof refreshRoleAnalysis>>>
+
+    export type RefreshRoleAnalysisMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Force-refresh the role analysis cache
+ */
+export const useRefreshRoleAnalysis = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshRoleAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshRoleAnalysis>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshRoleAnalysisMutationOptions(options));
+    }
 
 export const getListCrmSyncEventsUrl = () => {
 

@@ -899,6 +899,44 @@ export interface AlertRuleUpdate {
   isActive?: boolean;
 }
 
+export interface IndustryCount {
+  sector: string;
+  label: string;
+  count: number;
+}
+
+export interface CompanyHiring {
+  name: string;
+}
+
+export interface RoleEntry {
+  title: string;
+  count: number;
+  companies: CompanyHiring[];
+}
+
+export interface IndustrySectorRoles {
+  sector: string;
+  label: string;
+  roles: RoleEntry[];
+}
+
+export type RoleAnalysisStatus = typeof RoleAnalysisStatus[keyof typeof RoleAnalysisStatus];
+
+
+export const RoleAnalysisStatus = {
+  ready: 'ready',
+  analysing: 'analysing',
+  empty: 'empty',
+} as const;
+
+export interface RoleAnalysis {
+  sectors: IndustrySectorRoles[];
+  /** @nullable */
+  lastUpdatedAt?: string | null;
+  status: RoleAnalysisStatus;
+}
+
 export interface DashboardSummary {
   candidateCount: number;
   activeJobCount: number;

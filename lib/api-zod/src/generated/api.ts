@@ -1549,6 +1549,57 @@ export const GetTopMatchesResponse = zod.array(GetTopMatchesResponseItem)
 
 
 /**
+ * @summary Active job counts grouped by industry sector
+ */
+export const GetIndustryCountsResponseItem = zod.object({
+  "sector": zod.string(),
+  "label": zod.string(),
+  "count": zod.number()
+})
+export const GetIndustryCountsResponse = zod.array(GetIndustryCountsResponseItem)
+
+
+/**
+ * @summary AI-powered top roles by industry (cached daily)
+ */
+export const GetRoleAnalysisResponse = zod.object({
+  "sectors": zod.array(zod.object({
+  "sector": zod.string(),
+  "label": zod.string(),
+  "roles": zod.array(zod.object({
+  "title": zod.string(),
+  "count": zod.number(),
+  "companies": zod.array(zod.object({
+  "name": zod.string()
+}))
+}))
+})),
+  "lastUpdatedAt": zod.string().nullish(),
+  "status": zod.enum(['ready', 'analysing', 'empty'])
+})
+
+
+/**
+ * @summary Force-refresh the role analysis cache
+ */
+export const RefreshRoleAnalysisResponse = zod.object({
+  "sectors": zod.array(zod.object({
+  "sector": zod.string(),
+  "label": zod.string(),
+  "roles": zod.array(zod.object({
+  "title": zod.string(),
+  "count": zod.number(),
+  "companies": zod.array(zod.object({
+  "name": zod.string()
+}))
+}))
+})),
+  "lastUpdatedAt": zod.string().nullish(),
+  "status": zod.enum(['ready', 'analysing', 'empty'])
+})
+
+
+/**
  * @summary List CRM sync events
  */
 export const ListCrmSyncEventsResponseItem = zod.object({

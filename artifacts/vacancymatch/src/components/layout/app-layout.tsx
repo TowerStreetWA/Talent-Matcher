@@ -38,7 +38,7 @@ const navItems = [
   { href: "/upload", label: "Upload CV", icon: Upload },
   { href: "/candidates", label: "Candidates", icon: Users },
   { href: "/matches", label: "Matches", icon: Target },
-  { href: "/jobs", label: "Live Jobs", icon: Briefcase },
+  { href: "/top-roles", label: "Top Roles", icon: Briefcase },
   { href: "/job-search", label: "Job Search", icon: Search },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
