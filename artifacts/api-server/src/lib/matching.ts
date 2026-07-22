@@ -3,6 +3,7 @@ import {
   classifyVacancy,
   inferCandidateFinProfile,
 } from "./search/finClassify";
+import { canonicalSkill } from "./search/insuranceSynonyms";
 
 export type MatchComputation = {
   overallScore: number;
@@ -45,7 +46,11 @@ const STOP_WORDS = new Set([
 const SENIORITY_TOKENS = ["senior", "junior", "lead", "principal", "head"];
 
 function skillsScore(candidate: Candidate, job: Job) {
-  const candSkills = new Set(candidate.skills.map(norm));
+  // Normalise both sides through the insurance synonym index so that
+  // e.g. "D&O" on a job and "Directors and Officers Liability" on a CV
+  // are treated as the same skill.
+  const normSkill = (s: string) => norm(canonicalSkill(s));
+  const candSkills = new Set(candidate.skills.map(normSkill));
   const jobSkills = job.skills;
   if (jobSkills.length === 0) {
     return {
@@ -55,8 +60,8 @@ function skillsScore(candidate: Candidate, job: Job) {
       line: "Job lists no explicit skill requirements — neutral skills score applied",
     };
   }
-  const matched = jobSkills.filter((s) => candSkills.has(norm(s)));
-  const missing = jobSkills.filter((s) => !candSkills.has(norm(s)));
+  const matched = jobSkills.filter((s) => candSkills.has(normSkill(s)));
+  const missing = jobSkills.filter((s) => !candSkills.has(normSkill(s)));
   const score = matched.length / jobSkills.length;
   const line =
     matched.length > 0

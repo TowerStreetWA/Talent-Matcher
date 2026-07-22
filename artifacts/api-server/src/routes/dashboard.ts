@@ -18,6 +18,7 @@ import {
 } from "@workspace/api-zod";
 import { toMatchDto } from "../lib/dto";
 import { describeActivity } from "../lib/activityDescription";
+import { insuranceSynonymPromptHint } from "../lib/search/insuranceSynonyms";
 import { tenantOf } from "../middlewares/auth";
 import { chatCompletion } from "../lib/aiClient";
 import { SECTOR_LABELS } from "../lib/search/classification";
@@ -245,11 +246,15 @@ async function normaliseTitles(
 ): Promise<Map<string, string>> {
   if (titles.length === 0) return new Map();
 
+  const synonymHint = insuranceSynonymPromptHint();
   const prompt = `You are a job title normaliser for the financial services recruitment industry.
 
 Map each of the following job titles to a short canonical role name. Group similar titles under one canonical name (e.g. "Senior Underwriter", "Property Underwriter", "Casualty Underwriter" all map to "Underwriter"; "Software Engineer", "Full Stack Developer", "Sr. Software Engineer" all map to "Software Engineer").
 
 Sector context: ${sectorLabel}
+
+Insurance-domain equivalences to apply (canonical: alias1, alias2 ...):
+${synonymHint}
 
 Return ONLY a valid JSON object where each key is the exact input title and its value is the canonical role name. No markdown, no explanation — just the JSON object.
 

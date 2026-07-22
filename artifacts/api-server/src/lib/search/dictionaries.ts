@@ -2,7 +2,11 @@
  * Recruiter-domain dictionaries for query normalization.
  * Keep these explicit and data-driven: extend the maps/groups below to teach
  * search new shorthand without touching normalization or ranking logic.
+ *
+ * Insurance-domain abbreviations and synonyms are auto-derived from
+ * insuranceSynonyms.ts — do not duplicate them here manually.
  */
+import { INSURANCE_SYNONYMS } from "./insuranceSynonyms";
 
 /** Shorthand token -> list of expanded phrases it may mean. */
 export const ABBREVIATIONS: Record<string, string[]> = {
@@ -60,6 +64,14 @@ export const ABBREVIATIONS: Record<string, string[]> = {
   esg: ["esg analyst", "environmental social governance"],
   uw: ["underwriter", "underwriting"],
   ri: ["reinsurance"],
+  // Insurance-domain abbreviations — derived from INSURANCE_SYNONYMS
+  ...Object.fromEntries(
+    Object.entries(INSURANCE_SYNONYMS).flatMap(([canonical, aliases]) =>
+      aliases
+        .filter((a) => a.length <= 6 && /^[A-Z&/]+$/.test(a))
+        .map((abbr) => [abbr.toLowerCase().replace(/&/g, "and").replace(/\//g, ""), [canonical.toLowerCase()]]),
+    ),
+  ),
 };
 
 /**
@@ -107,6 +119,11 @@ export const SYNONYM_GROUPS: string[][] = [
   ["transfer agency", "ta operations"],
   ["portfolio analyst", "investment analyst"],
   ["client reporting", "investment reporting"],
+  // Insurance synonym groups — derived from INSURANCE_SYNONYMS
+  ...Object.entries(INSURANCE_SYNONYMS).map(([canonical, aliases]) => [
+    canonical.toLowerCase(),
+    ...aliases.map((a) => a.toLowerCase()),
+  ]),
 ];
 
 /** Words that carry no search intent on their own. */

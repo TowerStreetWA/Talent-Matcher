@@ -1,5 +1,6 @@
 import { z } from "zod/v4";
 import { chatCompletion } from "./aiClient";
+import { normaliseInsuranceTerm } from "./search/insuranceSynonyms";
 
 const ParsedCvSchema = z.object({
   firstName: z.string().min(1),
@@ -44,5 +45,10 @@ export async function parseCvText(cvText: string): Promise<ParsedCv> {
   if (!parsed.success) {
     throw new Error(`CV parser returned an invalid profile: ${parsed.error.message}`);
   }
-  return parsed.data;
+  // Normalise insurance-domain skills to their canonical form so that
+  // "D&O", "Directors & Officers", and "Directors and Officers Liability"
+  // all become the same term before being stored and matched.
+  const data = parsed.data;
+  data.skills = data.skills.map(normaliseInsuranceTerm);
+  return data;
 }
