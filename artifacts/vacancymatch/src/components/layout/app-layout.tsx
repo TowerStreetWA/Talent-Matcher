@@ -15,7 +15,8 @@ import {
   UserPlus,
   Sun,
   Moon,
-  Menu
+  Menu,
+  BarChart2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -43,6 +44,7 @@ const navItems = [
   { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/team", label: "Team", icon: UserPlus, adminOnly: true },
   { href: "/admin", label: "Compliance", icon: ShieldCheck, adminOnly: true },
+  { href: "/usage-report", label: "Usage Report", icon: BarChart2, adminOnly: true },
   { href: "/billing", label: "Billing", icon: CreditCard },
 ];
 

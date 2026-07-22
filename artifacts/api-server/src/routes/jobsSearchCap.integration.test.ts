@@ -131,7 +131,9 @@ describe("runJobSearchPipeline sector pre-filter (TOTAL_CAP regression)", () => 
     expect(titles).toContain("Senior Claims Adjuster 1");
   });
 
-  it("without a sector filter, the newest-200 window still applies (documented cap)", async () => {
+  it("without a sector filter, all matching rows are returned (no cap)", async () => {
+    // The TOTAL_CAP of 200 has been removed so recruiters can see all results.
+    // This tenant has 220 banking + 5 insurance + 3 insurance + 2 null = 220 rows.
     const scored = await runJobSearchPipeline({
       tenantId: TENANT,
       nq: null,
@@ -140,6 +142,6 @@ describe("runJobSearchPipeline sector pre-filter (TOTAL_CAP regression)", () => 
       familyFilters: [],
       sourceFilter: null,
     });
-    expect(scored.length).toBeLessThanOrEqual(200);
+    expect(scored.length).toBeGreaterThan(200);
   });
 });

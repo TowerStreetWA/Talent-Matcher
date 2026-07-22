@@ -932,6 +932,39 @@ export interface AuditLog {
   createdAt: string;
 }
 
+export interface UsageAggregate {
+  searches: number;
+  resultsReturned: number;
+  zeroResultSearches: number;
+  avgResultsPerSearch: number;
+  crmPushes: number;
+}
+
+export interface UserUsageRow {
+  userId: string;
+  userName: string;
+  email: string;
+  role: string;
+  searches: number;
+  resultsReturned: number;
+  zeroResultSearches: number;
+  avgResultsPerSearch: number;
+  crmPushes: number;
+  /** @nullable */
+  lastSearchAt?: string | null;
+}
+
+export type UsageReportPeriod = {
+  from: string;
+  to: string;
+};
+
+export interface UsageReport {
+  period: UsageReportPeriod;
+  aggregate: UsageAggregate;
+  byUser: UserUsageRow[];
+}
+
 export type LookupInviteParams = {
 token: string;
 };
@@ -1051,6 +1084,17 @@ export const ListJobSearchFamiliesSector = {
   accountancy_finance: 'accountancy_finance',
   it_tech: 'it_tech',
 } as const;
+
+export type GetUsageReportParams = {
+/**
+ * ISO date lower bound (inclusive), e.g. 2026-07-01
+ */
+from?: string;
+/**
+ * ISO date upper bound (inclusive), e.g. 2026-07-31
+ */
+to?: string;
+};
 
 export type SearchResearchCompaniesParams = {
 /**

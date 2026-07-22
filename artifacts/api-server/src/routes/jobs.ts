@@ -137,8 +137,6 @@ router.get("/jobs", async (req, res): Promise<void> => {
 
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 50;
-/** Total-result cap: we never fetch/rank more than this many rows. */
-const TOTAL_CAP = 200;
 
 const intParam = (raw: unknown, fallback: number, min: number, max: number): number => {
   if (typeof raw !== "string") return fallback;
@@ -201,10 +199,10 @@ export interface JobSearchPipelineRow {
 }
 
 /**
- * The core /jobs/search pipeline: DB broadening query (capped at TOTAL_CAP)
- * followed by in-memory scoring, sector/family filtering, and ranking.
- * Extracted so internal diagnostics can run the exact same search that the
- * recruiter-facing route uses. Read-only.
+ * The core /jobs/search pipeline: DB query followed by in-memory scoring,
+ * sector/family filtering, and ranking. No result cap — all matching active
+ * canonical jobs are scored and ranked. Extracted so internal diagnostics can
+ * run the exact same search that the recruiter-facing route uses. Read-only.
  */
 export async function runJobSearchPipeline(
   args: JobSearchPipelineArgs,
@@ -263,8 +261,7 @@ export async function runJobSearchPipeline(
     .from(jobsTable)
     .leftJoin(jobSourcesTable, eq(jobsTable.sourceId, jobSourcesTable.id))
     .where(and(...conditions))
-    .orderBy(desc(jobsTable.postedAt))
-    .limit(TOTAL_CAP);
+    .orderBy(desc(jobsTable.postedAt));
 
   return rows
     .map((r) => ({

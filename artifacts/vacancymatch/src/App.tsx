@@ -24,6 +24,7 @@ import AcceptInvite from "@/pages/accept-invite";
 import Team from "@/pages/team";
 import Pricing from "@/pages/pricing";
 import Landing from "@/pages/landing";
+import UsageReport from "@/pages/usage-report";
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
@@ -51,6 +52,7 @@ function Router() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/team" component={Team} />
         <Route path="/accept-invite" component={AcceptInvite} />
+        <Route path="/usage-report" component={UsageReport} />
         <Route path="/login">
           <Redirect to="/" replace />
         </Route>

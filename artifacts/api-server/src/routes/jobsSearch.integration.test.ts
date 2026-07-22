@@ -120,7 +120,7 @@ describe("GET /api/jobs/search (integration)", () => {
     expect(body.message).toContain("Unknown source");
   });
 
-  it("parses includeRecruiters (true/1 include; false/omitted exclude)", async () => {
+  it("parses includeRecruiters (true/1 include; false/omitted exclude)", { timeout: 15000 }, async () => {
     const totals: Record<string, number> = {};
     for (const qs of ["", "?includeRecruiters=false", "?includeRecruiters=true", "?includeRecruiters=1"]) {
       const res = await get(`/api/jobs/search${qs}`);

@@ -1568,6 +1568,41 @@ export const ListCrmSyncEventsResponse = zod.array(ListCrmSyncEventsResponseItem
 
 
 /**
+ * @summary Pilot usage report — searches, results, and CRM pushes per user
+ */
+export const GetUsageReportQueryParams = zod.object({
+  "from": zod.coerce.string().optional().describe('ISO date lower bound (inclusive), e.g. 2026-07-01'),
+  "to": zod.coerce.string().optional().describe('ISO date upper bound (inclusive), e.g. 2026-07-31')
+})
+
+export const GetUsageReportResponse = zod.object({
+  "period": zod.object({
+  "from": zod.string(),
+  "to": zod.string()
+}),
+  "aggregate": zod.object({
+  "searches": zod.number(),
+  "resultsReturned": zod.number(),
+  "zeroResultSearches": zod.number(),
+  "avgResultsPerSearch": zod.number(),
+  "crmPushes": zod.number()
+}),
+  "byUser": zod.array(zod.object({
+  "userId": zod.string(),
+  "userName": zod.string(),
+  "email": zod.string(),
+  "role": zod.string(),
+  "searches": zod.number(),
+  "resultsReturned": zod.number(),
+  "zeroResultSearches": zod.number(),
+  "avgResultsPerSearch": zod.number(),
+  "crmPushes": zod.number(),
+  "lastSearchAt": zod.string().nullish()
+}))
+})
+
+
+/**
  * @summary List audit logs
  */
 export const ListAuditLogsResponseItem = zod.object({

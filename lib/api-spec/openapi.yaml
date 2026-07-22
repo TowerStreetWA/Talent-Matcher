@@ -1131,6 +1131,27 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CrmSyncEvent"
+  /admin/usage-report:
+    get:
+      operationId: getUsageReport
+      tags: [admin]
+      summary: Pilot usage report — searches, results, and CRM pushes per user
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string }
+          description: ISO date lower bound (inclusive), e.g. 2026-07-01
+        - in: query
+          name: to
+          schema: { type: string }
+          description: ISO date upper bound (inclusive), e.g. 2026-07-31
+      responses:
+        "200":
+          description: Usage report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageReport"
   /audit-logs:
     get:
       operationId: listAuditLogs
@@ -2130,3 +2151,42 @@ components:
         entityId: { type: ["string", "null"] }
         metadata: { type: ["string", "null"] }
         createdAt: { type: string }
+    UsageAggregate:
+      type: object
+      required: [searches, resultsReturned, zeroResultSearches, avgResultsPerSearch, crmPushes]
+      properties:
+        searches: { type: integer }
+        resultsReturned: { type: integer }
+        zeroResultSearches: { type: integer }
+        avgResultsPerSearch: { type: number }
+        crmPushes: { type: integer }
+    UserUsageRow:
+      type: object
+      required: [userId, userName, email, role, searches, resultsReturned, zeroResultSearches, avgResultsPerSearch, crmPushes]
+      properties:
+        userId: { type: string }
+        userName: { type: string }
+        email: { type: string }
+        role: { type: string }
+        searches: { type: integer }
+        resultsReturned: { type: integer }
+        zeroResultSearches: { type: integer }
+        avgResultsPerSearch: { type: number }
+        crmPushes: { type: integer }
+        lastSearchAt: { type: ["string", "null"] }
+    UsageReport:
+      type: object
+      required: [period, aggregate, byUser]
+      properties:
+        period:
+          type: object
+          required: [from, to]
+          properties:
+            from: { type: string }
+            to: { type: string }
+        aggregate:
+          $ref: "#/components/schemas/UsageAggregate"
+        byUser:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserUsageRow"

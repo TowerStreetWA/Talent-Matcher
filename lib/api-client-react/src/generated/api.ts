@@ -43,6 +43,7 @@ import type {
   CvUploadInput,
   DashboardSummary,
   ExtractedJob,
+  GetUsageReportParams,
   HealthStatus,
   InviteCreated,
   InvitePreview,
@@ -75,7 +76,8 @@ import type {
   SignupInput,
   TeamInvite,
   TeamMember,
-  UpdateTeamMemberInput
+  UpdateTeamMemberInput,
+  UsageReport
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -3825,6 +3827,90 @@ export function useListCrmSyncEvents<TData = Awaited<ReturnType<typeof listCrmSy
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListCrmSyncEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetUsageReportUrl = (params?: GetUsageReportParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/usage-report?${stringifiedParams}` : `/api/admin/usage-report`
+}
+
+/**
+ * @summary Pilot usage report — searches, results, and CRM pushes per user
+ */
+export const getUsageReport = async (params?: GetUsageReportParams, options?: RequestInit): Promise<UsageReport> => {
+
+  return customFetch<UsageReport>(getGetUsageReportUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUsageReportQueryKey = (params?: GetUsageReportParams,) => {
+    return [
+    `/api/admin/usage-report`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetUsageReportQueryOptions = <TData = Awaited<ReturnType<typeof getUsageReport>>, TError = ErrorType<unknown>>(params?: GetUsageReportParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsageReportQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageReport>>> = ({ signal }) => getUsageReport(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsageReport>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUsageReportQueryResult = NonNullable<Awaited<ReturnType<typeof getUsageReport>>>
+export type GetUsageReportQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Pilot usage report — searches, results, and CRM pushes per user
+ */
+
+export function useGetUsageReport<TData = Awaited<ReturnType<typeof getUsageReport>>, TError = ErrorType<unknown>>(
+ params?: GetUsageReportParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUsageReportQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
