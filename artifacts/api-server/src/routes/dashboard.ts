@@ -208,12 +208,11 @@ router.get("/dashboard/industry-counts", async (req, res): Promise<void> => {
 
 // ---------------------------------------------------------------------------
 // Role analysis — AI-powered top roles per sector, cached 24h per tenant
+//
+// Architecture: AI does ONLY title normalisation (original title → canonical
+// role name). All company counting is done here in code from the actual DB
+// rows, so company counts are always 100% accurate and never capped.
 // ---------------------------------------------------------------------------
-
-interface RoleAnalysisEntry {
-  title: string;
-  companies: string[];
-}
 
 interface CachedAnalysis {
   data: {
@@ -235,7 +234,64 @@ function isCacheValid(entry: CachedAnalysis): boolean {
   return Date.now() - entry.cachedAt.getTime() < CACHE_TTL_MS;
 }
 
-async function runAnalysis(tenant: string, log: { info: (obj: object, msg: string) => void }): Promise<CachedAnalysis["data"]> {
+/**
+ * Ask the AI to return a title→canonical mapping for a list of distinct job
+ * titles. Company counting is NOT done here — the AI only normalises names.
+ */
+async function normaliseTitles(
+  titles: string[],
+  sectorLabel: string,
+  log: { info: (obj: object, msg: string) => void },
+): Promise<Map<string, string>> {
+  if (titles.length === 0) return new Map();
+
+  const prompt = `You are a job title normaliser for the financial services recruitment industry.
+
+Map each of the following job titles to a short canonical role name. Group similar titles under one canonical name (e.g. "Senior Underwriter", "Property Underwriter", "Casualty Underwriter" all map to "Underwriter"; "Software Engineer", "Full Stack Developer", "Sr. Software Engineer" all map to "Software Engineer").
+
+Sector context: ${sectorLabel}
+
+Return ONLY a valid JSON object where each key is the exact input title and its value is the canonical role name. No markdown, no explanation — just the JSON object.
+
+Titles to normalise:
+${JSON.stringify(titles)}`;
+
+  try {
+    const { completion } = await chatCompletion({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.1,
+      // Each key-value pair is ~50 chars; allow headroom for all titles
+      max_tokens: Math.min(8000, Math.max(2000, titles.length * 40)),
+    });
+
+    const text = completion.choices[0]?.message?.content ?? "{}";
+    // Extract the JSON object even if the model adds surrounding text
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      const parsed: unknown = JSON.parse(match[0]);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return new Map(
+          Object.entries(parsed as Record<string, unknown>).map(([k, v]) => [
+            k,
+            typeof v === "string" ? v : String(v),
+          ]),
+        );
+      }
+    }
+  } catch (err) {
+    log.info(
+      { event: "title_normalise_error", sector: sectorLabel, err: String(err) },
+      "Title normalisation failed — using raw titles",
+    );
+  }
+  return new Map(); // fallback: identity mapping (raw titles used as-is)
+}
+
+async function runAnalysis(
+  tenant: string,
+  log: { info: (obj: object, msg: string) => void },
+): Promise<CachedAnalysis["data"]> {
   const jobs = await db
     .select({
       sector: jobsTable.sectorTag,
@@ -256,7 +312,7 @@ async function runAnalysis(tenant: string, log: { info: (obj: object, msg: strin
     return { sectors: [], lastUpdatedAt: new Date().toISOString(), status: "empty" };
   }
 
-  // Group by sector
+  // Group all rows by sector
   const bySector = new Map<string, Array<{ title: string; company: string }>>();
   for (const j of jobs) {
     if (!j.sector) continue;
@@ -270,69 +326,47 @@ async function runAnalysis(tenant: string, log: { info: (obj: object, msg: strin
     Array.from(bySector.entries()).map(async ([sector, entries]) => {
       const label = (SECTOR_LABELS as Record<string, string>)[sector] ?? sector;
 
-      // Dedupe and cap to keep prompt size manageable
+      // Dedupe (title, company) pairs — keeps all distinct (title, company)
+      // combinations so every hiring company is counted accurately.
       const seen = new Set<string>();
-      const deduped = entries
-        .filter((e) => {
-          const key = `${e.title.toLowerCase()}|${e.company.toLowerCase()}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        })
-        .slice(0, 400);
+      const deduped = entries.filter((e) => {
+        const key = `${e.title.toLowerCase()}|${e.company.toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
-      const lines = deduped.map((e) => `${e.title} | ${e.company}`).join("\n");
+      // Collect distinct titles to normalise — cap at 300 to stay within
+      // token budget; rare titles beyond the cap keep their raw name.
+      const distinctTitles = [...new Set(deduped.map((e) => e.title))].slice(0, 300);
 
-      const prompt = `You are a job market analyst for the financial services industry.
+      // Step 1 — AI: normalise titles (title → canonical name)
+      const titleMap = await normaliseTitles(distinctTitles, label, log);
 
-Analyse these job postings from the "${label}" sector. Each line is: "job title | company name"
-
-${lines}
-
-Instructions:
-1. Group similar job titles into normalised role names (e.g. "Software Engineer", "Software Developer", "Full Stack Developer" → "Software Engineer").
-2. For each normalised role, collect ALL distinct company names from the input that map to it — include every company, do not truncate or cap the list.
-3. Return a JSON array of the top 10 roles ranked by the number of distinct companies hiring for them, sorted highest first.
-
-Format (return ONLY the JSON array, no other text):
-[{"title":"Normalised Role Name","companies":["Company A","Company B","Company C"]}]`;
-
-      try {
-        const { completion } = await chatCompletion({
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.1,
-          max_tokens: 3000,
-        });
-
-        const text = completion.choices[0]?.message?.content ?? "[]";
-        let roles: RoleAnalysisEntry[] = [];
-        try {
-          // Extract JSON array from response (may have surrounding text)
-          const match = text.match(/\[[\s\S]*\]/);
-          if (match) {
-            const parsed = JSON.parse(match[0]);
-            if (Array.isArray(parsed)) roles = parsed;
-          }
-        } catch {
-          // ignore parse errors
-        }
-
-        return {
-          sector,
-          label,
-          roles: roles.slice(0, 10).map((r) => ({
-            title: r.title ?? "Unknown Role",
-            count: Array.isArray(r.companies) ? r.companies.length : 0,
-            companies: (Array.isArray(r.companies) ? r.companies : []).map((c: string) => ({
-              name: typeof c === "string" ? c : String(c),
-            })),
-          })),
-        };
-      } catch (err) {
-        log.info({ event: "role_analysis_sector_error", sector, err: String(err) }, "AI analysis failed for sector");
-        return { sector, label, roles: [] };
+      // Step 2 — code: group by canonical name, collect distinct companies
+      const roleCompanies = new Map<string, Set<string>>();
+      for (const entry of deduped) {
+        const canonical = titleMap.get(entry.title) ?? entry.title;
+        if (!roleCompanies.has(canonical)) roleCompanies.set(canonical, new Set());
+        roleCompanies.get(canonical)!.add(entry.company);
       }
+
+      // Step 3 — code: sort by company count, take top 10
+      const roles = Array.from(roleCompanies.entries())
+        .sort((a, b) => b[1].size - a[1].size)
+        .slice(0, 10)
+        .map(([title, companies]) => ({
+          title,
+          count: companies.size,
+          companies: Array.from(companies).map((name) => ({ name })),
+        }));
+
+      log.info(
+        { event: "role_analysis_sector_done", sector, roles: roles.length, topCount: roles[0]?.count },
+        "Sector role analysis complete",
+      );
+
+      return { sector, label, roles };
     }),
   );
 
