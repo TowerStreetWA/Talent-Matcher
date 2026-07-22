@@ -66,7 +66,7 @@ export const ABBREVIATIONS: Record<string, string[]> = {
   ri: ["reinsurance"],
   // Insurance-domain abbreviations — derived from INSURANCE_SYNONYMS
   ...Object.fromEntries(
-    Object.entries(INSURANCE_SYNONYMS).flatMap(([canonical, aliases]) =>
+    INSURANCE_SYNONYMS.flatMap(({ canonical, aliases }) =>
       aliases
         .filter((a) => a.length <= 6 && /^[A-Z&/]+$/.test(a))
         .map((abbr) => [abbr.toLowerCase().replace(/&/g, "and").replace(/\//g, ""), [canonical.toLowerCase()]]),
@@ -120,7 +120,7 @@ export const SYNONYM_GROUPS: string[][] = [
   ["portfolio analyst", "investment analyst"],
   ["client reporting", "investment reporting"],
   // Insurance synonym groups — derived from INSURANCE_SYNONYMS
-  ...Object.entries(INSURANCE_SYNONYMS).map(([canonical, aliases]) => [
+  ...INSURANCE_SYNONYMS.map(({ canonical, aliases }) => [
     canonical.toLowerCase(),
     ...aliases.map((a) => a.toLowerCase()),
   ]),

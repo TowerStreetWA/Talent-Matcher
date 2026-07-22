@@ -1,3 +1,6 @@
+// insuranceSynonyms.ts
+// Paste into Replit. Add this file under: artifacts/api-server/src/lib/search/insuranceSynonyms.ts
+
 export type SynonymKind = 'business_line' | 'role' | 'abbreviation' | 'market_term';
 
 export type SynonymEntry = {
@@ -174,9 +177,7 @@ export const INSURANCE_SYNONYMS: SynonymEntry[] = [
   },
 ];
 
-// ── Internal index (built once at module load) ───────────────────────────
-
-const normalise = (value: string): string =>
+const normalise = (value: string) =>
   value
     .toLowerCase()
     .replace(/&/g, ' and ')
@@ -193,15 +194,10 @@ for (const entry of INSURANCE_SYNONYMS) {
   }
 }
 
-// ── Public API ───────────────────────────────────────────────────────────
-
 export function normaliseInsuranceTerm(term: string): string {
   const entry = synonymIndex.get(normalise(term));
   return entry ? entry.canonical : term;
 }
-
-/** Alias used by matching.ts — resolves to the same canonical form. */
-export const canonicalSkill = normaliseInsuranceTerm;
 
 export function getInsuranceSynonymEntry(term: string): SynonymEntry | null {
   return synonymIndex.get(normalise(term)) ?? null;
@@ -244,7 +240,7 @@ export function replaceInsuranceTerms(text: string): string {
 export function buildInsuranceHintBlock(): string {
   const grouped = INSURANCE_SYNONYMS.reduce<Record<string, string[]>>((acc, entry) => {
     if (!acc[entry.kind]) acc[entry.kind] = [];
-    acc[entry.kind]!.push(`${entry.canonical}: ${entry.aliases.join(', ')}`);
+    acc[entry.kind].push(`${entry.canonical}: ${entry.aliases.join(', ')}`);
     return acc;
   }, {});
 
@@ -260,3 +256,8 @@ export function debugInsuranceSynonyms() {
     hintBlock: buildInsuranceHintBlock(),
   };
 }
+
+// Example:
+// console.log(normaliseInsuranceTerm('A&H Underwriter'));
+// console.log(normaliseInsuranceTerm('CRPI'));
+// console.log(extractInsuranceMatches('Experienced A&H Underwriter with D&O and CGL exposure'));
