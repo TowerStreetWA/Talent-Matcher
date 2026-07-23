@@ -1952,6 +1952,76 @@ export const useRunMatch = <TError = ErrorType<ApiMessage>,
       return useMutation(getRunMatchMutationOptions(options));
     }
 
+export const getReparseCandidateCvUrl = (id: string,) => {
+
+
+
+
+  return `/api/candidates/${id}/reparse-cv`
+}
+
+/**
+ * @summary Re-run AI parsing on the candidate's stored CV
+ */
+export const reparseCandidateCv = async (id: string, options?: RequestInit): Promise<Candidate> => {
+
+  return customFetch<Candidate>(getReparseCandidateCvUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getReparseCandidateCvMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reparseCandidateCv>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reparseCandidateCv>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['reparseCandidateCv'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reparseCandidateCv>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  reparseCandidateCv(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReparseCandidateCvMutationResult = NonNullable<Awaited<ReturnType<typeof reparseCandidateCv>>>
+
+    export type ReparseCandidateCvMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Re-run AI parsing on the candidate's stored CV
+ */
+export const useReparseCandidateCv = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reparseCandidateCv>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reparseCandidateCv>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getReparseCandidateCvMutationOptions(options));
+    }
+
 export const getListCandidateMatchesUrl = (id: string,) => {
 
 

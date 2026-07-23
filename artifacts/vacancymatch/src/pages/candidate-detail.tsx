@@ -4,7 +4,8 @@ import {
   useGetCandidate, 
   useUpdateCandidate, 
   useDeleteCandidate, 
-  useRunMatch, 
+  useRunMatch,
+  useReparseCandidateCv,
   useListCandidateMatches,
   useUpdateMatch,
   usePushMatchToCrm,
@@ -45,6 +46,7 @@ import {
   Download,
   ListPlus,
   Plus,
+  RefreshCw,
 } from "lucide-react";
 import SpecListsTab from "@/components/SpecListsTab";
 import { formatDistanceToNow } from "date-fns";
@@ -77,6 +79,7 @@ export default function CandidateDetail() {
   const updateCandidate = useUpdateCandidate();
   const deleteCandidate = useDeleteCandidate();
   const runMatch = useRunMatch();
+  const reparseCV = useReparseCandidateCv();
   const updateMatch = useUpdateMatch();
   const pushCrm = usePushMatchToCrm();
   const createAlert = useCreateAlertRule();
@@ -140,6 +143,19 @@ export default function CandidateDetail() {
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: getListCandidateMatchesQueryKey(id) });
         }, 2000);
+      }
+    });
+  };
+
+  const handleReparseCV = () => {
+    reparseCV.mutate({ id }, {
+      onSuccess: () => {
+        toast({ title: "CV re-parsed", description: "Candidate profile updated from CV." });
+        queryClient.invalidateQueries({ queryKey: getGetCandidateQueryKey(id) });
+      },
+      onError: (err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Re-parse failed. Please try again.";
+        toast({ title: "Re-parse failed", description: msg, variant: "destructive" });
       }
     });
   };
@@ -217,6 +233,16 @@ export default function CandidateDetail() {
               <a href={`${import.meta.env.BASE_URL}api/candidates/${candidate.id}/cv-file`} download>
                 <Download className="w-4 h-4 mr-2" /> CV
               </a>
+            </Button>
+          )}
+          {(candidate.cvFileKey || candidate.cvText) && (
+            <Button
+              variant="outline"
+              onClick={handleReparseCV}
+              disabled={reparseCV.isPending}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2${reparseCV.isPending ? " animate-spin" : ""}`} />
+              Re-parse CV
             </Button>
           )}
           <Button variant="outline" onClick={handleCreateAlert}>

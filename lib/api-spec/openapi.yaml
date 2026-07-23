@@ -571,6 +571,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
+  /candidates/{id}/reparse-cv:
+    post:
+      operationId: reparseCandidateCv
+      tags: [candidates]
+      summary: Re-run AI parsing on the candidate's stored CV
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Candidate profile updated from re-parsed CV
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "400":
+          description: No CV available or parse failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Candidate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
   /candidates/{id}/matches:
     get:
       operationId: listCandidateMatches

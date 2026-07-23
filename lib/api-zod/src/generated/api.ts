@@ -647,6 +647,54 @@ export const RunMatchResponse = zod.object({
 
 
 /**
+ * @summary Re-run AI parsing on the candidate's stored CV
+ */
+export const ReparseCandidateCvParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ReparseCandidateCvResponse = zod.object({
+  "id": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "currentTitle": zod.string().nullish(),
+  "currentCompany": zod.string().nullish(),
+  "locationText": zod.string().nullish(),
+  "summary": zod.string().nullish(),
+  "seniority": zod.string().nullish(),
+  "skills": zod.array(zod.string()),
+  "titles": zod.array(zod.string()),
+  "industries": zod.array(zod.string()),
+  "remotePreference": zod.string().nullish(),
+  "desiredSalaryMin": zod.number().nullish(),
+  "desiredSalaryMax": zod.number().nullish(),
+  "salaryCurrency": zod.string().nullish(),
+  "cvFileName": zod.string().nullish(),
+  "cvFileKey": zod.string().nullish(),
+  "cvText": zod.string().nullish(),
+  "status": zod.string(),
+  "lastMatchedAt": zod.string().nullish(),
+  "bestMatchScore": zod.number().nullish(),
+  "matchCount": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "searchDebug": zod.object({
+  "score": zod.number().describe('Total relevance score used for ordering'),
+  "sector": zod.string().nullish().describe('Classified FS sector: insurance\/banking\/pensions\/asset_management\/accountancy_finance'),
+  "function": zod.string().nullish().describe('Classified FS function, e.g. underwriting, claims, pensions_admin'),
+  "employerType": zod.string().nullish().describe('Rule-based employer type, e.g. insurer, broker, bank'),
+  "sectorBoost": zod.number().optional().describe('Points added for sector alignment with the query'),
+  "functionBoost": zod.number().optional().describe('Points added for function alignment with the query'),
+  "employerTypeBoost": zod.number().optional().describe('Points added for employer-type alignment with the query'),
+  "directEmployerBoost": zod.number().optional().describe('Points added for direct-employer source on FS queries'),
+  "matchedTerms": zod.array(zod.string()).optional().describe('Taxonomy terms that drove the classification')
+}).optional().describe('Dev\/internal search ranking explainability (present only when debug=1 on a search)')
+})
+
+
+/**
  * @summary List matches for a candidate (latest run)
  */
 export const ListCandidateMatchesParams = zod.object({

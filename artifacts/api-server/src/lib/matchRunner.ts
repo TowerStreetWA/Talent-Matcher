@@ -10,10 +10,15 @@ import {
   tenantsTable,
   tenantUsersTable,
 } from "@workspace/db";
+
 import { computeMatch } from "./matching";
 import { recordAudit } from "./audit";
 import { sendEmail, alertMatchEmailHtml } from "./email";
 import { logger } from "./logger";
+
+/** Minimum gap between ingestion-triggered match sweeps for the same tenant. */
+const POST_INGESTION_COOLDOWN_MS = 5 * 60 * 1000;
+const lastIngestionSweep = new Map<string, number>();
 
 type Candidate = typeof candidatesTable.$inferSelect;
 type MatchRun = typeof matchRunsTable.$inferSelect;
@@ -173,6 +178,51 @@ async function notifyAlertRules(
         rules.map((r) => r.id),
       ),
     );
+}
+
+/**
+ * Fire-and-forget: after an ingestion run stores new canonical jobs, re-run
+ * matching for all active candidates in the tenant so results stay fresh.
+ * A per-tenant cooldown prevents stampedes when multiple sources store jobs
+ * in the same sweep tick.
+ */
+export async function runPostIngestionMatches(tenantId: string): Promise<void> {
+  const now = Date.now();
+  const last = lastIngestionSweep.get(tenantId) ?? 0;
+  if (now - last < POST_INGESTION_COOLDOWN_MS) return;
+  lastIngestionSweep.set(tenantId, now);
+
+  const candidates = await db
+    .select()
+    .from(candidatesTable)
+    .where(
+      and(
+        eq(candidatesTable.tenantId, tenantId),
+        eq(candidatesTable.status, "active"),
+      ),
+    );
+
+  if (candidates.length === 0) return;
+
+  for (const candidate of candidates) {
+    try {
+      await runMatchForCandidate(candidate, "scheduled");
+    } catch (err) {
+      logger.warn(
+        { err, candidateId: candidate.id },
+        "Post-ingestion match run failed for candidate",
+      );
+    }
+  }
+
+  logger.info(
+    {
+      event: "post_ingestion_match_run",
+      tenantId,
+      candidateCount: candidates.length,
+    },
+    "Post-ingestion match runs completed",
+  );
 }
 
 export async function latestMatchRun(

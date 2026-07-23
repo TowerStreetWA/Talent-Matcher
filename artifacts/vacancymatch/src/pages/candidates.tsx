@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useListCandidates } from "@workspace/api-client-react";
+import { useListCandidates, useRunMatch } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserPlus, FileText, ChevronRight, X } from "lucide-react";
+import { Search, UserPlus, FileText, ChevronRight, X, RefreshCw, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -25,10 +27,21 @@ import { SearchBox } from "@/components/search-box";
 import { useDebounce } from "@/hooks/use-debounce";
 import { track } from "@/lib/analytics";
 
+const STALE_DAYS = 7;
+
+function isStaleMatch(lastMatchedAt: string | null): boolean {
+  if (!lastMatchedAt) return true;
+  const ms = Date.now() - new Date(lastMatchedAt).getTime();
+  return ms > STALE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 export default function Candidates() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const [runningId, setRunningId] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 300);
+  const queryClient = useQueryClient();
+  const runMatch = useRunMatch();
 
   const { data: candidates, isLoading } = useListCandidates({
     ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
@@ -145,6 +158,7 @@ export default function Candidates() {
                 <TableHead>Location</TableHead>
                 <TableHead>Skills</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Last Matched</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -157,12 +171,13 @@ export default function Candidates() {
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-28" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : candidates?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center">
                       <FileText className="h-8 w-8 mb-4 text-muted-foreground/50" />
                       <p className="font-medium text-foreground">No candidates found</p>
@@ -223,6 +238,42 @@ export default function Candidates() {
                       <Badge variant={candidate.status === 'active' ? "default" : "secondary"}>
                         {candidate.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        {candidate.lastMatchedAt ? (
+                          <>
+                            {isStaleMatch(candidate.lastMatchedAt) ? (
+                              <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            ) : null}
+                            <span className={`text-xs ${isStaleMatch(candidate.lastMatchedAt) ? "text-amber-600" : "text-muted-foreground"}`}>
+                              {formatDistanceToNow(new Date(candidate.lastMatchedAt), { addSuffix: true })}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Never</span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={runningId === candidate.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setRunningId(candidate.id);
+                            runMatch.mutate({ id: candidate.id }, {
+                              onSuccess: () => {
+                                setRunningId(null);
+                                void queryClient.invalidateQueries({ queryKey: ["listCandidates"] });
+                              },
+                              onError: () => setRunningId(null),
+                            });
+                          }}
+                          title="Run match now"
+                        >
+                          <RefreshCw className={`h-3.5 w-3.5${runningId === candidate.id ? " animate-spin" : ""}`} />
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link href={`/candidates/${candidate.id}`}>

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, count, eq, sql } from "drizzle-orm";
 import { db, jobsTable, jobSourcesTable, type BackingSource } from "@workspace/db";
 import { logger } from "../logger";
+import { runPostIngestionMatches } from "../matchRunner";
 import { classifyCompanyKind } from "../search/companyKind";
 import {
   clusterKey,
@@ -364,6 +365,15 @@ export async function runVacancyIngestion(opts: {
     },
     "vacancy ingestion run completed",
   );
+
+  if (summary.insertedCanonical > 0) {
+    void runPostIngestionMatches(tenantId).catch((err) => {
+      logger.warn(
+        { err, tenantId, insertedCanonical: summary.insertedCanonical },
+        "Post-ingestion match trigger failed",
+      );
+    });
+  }
 
   return summary;
 }

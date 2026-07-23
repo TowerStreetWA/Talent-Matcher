@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,24 +8,25 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { BillingGateProvider, notifyApiError } from "@/lib/billing-gate";
 import AppLayout from "@/components/layout/app-layout";
-import Login from "@/pages/login";
-import Dashboard from "@/pages/dashboard";
-import UploadCv from "@/pages/upload-cv";
-import Candidates from "@/pages/candidates";
-import CandidateDetail from "@/pages/candidate-detail";
-import Matches from "@/pages/matches";
-import TopRoles from "@/pages/top-roles";
-import JobSearch from "@/pages/job-search";
-import Sources from "@/pages/sources";
-import Alerts from "@/pages/alerts";
-import Admin from "@/pages/admin";
-import Billing from "@/pages/billing";
-import Signup from "@/pages/signup";
-import AcceptInvite from "@/pages/accept-invite";
-import Team from "@/pages/team";
-import Pricing from "@/pages/pricing";
-import Landing from "@/pages/landing";
-import UsageReport from "@/pages/usage-report";
+
+const Login = lazy(() => import("@/pages/login"));
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const UploadCv = lazy(() => import("@/pages/upload-cv"));
+const Candidates = lazy(() => import("@/pages/candidates"));
+const CandidateDetail = lazy(() => import("@/pages/candidate-detail"));
+const Matches = lazy(() => import("@/pages/matches"));
+const TopRoles = lazy(() => import("@/pages/top-roles"));
+const JobSearch = lazy(() => import("@/pages/job-search"));
+const Sources = lazy(() => import("@/pages/sources"));
+const Alerts = lazy(() => import("@/pages/alerts"));
+const Admin = lazy(() => import("@/pages/admin"));
+const Billing = lazy(() => import("@/pages/billing"));
+const Signup = lazy(() => import("@/pages/signup"));
+const AcceptInvite = lazy(() => import("@/pages/accept-invite"));
+const Team = lazy(() => import("@/pages/team"));
+const Pricing = lazy(() => import("@/pages/pricing"));
+const Landing = lazy(() => import("@/pages/landing"));
+const UsageReport = lazy(() => import("@/pages/usage-report"));
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
@@ -34,36 +36,44 @@ const queryClient = new QueryClient({
   }),
 });
 
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
+
 function Router() {
   return (
     <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/upload" component={UploadCv} />
-        <Route path="/candidates" component={Candidates} />
-        <Route path="/candidates/:id" component={CandidateDetail} />
-        <Route path="/matches" component={Matches} />
-        <Route path="/top-roles" component={TopRoles} />
-        <Route path="/jobs">
-          <Redirect to="/top-roles" replace />
-        </Route>
-        <Route path="/job-search" component={JobSearch} />
-        <Route path="/sources" component={Sources} />
-        <Route path="/alerts" component={Alerts} />
-        <Route path="/admin" component={Admin} />
-        <Route path="/billing" component={Billing} />
-        <Route path="/pricing" component={Pricing} />
-        <Route path="/team" component={Team} />
-        <Route path="/accept-invite" component={AcceptInvite} />
-        <Route path="/usage-report" component={UsageReport} />
-        <Route path="/login">
-          <Redirect to="/" replace />
-        </Route>
-        <Route path="/signup">
-          <Redirect to="/" replace />
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
+      <Suspense fallback={<PageFallback />}>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/upload" component={UploadCv} />
+          <Route path="/candidates" component={Candidates} />
+          <Route path="/candidates/:id" component={CandidateDetail} />
+          <Route path="/matches" component={Matches} />
+          <Route path="/top-roles" component={TopRoles} />
+          <Route path="/jobs">
+            <Redirect to="/top-roles" replace />
+          </Route>
+          <Route path="/job-search" component={JobSearch} />
+          <Route path="/sources" component={Sources} />
+          <Route path="/alerts" component={Alerts} />
+          <Route path="/admin" component={Admin} />
+          <Route path="/billing" component={Billing} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/team" component={Team} />
+          <Route path="/accept-invite" component={AcceptInvite} />
+          <Route path="/usage-report" component={UsageReport} />
+          <Route path="/login">
+            <Redirect to="/" replace />
+          </Route>
+          <Route path="/signup">
+            <Redirect to="/" replace />
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
     </AppLayout>
   );
 }
@@ -81,13 +91,15 @@ function AuthGate() {
 
   if (!user) {
     return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/signup" component={Signup} />
-        <Route path="/accept-invite" component={AcceptInvite} />
-        <Route path="/pricing" component={Pricing} />
-        <Route component={Login} />
-      </Switch>
+      <Suspense fallback={<PageFallback />}>
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/signup" component={Signup} />
+          <Route path="/accept-invite" component={AcceptInvite} />
+          <Route path="/pricing" component={Pricing} />
+          <Route component={Login} />
+        </Switch>
+      </Suspense>
     );
   }
 

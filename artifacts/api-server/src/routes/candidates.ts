@@ -349,6 +349,89 @@ router.delete("/candidates/:id", async (req, res): Promise<void> => {
   res.json({ message: "Candidate deleted" });
 });
 
+router.post("/candidates/:id/reparse-cv", async (req, res): Promise<void> => {
+  const id = paramId(req.params["id"] ?? "");
+  const [candidate] = await db
+    .select()
+    .from(candidatesTable)
+    .where(
+      and(eq(candidatesTable.id, id), eq(candidatesTable.tenantId, tenantOf(req))),
+    );
+  if (!candidate) {
+    res.status(404).json({ message: "Candidate not found" });
+    return;
+  }
+
+  let cvText = candidate.cvText ?? "";
+
+  if (candidate.cvFileKey) {
+    try {
+      const file = await objectStorage.getObjectEntityFile(candidate.cvFileKey);
+      const [meta] = await file.getMetadata();
+      const [buffer] = await file.download();
+      cvText = await extractCvText(
+        buffer,
+        candidate.cvFileName ?? "cv",
+        meta.contentType ?? null,
+      );
+    } catch (err) {
+      req.log.warn({ err }, "CV file re-fetch failed, falling back to stored cvText");
+    }
+  }
+
+  if (cvText.trim().length < 20) {
+    res.status(400).json({
+      message: "No CV text available to re-parse for this candidate.",
+    });
+    return;
+  }
+
+  let profile;
+  try {
+    profile = await parseCvText(cvText);
+  } catch (err) {
+    req.log.error({ err }, "CV re-parse failed");
+    res.status(400).json({
+      message: "CV parsing failed. Please check the CV content and try again.",
+    });
+    return;
+  }
+
+  const [updated] = await db
+    .update(candidatesTable)
+    .set({
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      email: profile.email ?? candidate.email,
+      phone: profile.phone ?? candidate.phone,
+      currentTitle: profile.currentTitle ?? null,
+      currentCompany: profile.currentCompany ?? null,
+      locationText: profile.locationText ?? null,
+      summary: profile.summary ?? null,
+      seniority: profile.seniority ?? null,
+      skills: profile.skills,
+      titles: profile.titles,
+      industries: profile.industries,
+      remotePreference: profile.remotePreference ?? null,
+      desiredSalaryMin: profile.desiredSalaryMin ?? null,
+      desiredSalaryMax: profile.desiredSalaryMax ?? null,
+      salaryCurrency: profile.salaryCurrency ?? null,
+      cvText,
+    })
+    .where(eq(candidatesTable.id, id))
+    .returning();
+
+  await recordAudit({
+    action: "candidate.cv_parsed",
+    entityType: "candidate",
+    entityId: id,
+    metadata: `CV re-parsed for ${updated?.firstName ?? ""} ${updated?.lastName ?? ""}`,
+    ...auditActor(req),
+  });
+
+  res.json(GetCandidateResponse.parse(toCandidateDto(updated ?? candidate)));
+});
+
 router.post("/candidates/:id/run-match", async (req, res): Promise<void> => {
   const id = paramId(req.params["id"] ?? "");
   const [candidate] = await db
