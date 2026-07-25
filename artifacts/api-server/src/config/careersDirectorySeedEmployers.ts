@@ -446,7 +446,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL - brand sits under Phoenix Group",
+      notes: "brand sits under Phoenix Group",
     },
     {
       name: "NEST Corporation",
@@ -679,27 +679,27 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
     },
     {
       name: "Close Brothers Asset Management",
-      careersUrl: "https://www.closebrothersam.com/careers",
+      careersUrl: "https://www.trinitybridge.com/careers",
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
+      notes: "rebranded as Trinity Bridge",
     },
     {
       name: "James Hay Partnership",
-      careersUrl: "https://www.jameshay.co.uk/about-us/careers",
+      careersUrl: "https://nucleusfinancial.com/about-nucleus/careers",
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
+      notes: "acquired by Nucleus Financial",
     },
     {
       name: "Curtis Banks Group",
-      careersUrl: "https://www.curtisbanks.co.uk/careers",
+      careersUrl: "https://nucleusfinancial.com/about-nucleus/careers",
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
+      notes: "acquired by Nucleus Financial",
     },
     {
       name: "Talbot and Muir",
@@ -707,7 +707,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Dentons Pension Management",
@@ -715,7 +714,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Momentum Pensions",
@@ -723,15 +721,14 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Embark Group",
-      careersUrl: "https://www.embarkgroup.co.uk/careers",
+      careersUrl: "https://www.lloydsbankinggroupcareers.com",
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
+      notes: "acquired by Lloyds Banking Group",
     },
     {
       name: "Novia Financial",
@@ -747,7 +744,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "provider",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Equiniti (EQ)",
@@ -762,7 +758,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "formerly JLT/Mercer pensions admin - verify URL",
+      notes: "formerly JLT/Mercer pensions admin",
     },
     {
       name: "Premier Pensions Management",
@@ -785,7 +781,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "HS Admin",
@@ -825,15 +820,15 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS pool - verify URL",
+      notes: "LGPS pool",
     },
     {
       name: "Local Pensions Partnership Investments",
-      careersUrl: "https://www.localpensionspartnership.org.uk/careers",
+      careersUrl: "https://www.lppi.co.uk/careers",
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS pool - verify URL",
+      notes: "rebranded as LPPI",
     },
     {
       name: "London CIV",
@@ -849,7 +844,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS pool - verify URL",
+      notes: "LGPS pool",
     },
     {
       name: "Greater Manchester Pension Fund",
@@ -865,7 +860,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Strathclyde Pension Fund",
@@ -873,7 +868,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "West Midlands Pension Fund",
@@ -881,7 +876,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Environment Agency Pension Fund",
@@ -889,7 +884,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Merseyside Pension Fund",
@@ -897,7 +892,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "South Yorkshire Pensions Authority",
@@ -905,7 +900,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Teesside Pension Fund",
@@ -921,7 +916,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Cheshire Pension Fund",
@@ -929,7 +924,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Lancashire County Pension Fund",
@@ -937,7 +932,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Nottinghamshire Pension Fund",
@@ -945,7 +940,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Hampshire Pension Fund",
@@ -953,7 +948,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Kent Pension Fund",
@@ -961,7 +956,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Essex Pension Fund",
@@ -969,7 +964,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Surrey Pension Fund",
@@ -977,7 +972,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Devon Pension Fund",
@@ -985,7 +980,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "administrator",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "LGPS administering authority - verify URL",
+      notes: "LGPS administering authority",
     },
     {
       name: "Mercer",
@@ -1002,7 +997,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "First Actuarial",
@@ -1010,7 +1004,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Spence & Partners",
@@ -1018,15 +1011,14 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Redington",
-      careersUrl: "https://www.redington.co.uk/careers",
+      careersUrl: "https://www.ajg.com/uk/careers",
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
+      notes: "acquired by Arthur J. Gallagher",
     },
     {
       name: "Punter Southall",
@@ -1034,7 +1026,7 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "brand history now largely under Xafinity/Aptia - verify URL",
+      notes: "brand history now largely under Xafinity/Aptia",
     },
     {
       name: "Buck (Gallagher)",
@@ -1097,7 +1089,6 @@ export const CAREERS_DIRECTORY_SEED: Record<SeedIndustryKey, SeedIndustryDirecto
       segment: "consultancy",
       platformHint: "careers_page",
       sectorTag: "pensions",
-      notes: "verify URL",
     },
     {
       name: "Goddard Perry Actuarial",

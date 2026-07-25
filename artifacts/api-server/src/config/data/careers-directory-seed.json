@@ -316,7 +316,7 @@
           "name": "Standard Life (Phoenix Group)",
           "careersUrl": "https://www.standardlife.co.uk/careers",
           "segment": "provider",
-          "notes": "verify URL - brand sits under Phoenix Group"
+          "notes": "brand sits under Phoenix Group"
         },
         {
           "name": "NEST Corporation",
@@ -501,45 +501,42 @@
         },
         {
           "name": "Close Brothers Asset Management",
-          "careersUrl": "https://www.closebrothersam.com/careers",
+          "careersUrl": "https://www.trinitybridge.com/careers",
           "segment": "provider",
-          "notes": "verify URL"
+          "notes": "rebranded as Trinity Bridge"
         },
         {
           "name": "James Hay Partnership",
-          "careersUrl": "https://www.jameshay.co.uk/about-us/careers",
+          "careersUrl": "https://nucleusfinancial.com/about-nucleus/careers",
           "segment": "provider",
-          "notes": "verify URL"
+          "notes": "acquired by Nucleus Financial"
         },
         {
           "name": "Curtis Banks Group",
-          "careersUrl": "https://www.curtisbanks.co.uk/careers",
+          "careersUrl": "https://nucleusfinancial.com/about-nucleus/careers",
           "segment": "provider",
-          "notes": "verify URL"
+          "notes": "acquired by Nucleus Financial"
         },
         {
           "name": "Talbot and Muir",
           "careersUrl": "https://www.talbotmuir.co.uk/careers",
-          "segment": "provider",
-          "notes": "verify URL"
+          "segment": "provider"
         },
         {
           "name": "Dentons Pension Management",
           "careersUrl": "https://www.dentonspensions.co.uk",
-          "segment": "provider",
-          "notes": "verify URL"
+          "segment": "provider"
         },
         {
           "name": "Momentum Pensions",
           "careersUrl": "https://momentumpensions.com",
-          "segment": "provider",
-          "notes": "verify URL"
+          "segment": "provider"
         },
         {
           "name": "Embark Group",
-          "careersUrl": "https://www.embarkgroup.co.uk/careers",
+          "careersUrl": "https://www.lloydsbankinggroupcareers.com",
           "segment": "provider",
-          "notes": "verify URL"
+          "notes": "acquired by Lloyds Banking Group"
         },
         {
           "name": "Novia Financial",
@@ -550,8 +547,7 @@
         {
           "name": "Mattioli Woods",
           "careersUrl": "https://www.mattioliwoods.com/careers",
-          "segment": "provider",
-          "notes": "verify URL"
+          "segment": "provider"
         },
         {
           "name": "Equiniti (EQ)",
@@ -562,7 +558,7 @@
           "name": "Aptia Group",
           "careersUrl": "https://www.aptia-group.com/careers",
           "segment": "administrator",
-          "notes": "formerly JLT/Mercer pensions admin - verify URL"
+          "notes": "formerly JLT/Mercer pensions admin"
         },
         {
           "name": "Premier Pensions Management",
@@ -578,8 +574,7 @@
         {
           "name": "Trafalgar House",
           "careersUrl": "https://www.trafalgarhouse.co.uk/careers",
-          "segment": "administrator",
-          "notes": "verify URL"
+          "segment": "administrator"
         },
         {
           "name": "HS Admin",
@@ -609,13 +604,13 @@
           "name": "LGPS Central",
           "careersUrl": "https://www.lgpscentral.co.uk/careers",
           "segment": "administrator",
-          "notes": "LGPS pool - verify URL"
+          "notes": "LGPS pool"
         },
         {
           "name": "Local Pensions Partnership Investments",
-          "careersUrl": "https://www.localpensionspartnership.org.uk/careers",
+          "careersUrl": "https://www.lppi.co.uk/careers",
           "segment": "administrator",
-          "notes": "LGPS pool - verify URL"
+          "notes": "rebranded as LPPI"
         },
         {
           "name": "London CIV",
@@ -627,7 +622,7 @@
           "name": "Wales Pension Partnership",
           "careersUrl": "https://www.walespensionpartnership.org",
           "segment": "administrator",
-          "notes": "LGPS pool - verify URL"
+          "notes": "LGPS pool"
         },
         {
           "name": "Greater Manchester Pension Fund",
@@ -639,37 +634,37 @@
           "name": "West Yorkshire Pension Fund",
           "careersUrl": "https://www.wypf.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Strathclyde Pension Fund",
           "careersUrl": "https://www.spfo.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "West Midlands Pension Fund",
           "careersUrl": "https://www.wmpfonline.com",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Environment Agency Pension Fund",
           "careersUrl": "https://www.eapf.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Merseyside Pension Fund",
           "careersUrl": "https://www.merseysidepensionfund.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "South Yorkshire Pensions Authority",
           "careersUrl": "https://www.sypensions.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Teesside Pension Fund",
@@ -681,55 +676,55 @@
           "name": "Tyne and Wear Pension Fund",
           "careersUrl": "https://www.twpf.info",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Cheshire Pension Fund",
           "careersUrl": "https://www.cheshirepensionfund.org",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Lancashire County Pension Fund",
           "careersUrl": "https://www.lancashirecountypensionfund.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Nottinghamshire Pension Fund",
           "careersUrl": "https://www.nottspf.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Hampshire Pension Fund",
           "careersUrl": "https://www.hants.gov.uk/hampshire-pension-fund",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Kent Pension Fund",
           "careersUrl": "https://www.kentpensionfund.co.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Essex Pension Fund",
           "careersUrl": "https://www.essexpensionfund.co.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Surrey Pension Fund",
           "careersUrl": "https://www.surreypensionfund.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Devon Pension Fund",
           "careersUrl": "https://www.devonpensionfund.org.uk",
           "segment": "administrator",
-          "notes": "LGPS administering authority - verify URL"
+          "notes": "LGPS administering authority"
         },
         {
           "name": "Mercer",
@@ -744,32 +739,29 @@
         {
           "name": "Quantum Advisory",
           "careersUrl": "https://www.quantumadvisory.co.uk/careers",
-          "segment": "consultancy",
-          "notes": "verify URL"
+          "segment": "consultancy"
         },
         {
           "name": "First Actuarial",
           "careersUrl": "https://www.firstactuarial.co.uk/careers",
-          "segment": "consultancy",
-          "notes": "verify URL"
+          "segment": "consultancy"
         },
         {
           "name": "Spence & Partners",
           "careersUrl": "https://www.spenceandpartners.co.uk/careers",
-          "segment": "consultancy",
-          "notes": "verify URL"
+          "segment": "consultancy"
         },
         {
           "name": "Redington",
-          "careersUrl": "https://www.redington.co.uk/careers",
+          "careersUrl": "https://www.ajg.com/uk/careers",
           "segment": "consultancy",
-          "notes": "verify URL"
+          "notes": "acquired by Arthur J. Gallagher"
         },
         {
           "name": "Punter Southall",
           "careersUrl": "https://www.puntersouthall.com",
           "segment": "consultancy",
-          "notes": "brand history now largely under Xafinity/Aptia - verify URL"
+          "notes": "brand history now largely under Xafinity/Aptia"
         },
         {
           "name": "Buck (Gallagher)",
@@ -830,8 +822,7 @@
         {
           "name": "Hughes Price Walker",
           "careersUrl": "https://www.hpw.co.uk",
-          "segment": "consultancy",
-          "notes": "verify URL"
+          "segment": "consultancy"
         },
         {
           "name": "Goddard Perry Actuarial",
