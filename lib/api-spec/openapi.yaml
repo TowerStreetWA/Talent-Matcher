@@ -1160,6 +1160,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/IndustryCount"
+  /dashboard/top-pension-jobs:
+    get:
+      operationId: getTopPensionJobs
+      tags: [dashboard]
+      summary: Top 10 active pensions sector jobs by recency
+      responses:
+        "200":
+          description: Top pension jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PensionJob"
   /dashboard/role-analysis:
     get:
       operationId: getRoleAnalysis
@@ -2365,6 +2379,23 @@ components:
         minScore: { type: number }
         frequency: { type: string }
         isActive: { type: boolean }
+    PensionJob:
+      type: object
+      required: [id, title, companyName, locationText, postedAt, applyUrl]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        companyName: { type: string }
+        locationText: { type: ["string", "null"] }
+        remoteType: { type: ["string", "null"] }
+        salaryMin: { type: ["number", "null"] }
+        salaryMax: { type: ["number", "null"] }
+        salaryCurrency: { type: ["string", "null"] }
+        postedAt: { type: ["string", "null"] }
+        applyUrl: { type: ["string", "null"] }
+        skills:
+          type: array
+          items: { type: string }
     IndustryCount:
       type: object
       required: [sector, label, count]
