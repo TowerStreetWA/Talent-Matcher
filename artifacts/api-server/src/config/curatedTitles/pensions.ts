@@ -151,6 +151,13 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   {
     industry: "pensions",
     family: "pensions_admin",
+    canonicalTitle: "Scheme Secretary",
+    variants: ["pension scheme secretary", "pensions scheme secretary", "secretary to the trustees"],
+    tags: ["administration_operations"],
+  },
+  {
+    industry: "pensions",
+    family: "pensions_admin",
     canonicalTitle: "Pensions Director",
     variants: ["pension director"],
     seniority: "executive",
@@ -327,6 +334,35 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   {
     industry: "pensions",
     family: "client_service",
+    canonicalTitle: "Fiduciary Manager (Pensions)",
+    variants: ["fiduciary manager pensions", "fiduciary management consultant"],
+    tags: ["consulting_advice"],
+  },
+  {
+    industry: "pensions",
+    family: "investments",
+    canonicalTitle: "Investment Consultant (Pensions)",
+    variants: ["investment consultant pensions", "pensions investment consultant"],
+    tags: ["consulting_advice", "investment_ldi"],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Pensions Client Relationship Manager",
+    variants: ["client relationship manager pensions", "pensions relationship manager"],
+    tags: ["consulting_advice"],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Pensions Client Director",
+    variants: ["client director pensions", "pensions director of clients"],
+    seniority: "senior",
+    tags: ["consulting_advice"],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
     canonicalTitle: "Pension Risk Transfer Consultant",
     variants: ["pensions risk transfer consultant", "prt consultant", "de risking consultant"],
     tags: ["consulting_advice", "de_risking"],
@@ -340,6 +376,13 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   },
 
   // ── Actuarial & risk ─────────────────────────────────────────────────────
+  {
+    industry: "pensions",
+    family: "actuarial",
+    canonicalTitle: "Actuarial Consultant (Pensions)",
+    variants: ["actuarial consultant pensions", "pensions actuarial consultant"],
+    tags: ["actuarial_risk", "consulting_advice"],
+  },
   {
     industry: "pensions",
     family: "actuarial",
@@ -403,6 +446,34 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   {
     industry: "pensions",
     family: "investments",
+    canonicalTitle: "Portfolio Manager (Pensions)",
+    variants: ["portfolio manager pensions", "pension fund portfolio manager"],
+    tags: ["investment_ldi"],
+  },
+  {
+    industry: "pensions",
+    family: "investments",
+    canonicalTitle: "Pension Fund Manager",
+    variants: ["pension fund manager", "pensions fund manager"],
+    tags: ["investment_ldi"],
+  },
+  {
+    industry: "pensions",
+    family: "investments",
+    canonicalTitle: "ESG / Responsible Investment Analyst (Pensions)",
+    variants: ["esg analyst pensions", "responsible investment analyst pensions", "esg investment analyst pensions", "sustainable investment analyst pensions"],
+    tags: ["investment_ldi"],
+  },
+  {
+    industry: "pensions",
+    family: "underwriting",
+    canonicalTitle: "Pensions Underwriter",
+    variants: ["group pensions underwriter", "bulk annuity underwriter", "pension risk underwriter"],
+    tags: ["actuarial_risk"],
+  },
+  {
+    industry: "pensions",
+    family: "investments",
     canonicalTitle: "Pension Investment Analyst",
     variants: ["pensions investment analyst", "pension fund investment analyst"],
     tags: ["investment_ldi"],
@@ -444,6 +515,27 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   },
 
   // ── Policy, regulation & compliance ──────────────────────────────────────
+  {
+    industry: "pensions",
+    family: "compliance",
+    canonicalTitle: "Pensions Lawyer / Legal Counsel",
+    variants: ["pensions lawyer", "pensions legal counsel", "pension legal counsel", "pensions solicitor"],
+    tags: ["policy_regulation_compliance"],
+  },
+  {
+    industry: "pensions",
+    family: "compliance",
+    canonicalTitle: "Governance Manager (Pensions)",
+    variants: ["governance manager pensions", "pensions governance manager"],
+    tags: ["policy_regulation_compliance"],
+  },
+  {
+    industry: "pensions",
+    family: "compliance",
+    canonicalTitle: "Regulatory Affairs Manager (Pensions)",
+    variants: ["regulatory affairs manager pensions", "pensions regulatory affairs manager"],
+    tags: ["policy_regulation_compliance"],
+  },
   {
     industry: "pensions",
     family: "compliance",
@@ -541,6 +633,27 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
   // ── Reporting, change & systems ──────────────────────────────────────────
   {
     industry: "pensions",
+    family: "product_management_tech",
+    canonicalTitle: "Digital Product Manager (Pensions)",
+    variants: ["digital product manager pensions", "pensions digital product manager", "product manager pensions technology"],
+    tags: ["reporting_change_systems"],
+  },
+  {
+    industry: "pensions",
+    family: "pensions_admin",
+    canonicalTitle: "Pensions Dashboard Specialist",
+    variants: ["pension dashboard specialist", "pensions dashboards specialist", "pension dashboard project manager"],
+    tags: ["reporting_change_systems"],
+  },
+  {
+    industry: "pensions",
+    family: "operations",
+    canonicalTitle: "Pensions Administration Manager",
+    variants: ["pensions administration manager", "pensions admin manager"],
+    tags: ["reporting_change_systems", "administration_operations"],
+  },
+  {
+    industry: "pensions",
     family: "pensions_admin",
     canonicalTitle: "Auto-Enrolment Specialist",
     variants: ["auto enrolment specialist", "auto enrollment specialist", "auto enrolment consultant"],
@@ -601,5 +714,51 @@ export const PENSIONS_TITLES: CuratedTitleEntry[] = [
     canonicalTitle: "Pensions Change Manager",
     variants: ["pension change manager", "pensions change analyst"],
     tags: ["reporting_change_systems"],
+  },
+  {
+    industry: "pensions",
+    family: "operations",
+    canonicalTitle: "Pensions Operations Manager",
+    variants: ["pension operations manager", "pensions operations lead"],
+    tags: ["administration_operations"],
+  },
+
+  // ── Customer service ─────────────────────────────────────────────────────
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Pensions Customer Service Advisor",
+    variants: ["pension customer service advisor", "pensions service advisor", "pensions helpdesk advisor"],
+    tags: ["member_services_communications"],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Pensions Contact Centre Team Leader",
+    variants: ["pension contact centre team leader", "pensions call centre team leader"],
+    tags: ["member_services_communications"],
+  },
+
+  // ── Sales & business development ─────────────────────────────────────────
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Business Development Manager (Pensions)",
+    variants: ["business development manager pensions", "pensions business development manager", "bdm pensions"],
+    tags: [],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Sales Executive (Workplace Pensions)",
+    variants: ["workplace pensions sales executive", "pensions sales executive", "workplace pensions sales"],
+    tags: [],
+  },
+  {
+    industry: "pensions",
+    family: "client_service",
+    canonicalTitle: "Marketing Manager (Pensions)",
+    variants: ["pensions marketing manager", "pension marketing manager"],
+    tags: [],
   },
 ];

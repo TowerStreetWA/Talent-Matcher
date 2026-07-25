@@ -1,0 +1,51 @@
+role_title,function_category,typical_segment,example_search_query
+Chief Actuary,Actuarial,provider;consultancy,pensions chief actuary
+Pensions Actuary,Actuarial,consultancy;provider,pensions actuary
+Actuarial Analyst,Actuarial,consultancy;provider,actuarial analyst pensions
+Trainee Actuary,Actuarial,consultancy;provider,trainee actuary pensions
+Actuarial Consultant,Actuarial,consultancy,actuarial consultant pensions
+Pensions Administrator,Administration,provider;administrator,pensions administrator
+Senior Pensions Administrator,Administration,provider;administrator,senior pensions administrator
+Pensions Team Leader,Administration,administrator;provider,pensions team leader
+Pensions Administration Manager,Administration,administrator;provider,pensions administration manager
+Scheme Manager,Administration,administrator,pension scheme manager
+Pensions Payroll Specialist,Administration,administrator;provider,pensions payroll specialist
+DC Consultant,Consulting,consultancy,DC pensions consultant
+DB Consultant,Consulting,consultancy,DB pensions consultant
+Employee Benefits Consultant,Consulting,consultancy,employee benefits consultant
+Pensions Consultant,Consulting,consultancy,pensions consultant
+Fiduciary Manager,Consulting,consultancy,fiduciary management pensions
+Investment Consultant,Consulting,consultancy,investment consultant pensions
+Client Relationship Manager,Client Services,provider;consultancy,pensions client relationship manager
+Client Director,Client Services,consultancy,pensions client director
+Trustee Executive,Trustee Services,administrator;consultancy,trustee executive pensions
+Trustee Services Manager,Trustee Services,administrator;consultancy,trustee services manager
+Scheme Secretary,Trustee Services,administrator;consultancy,pension scheme secretary
+Pensions Lawyer / Legal Counsel,Legal & Compliance,provider;consultancy,pensions lawyer
+Compliance Officer,Legal & Compliance,provider;administrator,pensions compliance officer
+Governance Manager,Legal & Compliance,administrator;provider,pensions governance manager
+Regulatory Affairs Manager,Legal & Compliance,provider;consultancy,pensions regulatory affairs
+Risk Manager,Risk,provider;administrator,pensions risk manager
+Investment Analyst,Investment,provider;consultancy,pensions investment analyst
+Investment Manager,Investment,provider,pensions investment manager
+Portfolio Manager,Investment,provider,pensions portfolio manager
+Fund Manager,Investment,provider,pension fund manager
+ESG / Responsible Investment Analyst,Investment,provider;consultancy,ESG investment analyst pensions
+Bulk Annuity / Buy-in Specialist,Investment,provider;consultancy,bulk annuity specialist
+Underwriter (Group Pensions/Bulk Annuities),Underwriting,provider,pensions underwriter
+Data Analyst (Pensions),Technology & Data,administrator;provider,pensions data analyst
+Pensions Systems / IT Analyst,Technology & Data,administrator;provider,pensions systems analyst
+Digital Product Manager (Pensions),Technology & Data,provider,pensions product manager
+Pensions Dashboard Specialist,Technology & Data,provider;administrator,pensions dashboard specialist
+Member Communications Specialist,Communications,provider;administrator,pensions member communications
+Marketing Manager,Marketing,provider,pensions marketing manager
+Business Development Manager,Sales & BD,provider;consultancy,pensions business development manager
+Sales Executive (Workplace Pensions),Sales & BD,provider,workplace pensions sales
+HR Business Partner,HR,provider;consultancy,HR business partner pensions
+Finance Analyst / Accountant,Finance,provider;administrator,pensions finance analyst
+Customer Service Advisor,Customer Service,provider;administrator,pensions customer service advisor
+Contact Centre Team Leader,Customer Service,provider;administrator,pensions contact centre team leader
+Operations Manager,Operations,provider;administrator,pensions operations manager
+Change / Project Manager,Operations,provider;consultancy,pensions change manager
+Head of Pensions,Leadership,provider;administrator;consultancy,head of pensions
+Head of DC,Leadership,provider;consultancy,head of DC pensions

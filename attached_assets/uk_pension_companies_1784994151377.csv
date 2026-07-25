@@ -1,0 +1,104 @@
+name,segment,careers_url,location_includes,notes
+Aviva,provider,https://careers.aviva.com,,already in app's careers directory
+Legal & General,provider,https://careers.legalandgeneral.com,,already in app's careers directory
+Royal London,provider,https://jobs.royallondon.com,,already in app's careers directory
+Phoenix Group,provider,https://www.thephoenixgroup.com/careers,,already in app's careers directory
+Standard Life (Phoenix Group),provider,https://www.standardlife.co.uk/careers,,verify URL - brand sits under Phoenix Group
+Aegon UK,provider,https://www.aegon.co.uk/careers,,already in app's careers directory
+Smart Pension,provider,https://www.smartpension.co.uk/careers,,already in app's careers directory
+The People's Partnership,provider,https://peoplespartnership.co.uk/careers/,,already in app's careers directory
+NEST Corporation,provider,https://www.nestpensions.org.uk/schemeweb/nest/aboutnest/careers.html,,verify URL
+Scottish Widows,provider,https://www.lloydsbankinggroupcareers.com,,part of Lloyds Banking Group
+Prudential UK / M&G plc,provider,https://careers.mandg.com,,
+Fidelity International,provider,https://careers.fidelityinternational.com,united kingdom;uk,global firm - filter to UK roles
+Zurich UK,provider,https://www.zurich.co.uk/careers,,
+Sanlam UK,provider,https://www.sanlam.co.uk/about-us/careers,,verify URL
+Quilter,provider,https://careers.quilter.com,,
+Now: Pensions,provider,https://www.nowpensions.com/about-us/careers/,,verify URL
+Cushon,provider,https://www.cushon.co.uk/careers,,verify URL
+TPT Retirement Solutions,provider,https://www.tpt.org.uk/about-us/careers,,verify URL
+HSBC (HSBC Master Trust),provider,https://www.hsbc.com/careers,united kingdom;uk,global firm - filter to UK roles
+Atlas Master Trust (Lloyds Banking Group),provider,https://www.lloydsbankinggroupcareers.com,,
+Ensign Retirement Plan,provider,https://www.ensignpensions.co.uk,,verify URL
+Salvus Master Trust,provider,https://www.salvusmastertrust.co.uk,,verify URL
+Creative Pension Trust,provider,https://www.createpensiontrust.co.uk,,verify URL
+National Pension Trust,provider,https://www.nationalpensiontrust.co.uk,,verify URL
+Workers Pension Trust,provider,https://www.workerspensiontrust.co.uk,,verify URL
+True Potential,provider,https://www.tpllp.com/careers,,verify URL
+Nutmeg (JPMorgan),provider,https://www.nutmeg.com/careers,,
+PensionBee,provider,https://www.pensionbee.com/careers,,
+Penfold,provider,https://getpenfold.com/careers,,
+Moneyfarm,provider,https://www.moneyfarm.com/uk/careers,,
+Wealthify (Aviva),provider,https://www.wealthify.com/careers,,
+AJ Bell,provider,https://www.ajbell.co.uk/careers,,
+Hargreaves Lansdown,provider,https://careers.hl.co.uk,,
+Interactive Investor,provider,https://www.ii.co.uk/careers,,
+Vanguard UK,provider,https://about.vanguard.com/careers,united kingdom;uk,global firm - filter to UK roles
+Charles Stanley,provider,https://www.charles-stanley.co.uk/careers,,
+Bestinvest (Evelyn Partners),provider,https://www.evelyn.com/careers,,
+Halifax Share Dealing (Lloyds),provider,https://www.lloydsbankinggroupcareers.com,,
+Barclays Smart Investor,provider,https://home.barclays/careers,united kingdom;uk,
+Freetrade,provider,https://freetrade.io/careers,,
+Close Brothers Asset Management,provider,https://www.closebrothersam.com/careers,,verify URL
+James Hay Partnership,provider,https://www.jameshay.co.uk/about-us/careers,,verify URL
+Curtis Banks Group,provider,https://www.curtisbanks.co.uk/careers,,verify URL
+Talbot and Muir,provider,https://www.talbotmuir.co.uk/careers,,verify URL
+Dentons Pension Management,provider,https://www.dentonspensions.co.uk,,verify URL
+Momentum Pensions,provider,https://momentumpensions.com,,verify URL
+Embark Group,provider,https://www.embarkgroup.co.uk/careers,,verify URL
+Novia Financial,provider,https://www.novafinancial.co.uk,,verify URL
+Mattioli Woods,provider,https://www.mattioliwoods.com/careers,,verify URL
+Equiniti (EQ),administrator,https://equiniti.com/uk/careers,,
+Capita Pension Solutions,administrator,https://careers.capita.com,,
+Aptia Group,administrator,https://www.aptia-group.com/careers,,formerly JLT/Mercer pensions admin - verify URL
+Premier Pensions Management,administrator,https://www.premiercompanies.co.uk/careers,,verify URL
+RPMI (Railpen),administrator,https://www.railpen.com/careers,,
+Trafalgar House,administrator,https://www.trafalgarhouse.co.uk/careers,,verify URL
+HS Admin,administrator,https://www.hsadmin.co.uk,,verify URL - low confidence
+ITM Limited,administrator,https://www.itmlimited.com/careers,,verify URL
+Zellis,administrator,https://www.zellis.com/careers,,payroll & pensions admin services
+Border to Coast Pensions Partnership,administrator,https://www.bordertocoast.org.uk/careers,,LGPS pool
+LGPS Central,administrator,https://www.lgpscentral.co.uk/careers,,LGPS pool - verify URL
+Local Pensions Partnership Investments,administrator,https://www.localpensionspartnership.org.uk/careers,,LGPS pool - verify URL
+London CIV,administrator,https://www.londonciv.org.uk/careers,,LGPS pool - verify URL
+Wales Pension Partnership,administrator,https://www.walespensionpartnership.org,,LGPS pool - verify URL
+Greater Manchester Pension Fund,administrator,https://www.gmpf.org.uk/careers,,LGPS administering authority (Northern LGPS)
+West Yorkshire Pension Fund,administrator,https://www.wypf.org.uk,,LGPS administering authority - verify URL
+Strathclyde Pension Fund,administrator,https://www.spfo.org.uk,,LGPS administering authority - verify URL
+West Midlands Pension Fund,administrator,https://www.wmpfonline.com,,LGPS administering authority - verify URL
+Environment Agency Pension Fund,administrator,https://www.eapf.org.uk,,LGPS administering authority - verify URL
+Merseyside Pension Fund,administrator,https://www.merseysidepensionfund.org.uk,,LGPS administering authority - verify URL
+South Yorkshire Pensions Authority,administrator,https://www.sypensions.org.uk,,LGPS administering authority - verify URL
+Teesside Pension Fund,administrator,https://www.teespen.org.uk,,LGPS administering authority - verify URL
+Tyne and Wear Pension Fund,administrator,https://www.twpf.info,,LGPS administering authority - verify URL
+Cheshire Pension Fund,administrator,https://www.cheshirepensionfund.org,,LGPS administering authority - verify URL
+Lancashire County Pension Fund,administrator,https://www.lancashirecountypensionfund.org.uk,,LGPS administering authority - verify URL
+Nottinghamshire Pension Fund,administrator,https://www.nottspf.org.uk,,LGPS administering authority - verify URL
+Hampshire Pension Fund,administrator,https://www.hants.gov.uk/hampshire-pension-fund,,LGPS administering authority - verify URL
+Kent Pension Fund,administrator,https://www.kentpensionfund.co.uk,,LGPS administering authority - verify URL
+Essex Pension Fund,administrator,https://www.essexpensionfund.co.uk,,LGPS administering authority - verify URL
+Surrey Pension Fund,administrator,https://www.surreypensionfund.org.uk,,LGPS administering authority - verify URL
+Devon Pension Fund,administrator,https://www.devonpensionfund.org.uk,,LGPS administering authority - verify URL
+Mercer,consultancy,https://careers.mercer.com,united kingdom;uk,also runs Mercer Master Trust
+Willis Towers Watson (WTW),consultancy,https://careers.wtwco.com,united kingdom;uk,also runs LifeSight Master Trust
+Aon,consultancy,https://aon.wd1.myworkdayjobs.com/aoncareers,united kingdom;uk,also runs Aon Master Trust - verify URL
+LCP,consultancy,https://www.lcp.com/en/careers,,already in app's careers directory
+Barnett Waddingham,consultancy,https://www.barnett-waddingham.co.uk/careers/,,already in app's careers directory
+Hymans Robertson,consultancy,https://careers.hymans.co.uk,,already in app's careers directory
+XPS Pensions Group,consultancy,https://careers.xpsgroup.com,,already in app's careers directory
+Isio,consultancy,https://www.isio.com/careers,,
+Broadstone,consultancy,https://broadstone.co.uk/careers,,
+Quantum Advisory,consultancy,https://www.quantumadvisory.co.uk/careers,,verify URL
+First Actuarial,consultancy,https://www.firstactuarial.co.uk/careers,,verify URL
+Spence & Partners,consultancy,https://www.spenceandpartners.co.uk/careers,,verify URL
+Redington,consultancy,https://www.redington.co.uk/careers,,verify URL
+Punter Southall,consultancy,https://www.puntersouthall.com,,brand history now largely under Xafinity/Aptia - verify URL
+Buck (Gallagher),consultancy,https://www.gallagherbenefits.co.uk/careers,,
+Arthur J. Gallagher,consultancy,https://www.ajg.com/uk/careers,united kingdom;uk,
+KPMG UK (Pensions Advisory),consultancy,https://www.kpmgcareers.co.uk,united kingdom;uk,
+PwC UK (Pensions),consultancy,https://www.pwc.co.uk/careers,united kingdom;uk,
+Deloitte UK (Pensions),consultancy,https://www.deloitte.co.uk/careers,united kingdom;uk,
+EY UK (Pensions),consultancy,https://www.ey.com/en_uk/careers,united kingdom;uk,
+Cartwright Group,consultancy,https://cartwright-uk.com/careers,,verify URL
+Hughes Price Walker,consultancy,https://www.hpw.co.uk,,verify URL
+Goddard Perry Actuarial,consultancy,https://www.goddardperry.co.uk,,verify URL
