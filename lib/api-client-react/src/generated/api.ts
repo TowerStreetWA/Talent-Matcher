@@ -64,6 +64,7 @@ import type {
   Match,
   MatchRun,
   MatchUpdate,
+  PensionJob,
   RequestUploadUrlInput,
   RequestUploadUrlResult,
   ResearchUrlInput,
@@ -3905,6 +3906,83 @@ export function useGetIndustryCounts<TData = Awaited<ReturnType<typeof getIndust
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetIndustryCountsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetTopPensionJobsUrl = () => {
+
+
+
+
+  return `/api/dashboard/top-pension-jobs`
+}
+
+/**
+ * @summary Top 10 active pensions sector jobs by recency
+ */
+export const getTopPensionJobs = async ( options?: RequestInit): Promise<PensionJob[]> => {
+
+  return customFetch<PensionJob[]>(getGetTopPensionJobsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTopPensionJobsQueryKey = () => {
+    return [
+    `/api/dashboard/top-pension-jobs`
+    ] as const;
+    }
+
+
+export const getGetTopPensionJobsQueryOptions = <TData = Awaited<ReturnType<typeof getTopPensionJobs>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopPensionJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTopPensionJobsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTopPensionJobs>>> = ({ signal }) => getTopPensionJobs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTopPensionJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTopPensionJobsQueryResult = NonNullable<Awaited<ReturnType<typeof getTopPensionJobs>>>
+export type GetTopPensionJobsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Top 10 active pensions sector jobs by recency
+ */
+
+export function useGetTopPensionJobs<TData = Awaited<ReturnType<typeof getTopPensionJobs>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopPensionJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTopPensionJobsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

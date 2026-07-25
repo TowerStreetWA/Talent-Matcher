@@ -65,6 +65,7 @@ export * from './lookupInviteParams';
 export * from './match';
 export * from './matchRun';
 export * from './matchUpdate';
+export * from './pensionJob';
 export * from './requestUploadUrlInput';
 export * from './requestUploadUrlResult';
 export * from './researchUrlInput';

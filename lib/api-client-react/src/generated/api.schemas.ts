@@ -899,6 +899,27 @@ export interface AlertRuleUpdate {
   isActive?: boolean;
 }
 
+export interface PensionJob {
+  id: string;
+  title: string;
+  companyName: string;
+  /** @nullable */
+  locationText: string | null;
+  /** @nullable */
+  remoteType?: string | null;
+  /** @nullable */
+  salaryMin?: number | null;
+  /** @nullable */
+  salaryMax?: number | null;
+  /** @nullable */
+  salaryCurrency?: string | null;
+  /** @nullable */
+  postedAt: string | null;
+  /** @nullable */
+  applyUrl: string | null;
+  skills?: string[];
+}
+
 export interface IndustryCount {
   sector: string;
   label: string;

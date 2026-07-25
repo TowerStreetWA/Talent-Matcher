@@ -1608,6 +1608,25 @@ export const GetIndustryCountsResponse = zod.array(GetIndustryCountsResponseItem
 
 
 /**
+ * @summary Top 10 active pensions sector jobs by recency
+ */
+export const GetTopPensionJobsResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "companyName": zod.string(),
+  "locationText": zod.string().nullable(),
+  "remoteType": zod.string().nullish(),
+  "salaryMin": zod.number().nullish(),
+  "salaryMax": zod.number().nullish(),
+  "salaryCurrency": zod.string().nullish(),
+  "postedAt": zod.string().nullable(),
+  "applyUrl": zod.string().nullable(),
+  "skills": zod.array(zod.string()).optional()
+})
+export const GetTopPensionJobsResponse = zod.array(GetTopPensionJobsResponseItem)
+
+
+/**
  * @summary AI-powered top roles by industry (cached daily)
  */
 export const GetRoleAnalysisResponse = zod.object({

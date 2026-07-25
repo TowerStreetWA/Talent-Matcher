@@ -174,6 +174,55 @@ router.get("/dashboard/top-matches", async (req, res): Promise<void> => {
 });
 
 // ---------------------------------------------------------------------------
+// Top pension jobs — 10 most recent active canonical pensions jobs
+// ---------------------------------------------------------------------------
+
+router.get("/dashboard/top-pension-jobs", async (req, res): Promise<void> => {
+  const tenant = tenantOf(req);
+  const rows = await db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      companyName: jobsTable.companyName,
+      locationText: jobsTable.locationText,
+      remoteType: jobsTable.remoteType,
+      salaryMin: jobsTable.salaryMin,
+      salaryMax: jobsTable.salaryMax,
+      salaryCurrency: jobsTable.salaryCurrency,
+      postedAt: jobsTable.postedAt,
+      applyUrl: jobsTable.applyUrl,
+      skills: jobsTable.skills,
+    })
+    .from(jobsTable)
+    .where(
+      and(
+        eq(jobsTable.status, "active"),
+        eq(jobsTable.tenantId, tenant),
+        eq(jobsTable.isCanonical, true),
+        eq(jobsTable.sectorTag, "pensions"),
+      ),
+    )
+    .orderBy(desc(jobsTable.postedAt))
+    .limit(10);
+
+  res.json(
+    rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      companyName: r.companyName ?? "",
+      locationText: r.locationText ?? null,
+      remoteType: r.remoteType ?? null,
+      salaryMin: r.salaryMin ?? null,
+      salaryMax: r.salaryMax ?? null,
+      salaryCurrency: r.salaryCurrency ?? null,
+      postedAt: r.postedAt?.toISOString() ?? null,
+      applyUrl: r.applyUrl ?? null,
+      skills: r.skills ?? [],
+    })),
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Industry counts — active canonical jobs grouped by sector_tag
 // ---------------------------------------------------------------------------
 
