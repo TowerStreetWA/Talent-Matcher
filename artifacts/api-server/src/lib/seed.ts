@@ -92,6 +92,74 @@ export async function ensureAuthSeed(): Promise<void> {
   logger.info("Seeded demo tenant users (owner/admin/recruiter/viewer)");
 }
 
+/** Standard sources seeded for every new tenant on signup. */
+const STANDARD_SOURCES = [
+  { name: "Reed",                                    sourceType: "job_board",       provider: "reed_api" },
+  { name: "Adzuna",                                  sourceType: "job_board",       provider: "adzuna_api" },
+  { name: "Google Jobs",                             sourceType: "google_jobs",     provider: "google_jobs_serpapi" },
+  { name: "LinkedIn Jobs (via Google)",              sourceType: "google_jobs",     provider: "linkedin_via_google_jobs" },
+  { name: "Company career sites",                    sourceType: "direct_employer", provider: "company_site" },
+  { name: "Ashby boards (ATS)",                      sourceType: "direct_employer", provider: "ats_ashby" },
+  { name: "Greenhouse boards (ATS)",                 sourceType: "direct_employer", provider: "ats_greenhouse" },
+  { name: "Lever boards (ATS)",                      sourceType: "direct_employer", provider: "ats_lever" },
+  { name: "Workable boards (ATS)",                   sourceType: "direct_employer", provider: "ats_workable" },
+  { name: "Workday boards (ATS)",                    sourceType: "direct_employer", provider: "ats_workday" },
+  { name: "SmartRecruiters boards (ATS)",            sourceType: "direct_employer", provider: "ats_smartrecruiters" },
+  { name: "Teamtailor boards (ATS)",                 sourceType: "direct_employer", provider: "ats_teamtailor" },
+  { name: "Recruitee boards (ATS)",                  sourceType: "direct_employer", provider: "ats_recruitee" },
+  { name: "iCIMS boards (ATS)",                      sourceType: "direct_employer", provider: "ats_icims" },
+  { name: "SAP SuccessFactors boards (ATS)",         sourceType: "direct_employer", provider: "ats_successfactors" },
+  { name: "London Market — Lloyd's syndicates",      sourceType: "direct_employer", provider: "london_insurance_lloyds_syndicate" },
+  { name: "London Market — company market insurers", sourceType: "direct_employer", provider: "london_insurance_company_market" },
+  { name: "London Market — MGAs & coverholders",     sourceType: "direct_employer", provider: "london_insurance_mga_coverholder" },
+  { name: "London Market — brokers",                 sourceType: "direct_employer", provider: "london_insurance_broker" },
+  { name: "Directory — Banking: investment banks",   sourceType: "direct_employer", provider: "directory_banking_investment_bank" },
+  { name: "Directory — Banking: retail banks",       sourceType: "direct_employer", provider: "directory_banking_retail_bank" },
+  { name: "Directory — Banking: challenger banks",   sourceType: "direct_employer", provider: "directory_banking_challenger_bank" },
+  { name: "Directory — Banking: commercial lenders", sourceType: "direct_employer", provider: "directory_banking_commercial_lender" },
+  { name: "Directory — Banking: international banks",sourceType: "direct_employer", provider: "directory_banking_international_bank" },
+  { name: "Directory — Banking: central banks",      sourceType: "direct_employer", provider: "directory_banking_central_bank" },
+  { name: "Directory — Asset Management: managers",  sourceType: "direct_employer", provider: "directory_asset_management_asset_manager" },
+  { name: "Directory — Asset Management: hedge funds",sourceType: "direct_employer",provider: "directory_asset_management_hedge_fund" },
+  { name: "Directory — Asset Management: private markets",sourceType: "direct_employer",provider: "directory_asset_management_private_markets" },
+  { name: "Directory — Asset Management: wealth managers",sourceType: "direct_employer",provider: "directory_asset_management_wealth_manager" },
+  { name: "Directory — Pensions: consultancies",     sourceType: "direct_employer", provider: "directory_pensions_consultancy" },
+  { name: "Directory — Pensions: administrators",    sourceType: "direct_employer", provider: "directory_pensions_administrator" },
+  { name: "Directory — Pensions: providers",         sourceType: "direct_employer", provider: "directory_pensions_provider" },
+  { name: "Directory — Accountancy: Big 4",          sourceType: "direct_employer", provider: "directory_accountancy_finance_big4" },
+  { name: "Directory — Accountancy: mid-tier",       sourceType: "direct_employer", provider: "directory_accountancy_finance_mid_tier" },
+  { name: "Directory — IT & Tech: fintech",          sourceType: "direct_employer", provider: "directory_it_tech_fintech" },
+  { name: "Directory — IT & Tech: software",         sourceType: "direct_employer", provider: "directory_it_tech_software" },
+  { name: "Directory — IT & Tech: consultancies",    sourceType: "direct_employer", provider: "directory_it_tech_consultancy" },
+] as const;
+
+/**
+ * Seed the standard set of job sources for a tenant.
+ * Idempotent — skips if the tenant already has sources.
+ * Called automatically on signup so every new workspace starts with live feeds.
+ */
+export async function seedSourcesForTenant(tenantSlug: string): Promise<void> {
+  const existing = await db
+    .select({ id: jobSourcesTable.id })
+    .from(jobSourcesTable)
+    .where(eq(jobSourcesTable.tenantId, tenantSlug))
+    .limit(1);
+  if (existing.length > 0) return;
+
+  await db.insert(jobSourcesTable).values(
+    STANDARD_SOURCES.map((s) => ({
+      tenantId: tenantSlug,
+      name: s.name,
+      sourceType: s.sourceType,
+      provider: s.provider,
+      isActive: true,
+      healthStatus: "healthy" as const,
+      isDemo: false,
+    })),
+  );
+  logger.info({ tenant: tenantSlug, count: STANDARD_SOURCES.length }, "Seeded standard job sources for tenant");
+}
+
 export async function seedIfEmpty(): Promise<void> {
   if (
     process.env["NODE_ENV"] === "production" &&

@@ -24,6 +24,7 @@ import {
 } from "../lib/auth";
 import { requireAuth } from "../middlewares/auth";
 import { recordAudit } from "../lib/audit";
+import { seedSourcesForTenant } from "../lib/seed";
 
 const router: IRouter = Router();
 
@@ -156,6 +157,10 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     userAgent: req.headers["user-agent"] ?? null,
   });
   req.log.info({ tenant: created.slug }, "New workspace signup");
+  // Fire-and-forget: seed standard job sources for the new tenant
+  seedSourcesForTenant(created.slug).catch((err) =>
+    req.log.error({ err, tenant: created.slug }, "Failed to seed sources for new tenant"),
+  );
   res.cookie(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));
   res.json(
     SignupResponse.parse({
