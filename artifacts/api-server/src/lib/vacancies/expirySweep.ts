@@ -4,7 +4,7 @@ import { logger } from "../logger";
 import { resolveStaleAfterDays } from "../../config/ingestionFreshness";
 
 /** How often the periodic expiry sweep runs. */
-export const EXPIRY_SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
+export const EXPIRY_SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Postgres advisory-lock key so only one instance sweeps at a time when the

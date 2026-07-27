@@ -20,7 +20,7 @@ import {
 /** Max job ids stored per alert event (keeps rows small). */
 const MAX_JOB_IDS = 25;
 /** How often the sweep runs. */
-export const ALERT_SWEEP_INTERVAL_MS = 15 * 60 * 1000;
+export const ALERT_SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 /**
  * Postgres advisory-lock key so only one instance sweeps at a time when the
  * server runs on multiple autoscale instances (xact-scoped: auto-released).

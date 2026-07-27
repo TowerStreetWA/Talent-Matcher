@@ -30,7 +30,7 @@ import {
  * re-runs are safe anyway (ingestion is idempotent by sourceUrl).
  */
 
-export const DIRECTORY_SWEEP_INTERVAL_MS = 60 * 60 * 1000;
+export const DIRECTORY_SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 /** Same key the London-only sweep used — one sweeper across all directories. */
 const DIRECTORY_SWEEP_ADVISORY_LOCK_KEY = 743_291_652;
 
