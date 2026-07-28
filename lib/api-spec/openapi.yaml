@@ -30,6 +30,8 @@ tags:
     description: Team and invite management
   - name: research
     description: External vacancy page research (Firecrawl)
+  - name: specFolders
+    description: Job-centric spec list folders and contact enrichment
 paths:
   /healthz:
     get:
@@ -1599,6 +1601,369 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiMessage"
 
+  /spec-folders:
+    get:
+      operationId: listSpecFolders
+      tags: [specFolders]
+      summary: List spec folders visible to the current user
+      responses:
+        "200":
+          description: Folders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSpecFolder"
+    post:
+      operationId: createSpecFolder
+      tags: [specFolders]
+      summary: Create a new spec folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobSpecFolderInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecFolder"
+  /spec-folders/{id}:
+    patch:
+      operationId: updateSpecFolder
+      tags: [specFolders]
+      summary: Rename a folder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobSpecFolderInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecFolder"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteSpecFolder
+      tags: [specFolders]
+      summary: Delete a spec folder and all its items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /spec-folders/{id}/items:
+    get:
+      operationId: listSpecFolderItems
+      tags: [specFolders]
+      summary: List jobs in a spec folder, including their contacts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Items with contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSpecFolderItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    post:
+      operationId: addSpecFolderItem
+      tags: [specFolders]
+      summary: Add a job to a spec folder (triggers async Apollo enrichment)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddJobSpecFolderItemInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecFolderItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "409":
+          description: Job already in folder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /spec-folders/items/{itemId}:
+    delete:
+      operationId: removeSpecFolderItem
+      tags: [specFolders]
+      summary: Remove a job from a spec folder
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /spec-folders/items/{itemId}/enrich:
+    post:
+      operationId: enrichSpecFolderItem
+      tags: [specFolders]
+      summary: Re-run Apollo contact search for a folder item
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Enrichment triggered, returns new contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSpecContact"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /spec-folders/items/{itemId}/contacts:
+    get:
+      operationId: listSpecFolderItemContacts
+      tags: [specFolders]
+      summary: List contacts for a folder item
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSpecContact"
+    post:
+      operationId: createSpecFolderContact
+      tags: [specFolders]
+      summary: Manually add a contact to a folder item
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSpecContactInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecContact"
+  /spec-folders/contacts/{contactId}:
+    patch:
+      operationId: updateSpecFolderContact
+      tags: [specFolders]
+      summary: Update a contact
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSpecContactInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecContact"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteSpecFolderContact
+      tags: [specFolders]
+      summary: Delete a contact
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+  /spec-folders/search-configs:
+    get:
+      operationId: listSpecSearchConfigs
+      tags: [specFolders]
+      summary: List Apollo search configs for the tenant
+      responses:
+        "200":
+          description: Configs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobSpecSearchConfig"
+    post:
+      operationId: createSpecSearchConfig
+      tags: [specFolders]
+      summary: Create a search config
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSpecSearchConfigInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecSearchConfig"
+  /spec-folders/search-configs/{id}:
+    patch:
+      operationId: updateSpecSearchConfig
+      tags: [specFolders]
+      summary: Update a search config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobSpecSearchConfigInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobSpecSearchConfig"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+    delete:
+      operationId: deleteSpecSearchConfig
+      tags: [specFolders]
+      summary: Delete a search config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiMessage"
 components:
   schemas:
     HealthStatus:
@@ -2581,3 +2946,114 @@ components:
         note: { type: ["string", "null"] }
         status: { type: string, enum: [proposed, sent, candidate_approved, candidate_declined] }
         sortOrder: { type: integer }
+    JobSpecFolder:
+      type: object
+      required: [id, tenantId, name, visibility, createdBy, createdAt, itemCount]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        ownerUserId: { type: ["string", "null"] }
+        visibility: { type: string, enum: [team, personal] }
+        createdBy: { type: string }
+        createdAt: { type: string }
+        itemCount: { type: integer }
+    CreateJobSpecFolderInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        visibility: { type: string, enum: [team, personal] }
+    JobSpecContact:
+      type: object
+      required: [id, folderItemId, fullName, contactType, source, confidence, createdAt]
+      properties:
+        id: { type: string }
+        folderItemId: { type: string }
+        fullName: { type: string }
+        title: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        linkedinUrl: { type: ["string", "null"] }
+        contactType: { type: string, enum: [talent_acquisition, hiring_manager] }
+        source: { type: string }
+        confidence: { type: string, enum: [high, best_guess] }
+        createdAt: { type: string }
+    JobSpecContactInput:
+      type: object
+      required: [fullName, contactType]
+      properties:
+        fullName: { type: string, minLength: 1 }
+        title: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        linkedinUrl: { type: ["string", "null"] }
+        contactType: { type: string, enum: [talent_acquisition, hiring_manager] }
+        confidence: { type: string, enum: [high, best_guess] }
+    JobSpecFolderItem:
+      type: object
+      required: [id, folderId, jobId, addedBy, status, sortOrder, addedAt, job, contacts]
+      properties:
+        id: { type: string }
+        folderId: { type: string }
+        jobId: { type: string }
+        addedBy: { type: string }
+        note: { type: ["string", "null"] }
+        status: { type: string }
+        sortOrder: { type: integer }
+        addedAt: { type: string }
+        job:
+          type: object
+          required: [id, title]
+          properties:
+            id: { type: string }
+            title: { type: string }
+            companyName: { type: ["string", "null"] }
+            locationText: { type: ["string", "null"] }
+            salaryMin: { type: ["number", "null"] }
+            salaryMax: { type: ["number", "null"] }
+            salaryCurrency: { type: ["string", "null"] }
+            salaryText: { type: ["string", "null"] }
+            applyUrl: { type: ["string", "null"] }
+            sourceProvider: { type: ["string", "null"] }
+            sectorTag: { type: ["string", "null"] }
+            postedAt: { type: ["string", "null"] }
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobSpecContact"
+    AddJobSpecFolderItemInput:
+      type: object
+      required: [jobId]
+      properties:
+        jobId: { type: string }
+        note: { type: string }
+    JobSpecSearchConfig:
+      type: object
+      required: [id, tenantId, targetTitles, managerTitles, createdBy, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        sectorTag: { type: ["string", "null"] }
+        jobTitleKeyword: { type: ["string", "null"] }
+        targetTitles:
+          type: array
+          items: { type: string }
+        managerTitles:
+          type: array
+          items: { type: string }
+        createdBy: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    JobSpecSearchConfigInput:
+      type: object
+      required: [targetTitles, managerTitles]
+      properties:
+        sectorTag: { type: ["string", "null"] }
+        jobTitleKeyword: { type: ["string", "null"] }
+        targetTitles:
+          type: array
+          items: { type: string }
+        managerTitles:
+          type: array
+          items: { type: string }

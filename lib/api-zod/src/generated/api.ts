@@ -2002,3 +2002,398 @@ export const RemoveSpecListItemResponse = zod.object({
 })
 
 
+/**
+ * @summary List spec folders visible to the current user
+ */
+export const ListSpecFoldersResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "ownerUserId": zod.string().nullish(),
+  "visibility": zod.enum(['team', 'personal']),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "itemCount": zod.number()
+})
+export const ListSpecFoldersResponse = zod.array(ListSpecFoldersResponseItem)
+
+
+/**
+ * @summary Create a new spec folder
+ */
+
+
+
+export const CreateSpecFolderBody = zod.object({
+  "name": zod.string().min(1),
+  "visibility": zod.enum(['team', 'personal']).optional()
+})
+
+export const CreateSpecFolderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "ownerUserId": zod.string().nullish(),
+  "visibility": zod.enum(['team', 'personal']),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "itemCount": zod.number()
+})
+
+
+/**
+ * @summary Rename a folder
+ */
+export const UpdateSpecFolderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const UpdateSpecFolderBody = zod.object({
+  "name": zod.string().min(1),
+  "visibility": zod.enum(['team', 'personal']).optional()
+})
+
+export const UpdateSpecFolderResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "name": zod.string(),
+  "ownerUserId": zod.string().nullish(),
+  "visibility": zod.enum(['team', 'personal']),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "itemCount": zod.number()
+})
+
+
+/**
+ * @summary Delete a spec folder and all its items
+ */
+export const DeleteSpecFolderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteSpecFolderResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary List jobs in a spec folder, including their contacts
+ */
+export const ListSpecFolderItemsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListSpecFolderItemsResponseItem = zod.object({
+  "id": zod.string(),
+  "folderId": zod.string(),
+  "jobId": zod.string(),
+  "addedBy": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.string(),
+  "sortOrder": zod.number(),
+  "addedAt": zod.string(),
+  "job": zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "companyName": zod.string().nullish(),
+  "locationText": zod.string().nullish(),
+  "salaryMin": zod.number().nullish(),
+  "salaryMax": zod.number().nullish(),
+  "salaryCurrency": zod.string().nullish(),
+  "salaryText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "sourceProvider": zod.string().nullish(),
+  "sectorTag": zod.string().nullish(),
+  "postedAt": zod.string().nullish()
+}),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+}))
+})
+export const ListSpecFolderItemsResponse = zod.array(ListSpecFolderItemsResponseItem)
+
+
+/**
+ * @summary Add a job to a spec folder (triggers async Apollo enrichment)
+ */
+export const AddSpecFolderItemParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AddSpecFolderItemBody = zod.object({
+  "jobId": zod.string(),
+  "note": zod.string().optional()
+})
+
+export const AddSpecFolderItemResponse = zod.object({
+  "id": zod.string(),
+  "folderId": zod.string(),
+  "jobId": zod.string(),
+  "addedBy": zod.string(),
+  "note": zod.string().nullish(),
+  "status": zod.string(),
+  "sortOrder": zod.number(),
+  "addedAt": zod.string(),
+  "job": zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "companyName": zod.string().nullish(),
+  "locationText": zod.string().nullish(),
+  "salaryMin": zod.number().nullish(),
+  "salaryMax": zod.number().nullish(),
+  "salaryCurrency": zod.string().nullish(),
+  "salaryText": zod.string().nullish(),
+  "applyUrl": zod.string().nullish(),
+  "sourceProvider": zod.string().nullish(),
+  "sectorTag": zod.string().nullish(),
+  "postedAt": zod.string().nullish()
+}),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Remove a job from a spec folder
+ */
+export const RemoveSpecFolderItemParams = zod.object({
+  "itemId": zod.coerce.string()
+})
+
+export const RemoveSpecFolderItemResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Re-run Apollo contact search for a folder item
+ */
+export const EnrichSpecFolderItemParams = zod.object({
+  "itemId": zod.coerce.string()
+})
+
+export const EnrichSpecFolderItemResponseItem = zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+})
+export const EnrichSpecFolderItemResponse = zod.array(EnrichSpecFolderItemResponseItem)
+
+
+/**
+ * @summary List contacts for a folder item
+ */
+export const ListSpecFolderItemContactsParams = zod.object({
+  "itemId": zod.coerce.string()
+})
+
+export const ListSpecFolderItemContactsResponseItem = zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+})
+export const ListSpecFolderItemContactsResponse = zod.array(ListSpecFolderItemContactsResponseItem)
+
+
+/**
+ * @summary Manually add a contact to a folder item
+ */
+export const CreateSpecFolderContactParams = zod.object({
+  "itemId": zod.coerce.string()
+})
+
+
+
+
+export const CreateSpecFolderContactBody = zod.object({
+  "fullName": zod.string().min(1),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "confidence": zod.enum(['high', 'best_guess']).optional()
+})
+
+export const CreateSpecFolderContactResponse = zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Update a contact
+ */
+export const UpdateSpecFolderContactParams = zod.object({
+  "contactId": zod.coerce.string()
+})
+
+
+
+
+export const UpdateSpecFolderContactBody = zod.object({
+  "fullName": zod.string().min(1),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "confidence": zod.enum(['high', 'best_guess']).optional()
+})
+
+export const UpdateSpecFolderContactResponse = zod.object({
+  "id": zod.string(),
+  "folderItemId": zod.string(),
+  "fullName": zod.string(),
+  "title": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "contactType": zod.enum(['talent_acquisition', 'hiring_manager']),
+  "source": zod.string(),
+  "confidence": zod.enum(['high', 'best_guess']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a contact
+ */
+export const DeleteSpecFolderContactParams = zod.object({
+  "contactId": zod.coerce.string()
+})
+
+export const DeleteSpecFolderContactResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary List Apollo search configs for the tenant
+ */
+export const ListSpecSearchConfigsResponseItem = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "sectorTag": zod.string().nullish(),
+  "jobTitleKeyword": zod.string().nullish(),
+  "targetTitles": zod.array(zod.string()),
+  "managerTitles": zod.array(zod.string()),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListSpecSearchConfigsResponse = zod.array(ListSpecSearchConfigsResponseItem)
+
+
+/**
+ * @summary Create a search config
+ */
+export const CreateSpecSearchConfigBody = zod.object({
+  "sectorTag": zod.string().nullish(),
+  "jobTitleKeyword": zod.string().nullish(),
+  "targetTitles": zod.array(zod.string()),
+  "managerTitles": zod.array(zod.string())
+})
+
+export const CreateSpecSearchConfigResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "sectorTag": zod.string().nullish(),
+  "jobTitleKeyword": zod.string().nullish(),
+  "targetTitles": zod.array(zod.string()),
+  "managerTitles": zod.array(zod.string()),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update a search config
+ */
+export const UpdateSpecSearchConfigParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateSpecSearchConfigBody = zod.object({
+  "sectorTag": zod.string().nullish(),
+  "jobTitleKeyword": zod.string().nullish(),
+  "targetTitles": zod.array(zod.string()),
+  "managerTitles": zod.array(zod.string())
+})
+
+export const UpdateSpecSearchConfigResponse = zod.object({
+  "id": zod.string(),
+  "tenantId": zod.string(),
+  "sectorTag": zod.string().nullish(),
+  "jobTitleKeyword": zod.string().nullish(),
+  "targetTitles": zod.array(zod.string()),
+  "managerTitles": zod.array(zod.string()),
+  "createdBy": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a search config
+ */
+export const DeleteSpecSearchConfigParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteSpecSearchConfigResponse = zod.object({
+  "message": zod.string()
+})
+
+

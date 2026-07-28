@@ -14,3 +14,7 @@ export * from "./invites";
 export * from "./savedJobSearches";
 export * from "./searchEvents";
 export * from "./specLists";
+export * from "./jobSpecFolders";
+export * from "./jobSpecFolderItems";
+export * from "./jobSpecContacts";
+export * from "./jobSpecSearchConfig";

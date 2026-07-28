@@ -22,6 +22,7 @@ import type {
 import type {
   AcceptInviteInput,
   ActivityItem,
+  AddJobSpecFolderItemInput,
   AlertRule,
   AlertRuleInput,
   AlertRuleUpdate,
@@ -38,6 +39,7 @@ import type {
   CompanyProfile,
   CompanySearchResult,
   CreateInviteInput,
+  CreateJobSpecFolderInput,
   CrmPushInput,
   CrmSyncEvent,
   CvUploadInput,
@@ -54,6 +56,12 @@ import type {
   JobSource,
   JobSourceInput,
   JobSourceUpdate,
+  JobSpecContact,
+  JobSpecContactInput,
+  JobSpecFolder,
+  JobSpecFolderItem,
+  JobSpecSearchConfig,
+  JobSpecSearchConfigInput,
   ListCandidatesParams,
   ListJobSearchFamiliesParams,
   ListJobsParams,
@@ -5190,5 +5198,1158 @@ export const useRemoveSpecListItem = <TError = ErrorType<ApiMessage>,
         TContext
       > => {
       return useMutation(getRemoveSpecListItemMutationOptions(options));
+    }
+
+export const getListSpecFoldersUrl = () => {
+
+
+
+
+  return `/api/spec-folders`
+}
+
+/**
+ * @summary List spec folders visible to the current user
+ */
+export const listSpecFolders = async ( options?: RequestInit): Promise<JobSpecFolder[]> => {
+
+  return customFetch<JobSpecFolder[]>(getListSpecFoldersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSpecFoldersQueryKey = () => {
+    return [
+    `/api/spec-folders`
+    ] as const;
+    }
+
+
+export const getListSpecFoldersQueryOptions = <TData = Awaited<ReturnType<typeof listSpecFolders>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSpecFoldersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpecFolders>>> = ({ signal }) => listSpecFolders({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSpecFolders>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSpecFoldersQueryResult = NonNullable<Awaited<ReturnType<typeof listSpecFolders>>>
+export type ListSpecFoldersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List spec folders visible to the current user
+ */
+
+export function useListSpecFolders<TData = Awaited<ReturnType<typeof listSpecFolders>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSpecFoldersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSpecFolderUrl = () => {
+
+
+
+
+  return `/api/spec-folders`
+}
+
+/**
+ * @summary Create a new spec folder
+ */
+export const createSpecFolder = async (createJobSpecFolderInput: CreateJobSpecFolderInput, options?: RequestInit): Promise<JobSpecFolder> => {
+
+  return customFetch<JobSpecFolder>(getCreateSpecFolderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createJobSpecFolderInput)
+  }
+);}
+
+
+
+
+export const getCreateSpecFolderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecFolder>>, TError,{data: BodyType<CreateJobSpecFolderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSpecFolder>>, TError,{data: BodyType<CreateJobSpecFolderInput>}, TContext> => {
+
+const mutationKey = ['createSpecFolder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSpecFolder>>, {data: BodyType<CreateJobSpecFolderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSpecFolder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSpecFolderMutationResult = NonNullable<Awaited<ReturnType<typeof createSpecFolder>>>
+    export type CreateSpecFolderMutationBody = BodyType<CreateJobSpecFolderInput>
+    export type CreateSpecFolderMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new spec folder
+ */
+export const useCreateSpecFolder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecFolder>>, TError,{data: BodyType<CreateJobSpecFolderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSpecFolder>>,
+        TError,
+        {data: BodyType<CreateJobSpecFolderInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSpecFolderMutationOptions(options));
+    }
+
+export const getUpdateSpecFolderUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/${id}`
+}
+
+/**
+ * @summary Rename a folder
+ */
+export const updateSpecFolder = async (id: string,
+    createJobSpecFolderInput: CreateJobSpecFolderInput, options?: RequestInit): Promise<JobSpecFolder> => {
+
+  return customFetch<JobSpecFolder>(getUpdateSpecFolderUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createJobSpecFolderInput)
+  }
+);}
+
+
+
+
+export const getUpdateSpecFolderMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolder>>, TError,{id: string;data: BodyType<CreateJobSpecFolderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolder>>, TError,{id: string;data: BodyType<CreateJobSpecFolderInput>}, TContext> => {
+
+const mutationKey = ['updateSpecFolder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSpecFolder>>, {id: string;data: BodyType<CreateJobSpecFolderInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSpecFolder(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSpecFolderMutationResult = NonNullable<Awaited<ReturnType<typeof updateSpecFolder>>>
+    export type UpdateSpecFolderMutationBody = BodyType<CreateJobSpecFolderInput>
+    export type UpdateSpecFolderMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Rename a folder
+ */
+export const useUpdateSpecFolder = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolder>>, TError,{id: string;data: BodyType<CreateJobSpecFolderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSpecFolder>>,
+        TError,
+        {id: string;data: BodyType<CreateJobSpecFolderInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSpecFolderMutationOptions(options));
+    }
+
+export const getDeleteSpecFolderUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/${id}`
+}
+
+/**
+ * @summary Delete a spec folder and all its items
+ */
+export const deleteSpecFolder = async (id: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getDeleteSpecFolderUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSpecFolderMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolder>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolder>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteSpecFolder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSpecFolder>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSpecFolder(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSpecFolderMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSpecFolder>>>
+
+    export type DeleteSpecFolderMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a spec folder and all its items
+ */
+export const useDeleteSpecFolder = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolder>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSpecFolder>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSpecFolderMutationOptions(options));
+    }
+
+export const getListSpecFolderItemsUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/${id}/items`
+}
+
+/**
+ * @summary List jobs in a spec folder, including their contacts
+ */
+export const listSpecFolderItems = async (id: string, options?: RequestInit): Promise<JobSpecFolderItem[]> => {
+
+  return customFetch<JobSpecFolderItem[]>(getListSpecFolderItemsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSpecFolderItemsQueryKey = (id: string,) => {
+    return [
+    `/api/spec-folders/${id}/items`
+    ] as const;
+    }
+
+
+export const getListSpecFolderItemsQueryOptions = <TData = Awaited<ReturnType<typeof listSpecFolderItems>>, TError = ErrorType<ApiMessage>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItems>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSpecFolderItemsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpecFolderItems>>> = ({ signal }) => listSpecFolderItems(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItems>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSpecFolderItemsQueryResult = NonNullable<Awaited<ReturnType<typeof listSpecFolderItems>>>
+export type ListSpecFolderItemsQueryError = ErrorType<ApiMessage>
+
+
+/**
+ * @summary List jobs in a spec folder, including their contacts
+ */
+
+export function useListSpecFolderItems<TData = Awaited<ReturnType<typeof listSpecFolderItems>>, TError = ErrorType<ApiMessage>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItems>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSpecFolderItemsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddSpecFolderItemUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/${id}/items`
+}
+
+/**
+ * @summary Add a job to a spec folder (triggers async Apollo enrichment)
+ */
+export const addSpecFolderItem = async (id: string,
+    addJobSpecFolderItemInput: AddJobSpecFolderItemInput, options?: RequestInit): Promise<JobSpecFolderItem> => {
+
+  return customFetch<JobSpecFolderItem>(getAddSpecFolderItemUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(addJobSpecFolderItemInput)
+  }
+);}
+
+
+
+
+export const getAddSpecFolderItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSpecFolderItem>>, TError,{id: string;data: BodyType<AddJobSpecFolderItemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addSpecFolderItem>>, TError,{id: string;data: BodyType<AddJobSpecFolderItemInput>}, TContext> => {
+
+const mutationKey = ['addSpecFolderItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addSpecFolderItem>>, {id: string;data: BodyType<AddJobSpecFolderItemInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  addSpecFolderItem(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddSpecFolderItemMutationResult = NonNullable<Awaited<ReturnType<typeof addSpecFolderItem>>>
+    export type AddSpecFolderItemMutationBody = BodyType<AddJobSpecFolderItemInput>
+    export type AddSpecFolderItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Add a job to a spec folder (triggers async Apollo enrichment)
+ */
+export const useAddSpecFolderItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSpecFolderItem>>, TError,{id: string;data: BodyType<AddJobSpecFolderItemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addSpecFolderItem>>,
+        TError,
+        {id: string;data: BodyType<AddJobSpecFolderItemInput>},
+        TContext
+      > => {
+      return useMutation(getAddSpecFolderItemMutationOptions(options));
+    }
+
+export const getRemoveSpecFolderItemUrl = (itemId: string,) => {
+
+
+
+
+  return `/api/spec-folders/items/${itemId}`
+}
+
+/**
+ * @summary Remove a job from a spec folder
+ */
+export const removeSpecFolderItem = async (itemId: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getRemoveSpecFolderItemUrl(itemId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getRemoveSpecFolderItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeSpecFolderItem>>, TError,{itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeSpecFolderItem>>, TError,{itemId: string}, TContext> => {
+
+const mutationKey = ['removeSpecFolderItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeSpecFolderItem>>, {itemId: string}> = (props) => {
+          const {itemId} = props ?? {};
+
+          return  removeSpecFolderItem(itemId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveSpecFolderItemMutationResult = NonNullable<Awaited<ReturnType<typeof removeSpecFolderItem>>>
+
+    export type RemoveSpecFolderItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Remove a job from a spec folder
+ */
+export const useRemoveSpecFolderItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeSpecFolderItem>>, TError,{itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeSpecFolderItem>>,
+        TError,
+        {itemId: string},
+        TContext
+      > => {
+      return useMutation(getRemoveSpecFolderItemMutationOptions(options));
+    }
+
+export const getEnrichSpecFolderItemUrl = (itemId: string,) => {
+
+
+
+
+  return `/api/spec-folders/items/${itemId}/enrich`
+}
+
+/**
+ * @summary Re-run Apollo contact search for a folder item
+ */
+export const enrichSpecFolderItem = async (itemId: string, options?: RequestInit): Promise<JobSpecContact[]> => {
+
+  return customFetch<JobSpecContact[]>(getEnrichSpecFolderItemUrl(itemId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getEnrichSpecFolderItemMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enrichSpecFolderItem>>, TError,{itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof enrichSpecFolderItem>>, TError,{itemId: string}, TContext> => {
+
+const mutationKey = ['enrichSpecFolderItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof enrichSpecFolderItem>>, {itemId: string}> = (props) => {
+          const {itemId} = props ?? {};
+
+          return  enrichSpecFolderItem(itemId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EnrichSpecFolderItemMutationResult = NonNullable<Awaited<ReturnType<typeof enrichSpecFolderItem>>>
+
+    export type EnrichSpecFolderItemMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Re-run Apollo contact search for a folder item
+ */
+export const useEnrichSpecFolderItem = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enrichSpecFolderItem>>, TError,{itemId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof enrichSpecFolderItem>>,
+        TError,
+        {itemId: string},
+        TContext
+      > => {
+      return useMutation(getEnrichSpecFolderItemMutationOptions(options));
+    }
+
+export const getListSpecFolderItemContactsUrl = (itemId: string,) => {
+
+
+
+
+  return `/api/spec-folders/items/${itemId}/contacts`
+}
+
+/**
+ * @summary List contacts for a folder item
+ */
+export const listSpecFolderItemContacts = async (itemId: string, options?: RequestInit): Promise<JobSpecContact[]> => {
+
+  return customFetch<JobSpecContact[]>(getListSpecFolderItemContactsUrl(itemId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSpecFolderItemContactsQueryKey = (itemId: string,) => {
+    return [
+    `/api/spec-folders/items/${itemId}/contacts`
+    ] as const;
+    }
+
+
+export const getListSpecFolderItemContactsQueryOptions = <TData = Awaited<ReturnType<typeof listSpecFolderItemContacts>>, TError = ErrorType<unknown>>(itemId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItemContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSpecFolderItemContactsQueryKey(itemId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpecFolderItemContacts>>> = ({ signal }) => listSpecFolderItemContacts(itemId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: itemId !== null && itemId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItemContacts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSpecFolderItemContactsQueryResult = NonNullable<Awaited<ReturnType<typeof listSpecFolderItemContacts>>>
+export type ListSpecFolderItemContactsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List contacts for a folder item
+ */
+
+export function useListSpecFolderItemContacts<TData = Awaited<ReturnType<typeof listSpecFolderItemContacts>>, TError = ErrorType<unknown>>(
+ itemId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecFolderItemContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSpecFolderItemContactsQueryOptions(itemId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSpecFolderContactUrl = (itemId: string,) => {
+
+
+
+
+  return `/api/spec-folders/items/${itemId}/contacts`
+}
+
+/**
+ * @summary Manually add a contact to a folder item
+ */
+export const createSpecFolderContact = async (itemId: string,
+    jobSpecContactInput: JobSpecContactInput, options?: RequestInit): Promise<JobSpecContact> => {
+
+  return customFetch<JobSpecContact>(getCreateSpecFolderContactUrl(itemId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(jobSpecContactInput)
+  }
+);}
+
+
+
+
+export const getCreateSpecFolderContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecFolderContact>>, TError,{itemId: string;data: BodyType<JobSpecContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSpecFolderContact>>, TError,{itemId: string;data: BodyType<JobSpecContactInput>}, TContext> => {
+
+const mutationKey = ['createSpecFolderContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSpecFolderContact>>, {itemId: string;data: BodyType<JobSpecContactInput>}> = (props) => {
+          const {itemId,data} = props ?? {};
+
+          return  createSpecFolderContact(itemId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSpecFolderContactMutationResult = NonNullable<Awaited<ReturnType<typeof createSpecFolderContact>>>
+    export type CreateSpecFolderContactMutationBody = BodyType<JobSpecContactInput>
+    export type CreateSpecFolderContactMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Manually add a contact to a folder item
+ */
+export const useCreateSpecFolderContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecFolderContact>>, TError,{itemId: string;data: BodyType<JobSpecContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSpecFolderContact>>,
+        TError,
+        {itemId: string;data: BodyType<JobSpecContactInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSpecFolderContactMutationOptions(options));
+    }
+
+export const getUpdateSpecFolderContactUrl = (contactId: string,) => {
+
+
+
+
+  return `/api/spec-folders/contacts/${contactId}`
+}
+
+/**
+ * @summary Update a contact
+ */
+export const updateSpecFolderContact = async (contactId: string,
+    jobSpecContactInput: JobSpecContactInput, options?: RequestInit): Promise<JobSpecContact> => {
+
+  return customFetch<JobSpecContact>(getUpdateSpecFolderContactUrl(contactId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(jobSpecContactInput)
+  }
+);}
+
+
+
+
+export const getUpdateSpecFolderContactMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolderContact>>, TError,{contactId: string;data: BodyType<JobSpecContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolderContact>>, TError,{contactId: string;data: BodyType<JobSpecContactInput>}, TContext> => {
+
+const mutationKey = ['updateSpecFolderContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSpecFolderContact>>, {contactId: string;data: BodyType<JobSpecContactInput>}> = (props) => {
+          const {contactId,data} = props ?? {};
+
+          return  updateSpecFolderContact(contactId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSpecFolderContactMutationResult = NonNullable<Awaited<ReturnType<typeof updateSpecFolderContact>>>
+    export type UpdateSpecFolderContactMutationBody = BodyType<JobSpecContactInput>
+    export type UpdateSpecFolderContactMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a contact
+ */
+export const useUpdateSpecFolderContact = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecFolderContact>>, TError,{contactId: string;data: BodyType<JobSpecContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSpecFolderContact>>,
+        TError,
+        {contactId: string;data: BodyType<JobSpecContactInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSpecFolderContactMutationOptions(options));
+    }
+
+export const getDeleteSpecFolderContactUrl = (contactId: string,) => {
+
+
+
+
+  return `/api/spec-folders/contacts/${contactId}`
+}
+
+/**
+ * @summary Delete a contact
+ */
+export const deleteSpecFolderContact = async (contactId: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getDeleteSpecFolderContactUrl(contactId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSpecFolderContactMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolderContact>>, TError,{contactId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolderContact>>, TError,{contactId: string}, TContext> => {
+
+const mutationKey = ['deleteSpecFolderContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSpecFolderContact>>, {contactId: string}> = (props) => {
+          const {contactId} = props ?? {};
+
+          return  deleteSpecFolderContact(contactId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSpecFolderContactMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSpecFolderContact>>>
+
+    export type DeleteSpecFolderContactMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a contact
+ */
+export const useDeleteSpecFolderContact = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecFolderContact>>, TError,{contactId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSpecFolderContact>>,
+        TError,
+        {contactId: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSpecFolderContactMutationOptions(options));
+    }
+
+export const getListSpecSearchConfigsUrl = () => {
+
+
+
+
+  return `/api/spec-folders/search-configs`
+}
+
+/**
+ * @summary List Apollo search configs for the tenant
+ */
+export const listSpecSearchConfigs = async ( options?: RequestInit): Promise<JobSpecSearchConfig[]> => {
+
+  return customFetch<JobSpecSearchConfig[]>(getListSpecSearchConfigsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSpecSearchConfigsQueryKey = () => {
+    return [
+    `/api/spec-folders/search-configs`
+    ] as const;
+    }
+
+
+export const getListSpecSearchConfigsQueryOptions = <TData = Awaited<ReturnType<typeof listSpecSearchConfigs>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecSearchConfigs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSpecSearchConfigsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpecSearchConfigs>>> = ({ signal }) => listSpecSearchConfigs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSpecSearchConfigs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSpecSearchConfigsQueryResult = NonNullable<Awaited<ReturnType<typeof listSpecSearchConfigs>>>
+export type ListSpecSearchConfigsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List Apollo search configs for the tenant
+ */
+
+export function useListSpecSearchConfigs<TData = Awaited<ReturnType<typeof listSpecSearchConfigs>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSpecSearchConfigs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSpecSearchConfigsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSpecSearchConfigUrl = () => {
+
+
+
+
+  return `/api/spec-folders/search-configs`
+}
+
+/**
+ * @summary Create a search config
+ */
+export const createSpecSearchConfig = async (jobSpecSearchConfigInput: JobSpecSearchConfigInput, options?: RequestInit): Promise<JobSpecSearchConfig> => {
+
+  return customFetch<JobSpecSearchConfig>(getCreateSpecSearchConfigUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(jobSpecSearchConfigInput)
+  }
+);}
+
+
+
+
+export const getCreateSpecSearchConfigMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecSearchConfig>>, TError,{data: BodyType<JobSpecSearchConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSpecSearchConfig>>, TError,{data: BodyType<JobSpecSearchConfigInput>}, TContext> => {
+
+const mutationKey = ['createSpecSearchConfig'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSpecSearchConfig>>, {data: BodyType<JobSpecSearchConfigInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSpecSearchConfig(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSpecSearchConfigMutationResult = NonNullable<Awaited<ReturnType<typeof createSpecSearchConfig>>>
+    export type CreateSpecSearchConfigMutationBody = BodyType<JobSpecSearchConfigInput>
+    export type CreateSpecSearchConfigMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a search config
+ */
+export const useCreateSpecSearchConfig = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSpecSearchConfig>>, TError,{data: BodyType<JobSpecSearchConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSpecSearchConfig>>,
+        TError,
+        {data: BodyType<JobSpecSearchConfigInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSpecSearchConfigMutationOptions(options));
+    }
+
+export const getUpdateSpecSearchConfigUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/search-configs/${id}`
+}
+
+/**
+ * @summary Update a search config
+ */
+export const updateSpecSearchConfig = async (id: string,
+    jobSpecSearchConfigInput: JobSpecSearchConfigInput, options?: RequestInit): Promise<JobSpecSearchConfig> => {
+
+  return customFetch<JobSpecSearchConfig>(getUpdateSpecSearchConfigUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(jobSpecSearchConfigInput)
+  }
+);}
+
+
+
+
+export const getUpdateSpecSearchConfigMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecSearchConfig>>, TError,{id: string;data: BodyType<JobSpecSearchConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSpecSearchConfig>>, TError,{id: string;data: BodyType<JobSpecSearchConfigInput>}, TContext> => {
+
+const mutationKey = ['updateSpecSearchConfig'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSpecSearchConfig>>, {id: string;data: BodyType<JobSpecSearchConfigInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSpecSearchConfig(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSpecSearchConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateSpecSearchConfig>>>
+    export type UpdateSpecSearchConfigMutationBody = BodyType<JobSpecSearchConfigInput>
+    export type UpdateSpecSearchConfigMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Update a search config
+ */
+export const useUpdateSpecSearchConfig = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSpecSearchConfig>>, TError,{id: string;data: BodyType<JobSpecSearchConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSpecSearchConfig>>,
+        TError,
+        {id: string;data: BodyType<JobSpecSearchConfigInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSpecSearchConfigMutationOptions(options));
+    }
+
+export const getDeleteSpecSearchConfigUrl = (id: string,) => {
+
+
+
+
+  return `/api/spec-folders/search-configs/${id}`
+}
+
+/**
+ * @summary Delete a search config
+ */
+export const deleteSpecSearchConfig = async (id: string, options?: RequestInit): Promise<ApiMessage> => {
+
+  return customFetch<ApiMessage>(getDeleteSpecSearchConfigUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSpecSearchConfigMutationOptions = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecSearchConfig>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSpecSearchConfig>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteSpecSearchConfig'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSpecSearchConfig>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSpecSearchConfig(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSpecSearchConfigMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSpecSearchConfig>>>
+
+    export type DeleteSpecSearchConfigMutationError = ErrorType<ApiMessage>
+
+    /**
+ * @summary Delete a search config
+ */
+export const useDeleteSpecSearchConfig = <TError = ErrorType<ApiMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSpecSearchConfig>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSpecSearchConfig>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSpecSearchConfigMutationOptions(options));
     }
 

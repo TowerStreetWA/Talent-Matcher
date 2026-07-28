@@ -1,5 +1,7 @@
 # Memory Index
 
+- [Create Spec List feature](spec-list-feature.md) — job-centric spec list with Apollo enrichment; key pitfall: auditActor spreads, not string.
+
 - [Orval codegen quirks](orval-codegen-quirks.md) — Zod value exports are named by operationId; component names are type-only, and hooks may need explicit queryKey.
 - [Orval TS2308 barrel conflict](orval-ts2308-barrel.md) — TS2308 fires when a component schema name matches Orval's auto-named body pattern; fix by renaming schemas away from `{OperationId}Body`.
 - [Express router mounting](express-router-mounting.md) — `router.use(path, subRouter)` strips the prefix; guard paths with middleware separately when sub-routers use full paths.

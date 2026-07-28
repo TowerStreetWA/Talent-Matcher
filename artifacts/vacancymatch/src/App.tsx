@@ -27,6 +27,7 @@ const Team = lazy(() => import("@/pages/team"));
 const Pricing = lazy(() => import("@/pages/pricing"));
 const Landing = lazy(() => import("@/pages/landing"));
 const UsageReport = lazy(() => import("@/pages/usage-report"));
+const SpecList = lazy(() => import("@/pages/spec-list"));
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
@@ -65,6 +66,7 @@ function Router() {
           <Route path="/team" component={Team} />
           <Route path="/accept-invite" component={AcceptInvite} />
           <Route path="/usage-report" component={UsageReport} />
+          <Route path="/spec-list" component={SpecList} />
           <Route path="/login">
             <Redirect to="/" replace />
           </Route>

@@ -50,7 +50,9 @@ import {
   BellOff,
   Trash2,
   Play,
+  ClipboardList,
 } from "lucide-react";
+import { SendToSpecListDialog } from "@/components/send-to-spec-list-dialog";
 import { formatDistanceToNow } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { setSkylineCity } from "@/components/skyline-backdrop";
@@ -227,6 +229,11 @@ export default function JobSearch() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [saveAlerts, setSaveAlerts] = useState(false);
+  const [specListTarget, setSpecListTarget] = useState<{
+    id: string;
+    title: string;
+    companyName?: string | null;
+  } | null>(null);
 
   const invalidateSaved = (): void => {
     void queryClient.invalidateQueries({
@@ -798,7 +805,7 @@ export default function JobSearch() {
                   </div>
                 </div>
 
-                <div className="flex md:flex-col items-center justify-between md:justify-start gap-4 md:border-l md:pl-6">
+                <div className="flex md:flex-col items-center justify-between md:justify-start gap-2 md:border-l md:pl-6">
                   {job.applyUrl && (
                     <Button variant="outline" size="sm" asChild className="w-full">
                       <a href={job.applyUrl} target="_blank" rel="noopener noreferrer">
@@ -806,6 +813,21 @@ export default function JobSearch() {
                       </a>
                     </Button>
                   )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full gap-1.5 text-muted-foreground hover:text-foreground"
+                    onClick={() =>
+                      setSpecListTarget({
+                        id: job.id,
+                        title: job.title,
+                        companyName: job.companyName,
+                      })
+                    }
+                    data-testid={`button-spec-list-${job.id}`}
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" /> Spec list
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -900,6 +922,16 @@ export default function JobSearch() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {specListTarget && (
+        <SendToSpecListDialog
+          open={!!specListTarget}
+          onClose={() => setSpecListTarget(null)}
+          jobId={specListTarget.id}
+          jobTitle={specListTarget.title}
+          companyName={specListTarget.companyName}
+        />
+      )}
     </div>
   );
 }

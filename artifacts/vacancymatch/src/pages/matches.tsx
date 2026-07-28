@@ -34,7 +34,9 @@ import {
   Building2,
   ArrowRight,
   ExternalLink,
+  ClipboardList,
 } from "lucide-react";
+import { SendToSpecListDialog } from "@/components/send-to-spec-list-dialog";
 
 // ---------------------------------------------------------------------------
 // Score factor config
@@ -168,6 +170,7 @@ interface MatchCardProps {
 
 function MatchCard({ match, onShortlist, onDismiss, onPushCrm, isPending }: MatchCardProps) {
   const status = match.recruiterStatus as StatusKey;
+  const [specListOpen, setSpecListOpen] = useState(false);
 
   return (
     <Card className="flex flex-col hover:border-primary/40 transition-colors">
@@ -304,6 +307,16 @@ function MatchCard({ match, onShortlist, onDismiss, onPushCrm, isPending }: Matc
             </span>
           )}
 
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+            onClick={() => setSpecListOpen(true)}
+            data-testid={`button-spec-list-match-${match.id}`}
+          >
+            <ClipboardList className="w-3.5 h-3.5" /> Spec list
+          </Button>
+
           <Link href={`/candidates/${match.candidateId}`} className="ml-auto">
             <Button size="sm" variant="ghost" className="h-8 gap-1 text-xs text-muted-foreground">
               Candidate <ExternalLink className="w-3 h-3" />
@@ -311,6 +324,16 @@ function MatchCard({ match, onShortlist, onDismiss, onPushCrm, isPending }: Matc
           </Link>
         </div>
       </CardContent>
+
+      {match.job?.id && (
+        <SendToSpecListDialog
+          open={specListOpen}
+          onClose={() => setSpecListOpen(false)}
+          jobId={match.job.id}
+          jobTitle={match.job.title ?? "Unknown Role"}
+          companyName={match.job.companyName}
+        />
+      )}
     </Card>
   );
 }

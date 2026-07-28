@@ -16,7 +16,8 @@ import {
   Sun,
   Moon,
   Menu,
-  BarChart2
+  BarChart2,
+  ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -40,6 +41,7 @@ const navItems = [
   { href: "/matches", label: "Matches", icon: Target },
   { href: "/top-roles", label: "Top Roles", icon: Briefcase },
   { href: "/job-search", label: "Job Search", icon: Search },
+  { href: "/spec-list", label: "Create Spec List", icon: ClipboardList },
   { href: "/sources", label: "Sources", icon: Database },
   { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/team", label: "Team", icon: UserPlus, adminOnly: true },

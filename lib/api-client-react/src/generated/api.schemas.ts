@@ -1103,6 +1103,172 @@ export interface SpecListItemUpdateInput {
   sortOrder?: number;
 }
 
+export type JobSpecFolderVisibility = typeof JobSpecFolderVisibility[keyof typeof JobSpecFolderVisibility];
+
+
+export const JobSpecFolderVisibility = {
+  team: 'team',
+  personal: 'personal',
+} as const;
+
+export interface JobSpecFolder {
+  id: string;
+  tenantId: string;
+  name: string;
+  /** @nullable */
+  ownerUserId?: string | null;
+  visibility: JobSpecFolderVisibility;
+  createdBy: string;
+  createdAt: string;
+  itemCount: number;
+}
+
+export type CreateJobSpecFolderInputVisibility = typeof CreateJobSpecFolderInputVisibility[keyof typeof CreateJobSpecFolderInputVisibility];
+
+
+export const CreateJobSpecFolderInputVisibility = {
+  team: 'team',
+  personal: 'personal',
+} as const;
+
+export interface CreateJobSpecFolderInput {
+  /** @minLength 1 */
+  name: string;
+  visibility?: CreateJobSpecFolderInputVisibility;
+}
+
+export type JobSpecContactContactType = typeof JobSpecContactContactType[keyof typeof JobSpecContactContactType];
+
+
+export const JobSpecContactContactType = {
+  talent_acquisition: 'talent_acquisition',
+  hiring_manager: 'hiring_manager',
+} as const;
+
+export type JobSpecContactConfidence = typeof JobSpecContactConfidence[keyof typeof JobSpecContactConfidence];
+
+
+export const JobSpecContactConfidence = {
+  high: 'high',
+  best_guess: 'best_guess',
+} as const;
+
+export interface JobSpecContact {
+  id: string;
+  folderItemId: string;
+  fullName: string;
+  /** @nullable */
+  title?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
+  contactType: JobSpecContactContactType;
+  source: string;
+  confidence: JobSpecContactConfidence;
+  createdAt: string;
+}
+
+export type JobSpecContactInputContactType = typeof JobSpecContactInputContactType[keyof typeof JobSpecContactInputContactType];
+
+
+export const JobSpecContactInputContactType = {
+  talent_acquisition: 'talent_acquisition',
+  hiring_manager: 'hiring_manager',
+} as const;
+
+export type JobSpecContactInputConfidence = typeof JobSpecContactInputConfidence[keyof typeof JobSpecContactInputConfidence];
+
+
+export const JobSpecContactInputConfidence = {
+  high: 'high',
+  best_guess: 'best_guess',
+} as const;
+
+export interface JobSpecContactInput {
+  /** @minLength 1 */
+  fullName: string;
+  /** @nullable */
+  title?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
+  contactType: JobSpecContactInputContactType;
+  confidence?: JobSpecContactInputConfidence;
+}
+
+export type JobSpecFolderItemJob = {
+  id: string;
+  title: string;
+  /** @nullable */
+  companyName?: string | null;
+  /** @nullable */
+  locationText?: string | null;
+  /** @nullable */
+  salaryMin?: number | null;
+  /** @nullable */
+  salaryMax?: number | null;
+  /** @nullable */
+  salaryCurrency?: string | null;
+  /** @nullable */
+  salaryText?: string | null;
+  /** @nullable */
+  applyUrl?: string | null;
+  /** @nullable */
+  sourceProvider?: string | null;
+  /** @nullable */
+  sectorTag?: string | null;
+  /** @nullable */
+  postedAt?: string | null;
+};
+
+export interface JobSpecFolderItem {
+  id: string;
+  folderId: string;
+  jobId: string;
+  addedBy: string;
+  /** @nullable */
+  note?: string | null;
+  status: string;
+  sortOrder: number;
+  addedAt: string;
+  job: JobSpecFolderItemJob;
+  contacts: JobSpecContact[];
+}
+
+export interface AddJobSpecFolderItemInput {
+  jobId: string;
+  note?: string;
+}
+
+export interface JobSpecSearchConfig {
+  id: string;
+  tenantId: string;
+  /** @nullable */
+  sectorTag?: string | null;
+  /** @nullable */
+  jobTitleKeyword?: string | null;
+  targetTitles: string[];
+  managerTitles: string[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobSpecSearchConfigInput {
+  /** @nullable */
+  sectorTag?: string | null;
+  /** @nullable */
+  jobTitleKeyword?: string | null;
+  targetTitles: string[];
+  managerTitles: string[];
+}
+
 export type LookupInviteParams = {
 token: string;
 };
