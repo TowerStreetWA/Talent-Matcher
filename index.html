@@ -456,6 +456,19 @@ table.t tbody tr:hover{background:var(--surface-2)}
   .doc .to{grid-template-columns:1fr}
   .snav .phone{display:none}
 }
+/* mobile fixes */
+body{overflow-x:clip}
+@media (pointer:coarse),(max-width:600px){input,select,textarea,.chat form input,.field input,.field select,.field textarea,.input{font-size:16px!important}}
+@media (max-width:600px){
+  .chat{top:0;left:0;right:0;bottom:0;width:auto;height:auto;border-radius:0;border:0;z-index:85;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .chat header{padding:14px 12px 14px 16px}
+  .chat header button{font-size:30px;padding:2px 12px;min-width:44px;min-height:44px}
+  html.chat-open body{overflow:hidden}
+  .demobar .in{flex-wrap:nowrap;overflow-x:auto;gap:8px;padding-inline:12px;scrollbar-width:none}
+  .demobar .in>*{flex:none}
+  .demobar .cta-long{display:none}
+}
+@media (min-width:601px){.demobar .cta-short{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -470,7 +483,7 @@ table.t tbody tr:hover{background:var(--surface-2)}
     <span class="dnote">Sample business and data. No login needed — click anything.</span>
     <button class="btn sm tour" data-act="tour-start" id="tourBtn">▶ Take the tour</button>
     <button class="btn sm" data-act="reset">Reset demo</button>
-    <a class="btn sm tour" href="https://tsirs.co.uk" target="_blank" rel="noopener" style="text-decoration:none">Get this for your business →</a>
+    <a class="btn sm tour" href="https://tsirs.co.uk" target="_blank" rel="noopener" style="text-decoration:none"><span class="cta-long">Get this for your business →</span><span class="cta-short">Get yours →</span></a>
   </div>
 </div>
 
@@ -720,11 +733,12 @@ function renderSite(){
 function renderChat(){
  const box=$("#chatbox");if(!box)return;
  const fab=$("#t-chatfab");if(fab)fab.hidden=S.chat.open;
+ document.documentElement.classList.toggle("chat-open",!!S.chat.open);
  if(!S.chat.open){box.innerHTML="";return;}
  if(!S.chat.msgs.length) S.chat.msgs.push({who:"bot",txt:"Hi, I'm Redway's assistant. I can answer questions about our services, rough prices and availability, or get your quote request straight to the team. What are you planning?"});
  const chips=S.chat.flow?[]:["How much is a loft conversion?","Do you do electrics?","Which areas do you cover?","I'd like a quote"];
  box.innerHTML=`<div class="chat" role="dialog" aria-label="Redway assistant">
-  <header>${LOGO(28)}<div><b>Redway AI assistant</b><small><span class="dot" style="display:inline-block;margin-right:5px"></span>Replies instantly · 24/7</small></div><button data-act="chat-toggle" aria-label="Close chat">×</button></header>
+  <header>${LOGO(28)}<div><b>Redway AI assistant</b><small><span class="dot" style="display:inline-block;margin-right:5px"></span>Replies instantly · 24/7</small></div><button data-act="chat-toggle" aria-label="Close chat">✕</button></header>
   <div class="msgs" id="msgs">${S.chat.msgs.map(m=>`<div class="bub ${m.who}">${m.html||esc(m.txt)}</div>`).join("")}</div>
   ${chips.length?`<div class="chips">${chips.map(c=>`<button class="chip" data-act="chat-chip" data-t="${esc(c)}">${esc(c)}</button>`).join("")}</div>`:""}
   <form id="chatForm"><input id="chatIn" placeholder="Type a message…" autocomplete="off" aria-label="Message"><button class="btn primary sm" type="submit">Send</button></form>
@@ -1107,7 +1121,7 @@ function closeDrawer(){$("#overlay").innerHTML="";}
 
 /* ---------- mode ---------- */
 function setMode(m){
- S.mode=m;$("#site").hidden=m!=="site";$("#portal").hidden=m!=="portal";
+ S.mode=m;if(m!=="site")S.chat.open=false;document.documentElement.classList.toggle("chat-open",m==="site"&&!!S.chat.open);$("#site").hidden=m!=="site";$("#portal").hidden=m!=="portal";
  $("#segSite").setAttribute("aria-pressed",m==="site");$("#segPortal").setAttribute("aria-pressed",m==="portal");
  if(m==="site")renderSite();else renderPortal();
  window.scrollTo({top:0});
@@ -1220,7 +1234,7 @@ document.addEventListener("submit",ev=>{
   toast("Enquiry received — it's already in the owner portal","Open portal",()=>{setMode("portal");go("enquiries");});
  }
 });
-document.addEventListener("keydown",ev=>{if(ev.key==="Escape"){if(TI>=0)tourEnd();else closeDrawer();}
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"){if(TI>=0)tourEnd();else if(S.chat.open){S.chat.open=false;renderChat();}else closeDrawer();}
  if(TI>=0&&ev.key==="ArrowRight")tourGo(TI+1);if(TI>=0&&ev.key==="ArrowLeft")tourGo(TI-1);});
 
 /* ---------- guided tour ---------- */
