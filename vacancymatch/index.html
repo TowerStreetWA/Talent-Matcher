@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Try VacancyMatch: live financial services vacancies, CV upload and explainable candidate matching for specialist recruiters. Live demo, no login needed.">
+<meta property="og:title" content="VacancyMatch live demo">
+<meta property="og:description" content="Live vacancy intelligence and explainable AI matching for financial services recruiters. Try it now, no login needed.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F6E56">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F6E56'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23FAF7F2' stroke-width='2.6'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23FAF7F2'/%3E%3C/svg%3E">
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>VacancyMatch Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: VacancyMatch's own app shell (warm sidebar, card grid, serif page titles) with a demo bar and guided tour layered on top. Light editorial by default, onyx and emerald in dark. */
+:root{
+  --bg:#FAF7F2;--side:#F2EDE3;--card:#FFFFFF;--sunk:#F2EDE3;
+  --fg:#1C1B18;--fg2:#6E6A5F;--fg3:#A39E92;--line:#E5DFD3;--line2:#D6CEBF;
+  --accent:#0F6E56;--accent-fg:#FAF7F2;--accent-soft:rgba(15,110,86,.10);--accent-line:rgba(15,110,86,.35);
+  --hi:#D85A30;--hi-soft:#FAECE7;--hi-fg:#712B13;
+  --warn:#8A5410;--warn-soft:#FAEEDA;--bad:#A32D2D;--bad-soft:#F7E3E0;
+  --ins-bg:#E1F5EE;--ins-fg:#085041;--bank-bg:#E6F1FB;--bank-fg:#0C447C;--pen-bg:#FAEEDA;--pen-fg:#633806;
+  --am-bg:#EEEDFE;--am-fg:#3C3489;--acc-bg:#EAF3DE;--acc-fg:#27500A;--it-bg:#FDEBDD;--it-fg:#7A3A0C;
+  --paper:#FFFFFF;--paper-fg:#1C1B18;--paper-line:#E5DFD3;
+  --shadow:0 18px 50px rgba(28,27,24,.18);--scrim:rgba(28,27,24,.45);
+  --sans:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101113;--side:#0A0B0C;--card:#1A1C1F;--sunk:#24262A;
+  --fg:#ECEEEF;--fg2:#8A8F95;--fg3:#5F646B;--line:#2C2F33;--line2:#3A3E44;
+  --accent:#2BC98F;--accent-fg:#06251A;--accent-soft:rgba(43,201,143,.13);--accent-line:rgba(43,201,143,.35);
+  --hi:#F0B429;--hi-soft:rgba(240,180,41,.13);--hi-fg:#F0B429;
+  --warn:#F0B429;--warn-soft:rgba(240,180,41,.13);--bad:#E24B4A;--bad-soft:rgba(226,75,74,.14);
+  --ins-bg:rgba(93,202,165,.15);--ins-fg:#5DCAA5;--bank-bg:rgba(133,183,235,.12);--bank-fg:#85B7EB;--pen-bg:rgba(250,199,117,.12);--pen-fg:#FAC775;
+  --am-bg:rgba(175,169,236,.12);--am-fg:#AFA9EC;--acc-bg:rgba(151,196,89,.12);--acc-fg:#C0DD97;--it-bg:rgba(240,150,90,.13);--it-fg:#F2A870;
+  --paper:#F6F3EC;--paper-fg:#1C1B18;--paper-line:#DDD6C8;
+  --shadow:0 18px 50px rgba(0,0,0,.55);--scrim:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101113;--side:#0A0B0C;--card:#1A1C1F;--sunk:#24262A;
+  --fg:#ECEEEF;--fg2:#8A8F95;--fg3:#5F646B;--line:#2C2F33;--line2:#3A3E44;
+  --accent:#2BC98F;--accent-fg:#06251A;--accent-soft:rgba(43,201,143,.13);--accent-line:rgba(43,201,143,.35);
+  --hi:#F0B429;--hi-soft:rgba(240,180,41,.13);--hi-fg:#F0B429;
+  --warn:#F0B429;--warn-soft:rgba(240,180,41,.13);--bad:#E24B4A;--bad-soft:rgba(226,75,74,.14);
+  --ins-bg:rgba(93,202,165,.15);--ins-fg:#5DCAA5;--bank-bg:rgba(133,183,235,.12);--bank-fg:#85B7EB;--pen-bg:rgba(250,199,117,.12);--pen-fg:#FAC775;
+  --am-bg:rgba(175,169,236,.12);--am-fg:#AFA9EC;--acc-bg:rgba(151,196,89,.12);--acc-fg:#C0DD97;--it-bg:rgba(240,150,90,.13);--it-fg:#F2A870;
+  --paper:#F6F3EC;--paper-fg:#1C1B18;--paper-line:#DDD6C8;
+  --shadow:0 18px 50px rgba(0,0,0,.55);--scrim:rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2,h3,p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ic{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.grow{flex:1;min-width:0}.muted{color:var(--fg2)}.dim{color:var(--fg3)}.small{font-size:12.5px}.xs{font-size:11.5px}.strong{font-weight:600}
+.tnum{font-variant-numeric:tabular-nums}.mono{font-family:var(--mono)}.acc{color:var(--accent)}.hic{color:var(--hi)}
+.row{display:flex;align-items:center;gap:10px}.wrap{flex-wrap:wrap}
+.label{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--fg2);font-weight:600}
+
+/* shell */
+.app{display:flex;height:100%;overflow:hidden;position:relative}
+.sidebar{width:240px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;z-index:90}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:var(--scrim);z-index:80}
+.brand{height:56px;display:flex;align-items:center;gap:9px;padding:0 20px;border-bottom:1px solid var(--line);font-weight:700;font-size:17px;letter-spacing:-.2px}
+.brand .mk{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-fg);display:flex;align-items:center;justify-content:center}
+.brand .mk .ic{width:15px;height:15px;stroke-width:2.6}
+.tenant{margin:14px 14px 4px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.tenant span{display:block;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--fg2);font-weight:600}
+.tenant b{font-size:13px;font-weight:600}
+.nav{padding:8px 12px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.nav-sec{font-size:10.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--fg3);font-weight:600;padding:12px 10px 4px}
+.nav-item{display:flex;width:100%;align-items:center;gap:11px;padding:8px 10px;font-size:13.5px;color:var(--fg2);border:0;border-radius:7px;background:none;text-align:left;transition:background .15s,color .15s}
+.nav-item .ic{width:17px;height:17px}
+.nav-item:hover{background:var(--sunk);color:var(--fg)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.side-foot{padding:12px 14px;border-top:1px solid var(--line)}
+.plan{font-size:11.5px;color:var(--fg2);margin-bottom:10px;line-height:1.45}
+.plan b{color:var(--accent);font-weight:600}
+.me{display:flex;gap:10px;align-items:center}
+.licence{margin-top:10px;font-size:10.5px;color:var(--fg3)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.demo-bar{display:flex;align-items:center;gap:12px;padding:7px 24px;background:var(--hi-soft);color:var(--hi-fg);border-bottom:1px solid var(--line);font-size:12.5px}
+.demo-bar b{font-weight:700;text-transform:uppercase;letter-spacing:.9px;font-size:11px;white-space:nowrap}
+.demo-bar .grow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linkbtn{background:none;border:0;color:inherit;text-decoration:underline;text-underline-offset:2px;font-size:12.5px;padding:0;white-space:nowrap;font-weight:600}
+.topbar{height:56px;border-bottom:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 24px;flex-shrink:0}
+.qs{display:flex;align-items:center;gap:10px;color:var(--fg2);flex:1;max-width:420px;min-width:0}
+.qs input{border:0;background:transparent;outline:none;flex:1;min-width:0;font-size:13.5px}
+.qs input::placeholder{color:var(--fg3)}
+.top-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.menu-btn{display:none}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid transparent;background:none;display:inline-flex;align-items:center;justify-content:center;color:var(--fg2)}
+.icon-btn:hover{background:var(--sunk);color:var(--fg)}
+.icon-btn .ic{width:17px;height:17px}
+.content{flex:1;overflow-y:auto;padding:28px 32px;-webkit-overflow-scrolling:touch}
+.page{display:none;max-width:1160px;margin:0 auto}.page.active{display:block}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-family:var(--serif);font-weight:500;font-size:30px;letter-spacing:-.3px;line-height:1.15;text-wrap:balance}
+.page-head p{color:var(--fg2);margin-top:4px;max-width:64ch}
+
+/* components */
+.btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid transparent;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s,color .15s;text-decoration:none;white-space:nowrap;line-height:1.3;background:none;color:var(--fg)}
+.btn .ic{width:15px;height:15px}
+.btn-pri{background:var(--accent);color:var(--accent-fg)}.btn-pri:hover{filter:brightness(1.08)}
+.btn-out{border-color:var(--line2);background:var(--card)}.btn-out:hover{border-color:var(--fg3)}
+.btn-ghost{color:var(--fg2)}.btn-ghost:hover{background:var(--sunk);color:var(--fg)}
+.btn-soft{background:var(--accent-soft);color:var(--accent)}.btn-soft:hover{border-color:var(--accent-line)}
+.btn-hi{background:var(--hi-soft);color:var(--hi-fg)}.btn-hi:hover{border-color:var(--hi)}
+.btn-bad{color:var(--bad)}.btn-bad:hover{background:var(--bad-soft)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:18px}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.card-t{font-size:15px;font-weight:600}
+.card-s{font-size:12px;color:var(--fg2);margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi .t{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--fg2);font-weight:500}
+.kpi .t .ic{width:16px;height:16px}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:11.5px;color:var(--fg2)}
+.kpi.k-acc{border-color:var(--accent-line);background:var(--accent-soft)}.kpi.k-acc .v,.kpi.k-acc .t .ic{color:var(--accent)}
+.kpi.k-hi{border-color:var(--hi)}.kpi.k-hi .v,.kpi.k-hi .t .ic{color:var(--hi)}
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.grid-32{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+.grid-2>.card,.grid-32>.card{margin-bottom:0}
+.stack{display:flex;flex-direction:column;gap:18px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.sec-h h2{font-size:15px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--sunk);color:var(--fg2);border:1px solid transparent}
+.pill .ic{width:12px;height:12px}
+.p-ok{background:var(--accent-soft);color:var(--accent)}.p-warn{background:var(--warn-soft);color:var(--warn)}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-hi{background:var(--hi-soft);color:var(--hi-fg)}
+.p-line{background:transparent;border-color:var(--line2);color:var(--fg2)}
+.sec-insurance{background:var(--ins-bg);color:var(--ins-fg)}.sec-banking{background:var(--bank-bg);color:var(--bank-fg)}.sec-pensions{background:var(--pen-bg);color:var(--pen-fg)}
+.sec-asset_management{background:var(--am-bg);color:var(--am-fg)}.sec-accountancy_finance{background:var(--acc-bg);color:var(--acc-fg)}.sec-it_tech{background:var(--it-bg);color:var(--it-fg)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;border:1px solid var(--line2);border-radius:6px;padding:1px 7px;color:var(--fg2);background:var(--card)}
+.chip.hit{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
+.chip.miss{border-style:dashed;color:var(--fg3)}
+.chip .ic{width:11px;height:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--sunk);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;border:1px solid var(--line)}
+.av-lg{width:52px;height:52px;font-size:17px}
+.list-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.list-row:last-child{border-bottom:0}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}.kv .k{color:var(--fg2)}.kv .v{text-align:right;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.empty{padding:26px 16px;text-align:center;color:var(--fg2);font-size:13px;border:1px dashed var(--line2);border-radius:10px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--fg2)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.meta .ic{width:13px;height:13px}
+.score{display:inline-flex;align-items:center;justify-content:center;flex-direction:column;width:58px;height:58px;border-radius:50%;border:3px solid var(--line);flex-shrink:0;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;line-height:1}
+.score small{font-size:9.5px;font-weight:600;color:var(--fg2);letter-spacing:.5px;margin-top:2px}
+.score.s-hi{border-color:var(--accent);color:var(--accent)}.score.s-mid{border-color:var(--hi);color:var(--hi)}.score.s-lo{border-color:var(--line2);color:var(--fg2)}
+.sc-sm{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:24px;border-radius:6px;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;padding:0 6px}
+.sc-sm.s-hi{background:var(--accent-soft);color:var(--accent)}.sc-sm.s-mid{background:var(--hi-soft);color:var(--hi-fg)}.sc-sm.s-lo{background:var(--sunk);color:var(--fg2)}
+.bars{display:flex;flex-direction:column;gap:7px}
+.fbar{display:grid;grid-template-columns:118px 42px minmax(0,1fr);gap:10px;align-items:center;font-size:12.5px}
+.fbar .w{font-family:var(--mono);font-size:11px;color:var(--fg3)}
+.fbar .note{grid-column:3;font-size:11.5px;color:var(--fg2);margin-top:-3px}
+.track{height:7px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.track span{display:block;height:100%;border-radius:4px;background:var(--accent);transition:width .5s}
+.src{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--fg2);font-weight:500}
+.src .ic{width:13px;height:13px}
+.src.direct{color:var(--accent)}.src.agency{color:var(--hi)}
+.toggle{position:relative;width:36px;height:20px;border-radius:10px;background:var(--line2);border:0;padding:0;flex-shrink:0;transition:background .15s}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--card);transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.toggle.on{background:var(--accent)}.toggle.on::after{transform:translateX(16px)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;font-size:13px;color:var(--fg2);font-weight:500;white-space:nowrap;margin-bottom:-1px}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab .n{font-size:11px;background:var(--sunk);border-radius:9px;padding:0 6px;margin-left:5px;color:var(--fg2)}
+.fchips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:4px 12px;font-size:12.5px;color:var(--fg2);display:inline-flex;align-items:center;gap:6px}
+.fchip:hover{color:var(--fg)}
+.fchip.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent);font-weight:600}
+
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fg.full{grid-column:1/-1}
+.fl{font-size:12.5px;color:var(--fg2);font-weight:500}
+.inp{background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:13.5px;width:100%;min-width:0}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.inp::placeholder{color:var(--fg3)}
+textarea.inp{resize:vertical;line-height:1.5}
+.err{color:var(--bad);font-size:12.5px;margin-top:8px}
+.search-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-in{position:relative;flex:1 1 260px;min-width:0}
+.search-in .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--fg3)}
+.search-in input{padding-left:34px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--fg2);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr.click:hover{background:var(--sunk)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who b{display:block;font-weight:600;font-size:13px}
+.who span{display:block;font-size:12px;color:var(--fg2)}
+
+/* industry */
+.ind-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ind{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;background:var(--card);text-align:left;cursor:pointer;transition:border-color .15s}
+.ind:hover{border-color:var(--line2)}
+.ind .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.ind .n{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.ind .bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.ind .bar span{display:block;height:100%;border-radius:3px}
+
+/* jobs & matches */
+.jobs{display:flex;flex-direction:column;gap:10px}
+.job{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;gap:16px;align-items:flex-start}
+.job:hover{border-color:var(--line2)}
+.job .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.job .jt{font-size:15px;font-weight:600;line-height:1.3}
+.job .co{font-size:13px;color:var(--fg2)}
+.job .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px}
+.new-flag{animation:flash 2.4s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent-line)}100%{box-shadow:0 0 0 0 transparent}}
+.why{border-top:1px dashed var(--line2);padding-top:12px;margin-top:4px}
+.match-head{display:flex;gap:14px;align-items:flex-start}
+.status-strip{font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.status-strip .ic{width:14px;height:14px}
+
+/* upload */
+.drop{border:2px dashed var(--line2);border-radius:12px;padding:34px 18px;text-align:center;background:var(--card);transition:background .15s,border-color .15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop .big{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px}
+.drop .big .ic{width:24px;height:24px}
+.samples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.sample{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px;text-align:left;display:flex;gap:10px;align-items:flex-start;transition:border-color .15s}
+.sample:hover{border-color:var(--accent-line)}
+.sample .fi{width:32px;height:38px;border-radius:4px;background:var(--sunk);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--hi);flex-shrink:0}
+.sample[disabled]{opacity:.5}
+.steps{display:flex;flex-direction:column;gap:9px}
+.pstep{display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--fg3)}
+.pstep .st{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pstep .st .ic{width:12px;height:12px;stroke-width:3}
+.pstep.doing{color:var(--fg)}.pstep.doing .st{border-color:var(--accent);border-top-color:transparent;animation:spin .8s linear infinite}
+.pstep.done{color:var(--fg)}.pstep.done .st{border-color:var(--accent);background:var(--accent);color:var(--accent-fg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}
+.parsed{border:1px solid var(--accent-line);border-radius:10px;padding:16px;background:var(--card)}
+.field-found{background:var(--accent-soft)}
+
+/* spec lists */
+.spec-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px}
+.folders{display:flex;flex-direction:column;gap:2px}
+.folder{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:0;background:none;text-align:left;font-size:13.5px;color:var(--fg)}
+.folder:hover{background:var(--sunk)}
+.folder.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.folder .ic{width:15px;height:15px}
+.folder .c{margin-left:auto;font-size:12px;opacity:.75}
+.contact{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:8px;background:var(--sunk);font-size:13px}
+.contact .ln{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:3px;font-size:12px;color:var(--fg2)}
+.contact .ln span{display:inline-flex;align-items:center;gap:4px;user-select:all}
+.contact .ln .ic{width:12px;height:12px}
+.ctype{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--fg2);font-weight:600;margin:10px 0 5px}
+.ctype .ic{width:13px;height:13px}
+
+/* alerts & paper */
+.alert{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.alert:last-child{border-bottom:0}
+.alert .ai{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--sunk);color:var(--fg2)}
+.alert .ai .ic{width:16px;height:16px}
+.alert.unread .ai{background:var(--accent-soft);color:var(--accent)}
+.alert.unread .t{font-weight:600}
+.paper{background:var(--paper);color:var(--paper-fg);border:1px solid var(--paper-line);border-radius:8px;padding:26px 28px;font-size:13.5px;line-height:1.6}
+.paper h2{font-family:var(--serif);font-weight:500;font-size:22px;margin-bottom:2px}
+.paper h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#0F6E56;margin:18px 0 6px;font-weight:700}
+.paper .sub{color:#6E6A5F;font-size:12.5px}
+.paper .pj{padding:9px 0;border-bottom:1px solid var(--paper-line)}
+.paper .pj:last-child{border-bottom:0}
+.paper .pj b{display:block}
+.paper .pj span{color:#6E6A5F;font-size:12.5px}
+.paper .sc{display:inline-block;font-weight:700;color:#0F6E56;margin-right:6px}
+.paper .foot{margin-top:18px;padding-top:10px;border-top:1px solid var(--paper-line);font-size:11.5px;color:#6E6A5F}
+.paper .cta{display:inline-block;margin-top:10px;background:#0F6E56;color:#FAF7F2;padding:7px 14px;border-radius:7px;font-weight:600;font-size:12.5px}
+
+/* charts */
+.hbar{display:grid;grid-template-columns:150px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:12.5px;padding:4px 0}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:12px;width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal.wide{max-width:840px}
+.modal-h{padding:16px 20px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.modal-t{font-size:16px;font-weight:600;min-width:0}
+.modal-x{background:none;border:0;color:var(--fg2);font-size:24px;line-height:1;padding:2px 6px}
+.modal-b{padding:18px 20px;overflow-y:auto}
+.modal-f{padding:12px 20px 16px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.modal-f:empty{display:none}
+.msec{margin-bottom:18px}.msec:last-child{margin-bottom:0}
+
+/* tour */
+#tour-backdrop{position:fixed;inset:0;background:var(--scrim);z-index:3000}
+#tour-spot{position:fixed;z-index:3001;border:2px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(20,19,16,.42);pointer-events:none;transition:left .25s,top .25s,width .25s,height .25s}
+#tour-card{position:fixed;z-index:3002;width:360px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+#tour-card.center{left:50%;top:50%;transform:translate(-50%,-50%);width:470px}
+#tour-card.dock{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;max-width:none}
+.tour-x{position:absolute;top:10px;right:10px;background:none;border:0;color:var(--fg2);padding:4px;display:flex}
+.tour-step{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-weight:700}
+.tour-title{font-family:var(--serif);font-weight:500;font-size:20px;margin:0 24px 6px 0;text-wrap:balance;line-height:1.25}
+.tour-body{font-size:13.5px;color:var(--fg2);line-height:1.55}
+.tour-prog{height:3px;background:var(--sunk);border-radius:3px;margin:14px 0 12px;overflow:hidden}
+.tour-prog span{display:block;height:100%;background:var(--accent)}
+.tour-actions{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.tour-final{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tour-mark{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.tour-mark .ic{width:24px;height:24px}
+.prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.price{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:12px;color:var(--fg2)}
+.price b{display:block;color:var(--fg);font-size:13px}
+.price .amt{font-size:17px;font-weight:700;color:var(--accent);margin-top:2px}
+body.modal-open #tour-spot,body.modal-open #tour-card,body.modal-open #tour-backdrop{display:none}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--fg);color:var(--bg);border-radius:10px;padding:12px 16px;font-size:13px;z-index:4000;display:flex;align-items:center;gap:10px;transform:translateY(90px);opacity:0;transition:transform .3s,opacity .3s;max-width:420px;pointer-events:none;box-shadow:var(--shadow)}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media (max-width:1150px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-32{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);transition:transform .22s ease;box-shadow:var(--shadow);width:264px}
+  .app.drawer-open .sidebar{transform:translateX(0)}
+  .app.drawer-open .sidebar-backdrop{display:block}
+  .menu-btn{display:inline-flex}
+  .topbar{padding:0 12px}
+  .qs{display:none}
+  .mob-brand{display:block!important}
+  .demo-bar{padding:7px 14px}
+  .demo-bar .long{display:none}
+  .content{padding:18px 16px}
+  .card{padding:16px}
+  .top-actions .lbl{display:none}
+  .top-actions .btn{padding:8px 10px}
+  .grid-2,.form-grid,.samples,.ind-grid{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi:last-child{grid-column:1/-1}
+  .spec-layout{grid-template-columns:minmax(0,1fr)}
+  .inp{font-size:16px}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal,.modal.wide{max-width:100%;max-height:92%;border-radius:14px 14px 0 0}
+  .toast{left:16px;right:16px;bottom:16px;max-width:none}
+  .job{padding:14px;gap:12px}
+  .score{width:48px;height:48px;font-size:15px}
+  .fbar{grid-template-columns:96px 36px minmax(0,1fr)}
+  .hbar{grid-template-columns:110px minmax(0,1fr) 40px}
+  .page-head h1{font-size:25px}
+  .prices{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:480px){.kpi .v{font-size:22px}.job{flex-direction:column}.match-head{flex-direction:row}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5 5 5M12 4v12"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+<symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16M16 9h3a2 2 0 0 1 2 2v10M9 7h3M9 11h3M9 15h3"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+<symbol id="i-pound" viewBox="0 0 24 24"><path d="M17 6.5A4 4 0 0 0 9 8v4M6 12h9M8 12v3a4 4 0 0 1-2 3.5h12"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M10 14L21 3M21 3l-6.5 18a.55.55 0 0 1-1 0L10 14l-7-3.5a.55.55 0 0 1 0-1z"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11A8 8 0 0 0 5.3 7M4 4v4h4M4 13a8 8 0 0 0 14.7 4M20 20v-4h-4"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+<symbol id="i-linked" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 11v5M8 8v.01M12 16v-5M16 16v-3a2 2 0 0 0-4 0"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 7 7 6 6 0 0 0 3-5 9 9 0 0 0 6-8 3 3 0 0 0-3-3 9 9 0 0 0-8 6 6 6 0 0 0-5 3"/><path d="M7 14a6 6 0 0 0-3 6 6 6 0 0 0 6-3"/><circle cx="15" cy="9" r="1"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2zM9 13h6M9 17h6"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
+<symbol id="i-crm" viewBox="0 0 24 24"><path d="M4 12h11M11 7l5 5-5 5"/><rect x="16" y="4" width="5" height="16" rx="1.5"/></symbol>
+</defs>
+</svg>
+
+<div class="app" id="app">
+  <div class="sidebar-backdrop" data-menu></div>
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand"><span class="mk"><svg class="ic"><use href="#i-target"/></svg></span>VacancyMatch</div>
+    <div class="tenant"><span>Sample agency</span><b>Fenwick Hale Search</b></div>
+    <nav class="nav">
+      <button class="nav-item" data-nav="dashboard"><svg class="ic"><use href="#i-dash"/></svg>Dashboard</button>
+      <button class="nav-item" data-nav="upload"><svg class="ic"><use href="#i-upload"/></svg>Upload CV</button>
+      <button class="nav-item" data-nav="candidates"><svg class="ic"><use href="#i-users"/></svg>Candidates</button>
+      <button class="nav-item" data-nav="matches"><svg class="ic"><use href="#i-target"/></svg>Matches<span class="nav-badge" id="badge-m" hidden></span></button>
+      <button class="nav-item" data-nav="roles"><svg class="ic"><use href="#i-brief"/></svg>Top Roles</button>
+      <button class="nav-item" data-nav="search"><svg class="ic"><use href="#i-search"/></svg>Job Search</button>
+      <button class="nav-item" data-nav="spec"><svg class="ic"><use href="#i-clip"/></svg>Spec Lists</button>
+      <div class="nav-sec">Admin</div>
+      <button class="nav-item" data-nav="sources"><svg class="ic"><use href="#i-db"/></svg>Sources</button>
+      <button class="nav-item" data-nav="alerts"><svg class="ic"><use href="#i-bell"/></svg>Alerts<span class="nav-badge" id="badge-a" hidden></span></button>
+      <button class="nav-item" data-nav="compliance"><svg class="ic"><use href="#i-shield"/></svg>Compliance</button>
+    </nav>
+    <div class="side-foot">
+      <div class="plan"><b>Professional plan · demo</b><br>Sector scorecards, recruiter filtering and 25 saved searches</div>
+      <div class="me"><span class="avatar">SL</span><div><div class="small strong">Sophie Lane</div><div class="xs muted">Owner · Fenwick Hale</div></div></div>
+      <div class="licence">VacancyMatch is a Tower Street Web &amp; Apps product.</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="demo-bar"><b>Live demo</b><span class="grow"><span class="long">Fenwick Hale Search is a sample agency. </span>Everything works. Nothing is saved or sent.</span><button class="linkbtn" data-reset>Reset demo</button></div>
+    <header class="topbar">
+      <div class="row" style="min-width:0;flex:1">
+        <button class="icon-btn menu-btn" data-menu aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+        <strong class="mob-brand" style="display:none">VacancyMatch</strong>
+        <form class="qs" id="qs-form"><svg class="ic"><use href="#i-search"/></svg><input id="qs-in" placeholder="Quick search jobs, e.g. underwriter (Enter)" autocomplete="off" aria-label="Quick search jobs"></form>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" data-theme-toggle aria-label="Switch light or dark mode" id="theme-btn"><svg class="ic"><use href="#i-moon"/></svg></button>
+        <button class="btn btn-out" data-tour="start"><svg class="ic"><use href="#i-play"/></svg><span class="lbl">Take the tour</span></button>
+        <a class="btn btn-pri" href="https://tsirm.co.uk/signup" target="_blank" rel="noopener"><svg class="ic"><use href="#i-rocket"/></svg><span class="lbl">Start free trial</span></a>
+      </div>
+    </header>
+    <main class="content" id="content">
+      <section class="page" id="page-dashboard"></section>
+      <section class="page" id="page-upload"></section>
+      <section class="page" id="page-candidates"></section>
+      <section class="page" id="page-matches"></section>
+      <section class="page" id="page-roles"></section>
+      <section class="page" id="page-search"></section>
+      <section class="page" id="page-spec"></section>
+      <section class="page" id="page-sources"></section>
+      <section class="page" id="page-alerts"></section>
+      <section class="page" id="page-compliance"></section>
+    </main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-t">
+    <div class="modal-h"><div class="modal-t" id="modal-t"></div><button class="modal-x" data-close aria-label="Close">&times;</button></div>
+    <div class="modal-b" id="modal-b"></div>
+    <div class="modal-f" id="modal-f"></div>
+  </div>
+</div>
+<div id="tour-backdrop" hidden></div>
+<div id="tour-spot" hidden></div>
+<div id="tour-card" role="dialog" aria-label="Guided tour" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const TRIAL='https://tsirm.co.uk/signup',PRICING='https://tsirm.co.uk/pricing';
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,st)=>`<svg class="ic" aria-hidden="true"${st?` style="${st}"`:''}><use href="#i-${n}"/></svg>`;
+const kf=n=>'£'+Math.round(n/1000)+'k';
+const money=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ago=d=>d<=0?'Today':d===1?'Yesterday':d+' days ago';
+const initials=s=>s.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const now=()=>{const d=new Date();return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});};
+
+const SECTORS={insurance:'Insurance',banking:'Banking',pensions:'Pensions',asset_management:'Asset Management',accountancy_finance:'Accountancy & Finance',it_tech:'IT & Tech'};
+const SEC_VAR={insurance:'--ins-fg',banking:'--bank-fg',pensions:'--pen-fg',asset_management:'--am-fg',accountancy_finance:'--acc-fg',it_tech:'--it-fg'};
+const secChip=s=>`<span class="pill sec-${s}">${esc(SECTORS[s])}</span>`;
+const secDot=s=>`<span class="dot" style="background:var(${SEC_VAR[s]})"></span>`;
+const WEIGHTS=[['skills','Skills',25],['title','Job title',15],['industry','Industry',15],['location','Location',15],['semantic','Meaning match',15],['comp','Salary',10],['recency','Recency',5]];
+const SRC_KIND={1:'Direct employer site',2:'Workday',3:'Greenhouse',4:'Google Jobs',5:'Reed',6:'Adzuna',7:'Direct employer site',8:'Direct employer site'};
+
+function J(id,title,co,sector,family,loc,area,min,max,days,src,kind,skills,desc){return {id,title,co,sector,family,loc,area,min,max,days,src,kind,skills,desc};}
+const BASE_JOBS=[
+ J(1,'Senior Property Underwriter','Meridian Specialty','insurance','Underwriting','London EC3','London',85000,100000,1,1,'direct',['Property',"Lloyd's",'Delegated authority','Binders','Pricing'],"Lead a £45m open-market and binder property book, set pricing and manage coverholder relationships across the UK and Europe. You will audit binders and work closely with the pricing team."),
+ J(2,'Delegated Authority Manager','Greyfriars MGA','insurance','Delegated authority','London EC3','London',75000,90000,2,2,'direct',['Delegated authority','Coverholder audits','Bordereaux',"Lloyd's"],"Own the coverholder audit programme, bordereaux controls and binder renewals for a fast-growing MGA writing on Lloyd's paper."),
+ J(3,'Casualty Claims Team Leader','Albion Mutual','insurance','Claims','Chelmsford','Essex',55000,64000,4,3,'direct',['Casualty claims','Liability','Team leadership','Reserving'],"Lead a team of eight liability handlers, set reserves on complex employers' and public liability claims and coach handlers on negotiation."),
+ J(4,'Pricing Actuary','Stanmore Re','insurance','Actuarial','London','London',90000,115000,3,4,'direct',['Pricing','Python','Reserving','IFRS 17','Actuarial'],"Build pricing models for casualty treaty business in Python and support reserving and IFRS 17 reporting."),
+ J(5,'Marine Cargo Underwriter','Oakfield Syndicates','insurance','Underwriting','London EC3','London',65000,80000,6,1,'direct',['Cargo','Marine hull',"Lloyd's",'Broker relationships'],"Write open-market and lineslip cargo business and grow broker relationships across the London market."),
+ J(6,'Compliance Manager, Consumer Duty','Harrowgate Life','insurance','Compliance','Southend-on-Sea','Essex',55000,65000,5,6,'direct',['Consumer Duty','FCA','Compliance monitoring'],"Run the Consumer Duty monitoring plan, report outcomes to the board and manage FCA regulatory change for a life insurer."),
+ J(7,'Senior Property Underwriter','Harbour Lane Recruitment','insurance','Underwriting','London','London',80000,95000,1,5,'agency',['Property',"Lloyd's",'Binders'],"Our client, a Lloyd's syndicate, is looking for a senior property underwriter to join a growing binder team."),
+ J(8,'Pensions Administrator','Northbank Pensions Trust','pensions','Administration','Brentwood','Essex',32000,38000,2,3,'direct',['Pensions administration','Defined benefit','Calculations','Excel'],"Administer defined benefit schemes: retirement quotes, transfer values and member queries, with full training on our systems."),
+ J(9,'Pensions Actuarial Analyst','Castlegate Consulting','pensions','Actuarial','London','London',55000,70000,3,4,'direct',['Actuarial','Defined benefit','Valuations','Python'],"Support scheme valuations, funding updates and buy-in pricing for defined benefit trustee clients."),
+ J(10,'Trustee Executive','Northbank Pensions Trust','pensions','Governance','London','London',60000,70000,9,3,'direct',['Trustee governance','Defined benefit','Stakeholder management'],"Run trustee board meetings, governance calendars and adviser relationships for a £2bn defined benefit scheme."),
+ J(11,'Senior Pensions Technical Specialist','Ferrymead Pensions','pensions','Technical','Colchester','Essex',45000,55000,12,6,'direct',['Pensions administration','Defined benefit','Calculations','Pensions legislation'],"Be the technical lead for complex defined benefit calculations, GMP equalisation and pensions legislation queries."),
+ J(12,'Head of Pensions Operations','Sterling Talent','pensions','Operations','London','London',85000,100000,4,5,'agency',['Pensions administration','Team leadership','Defined benefit'],"Our client, a leading administrator, needs a head of operations to lead 60 administrators."),
+ J(13,'Credit Risk Analyst','Pemberton Bank','banking','Risk','London','London',55000,68000,2,2,'direct',['Credit risk','SQL','Python','IFRS 9'],"Monitor the SME lending portfolio, maintain IFRS 9 expected credit loss models and present risk reporting to committee."),
+ J(14,'KYC Team Leader','Pemberton Bank','banking','Financial crime','Chelmsford','Essex',45000,52000,7,2,'direct',['KYC','AML','Team leadership'],"Lead a team of ten KYC analysts on onboarding and periodic reviews for commercial customers."),
+ J(15,'Treasury Analyst','Lyndhurst Building Society','banking','Treasury','Southend-on-Sea','Essex',48000,58000,5,1,'direct',['Treasury','ALM','Excel'],"Manage daily liquidity, support ALM reporting and prepare funding analysis for the treasury committee."),
+ J(16,'Financial Crime Manager','Lyndhurst Building Society','banking','Financial crime','Southend-on-Sea','Essex',70000,85000,8,1,'direct',['AML','Financial crime','FCA','Team leadership'],"Own the financial crime framework, lead investigations and act as deputy MLRO."),
+ J(17,'Investment Operations Analyst','Castleford Asset Management','asset_management','Operations','London','London',40000,50000,3,3,'direct',['Trade settlement','Aladdin','Excel'],"Settle trades across equities and fixed income and resolve breaks in Aladdin."),
+ J(18,'Portfolio Analyst, Fixed Income','Castleford Asset Management','asset_management','Investment','London','London',55000,70000,6,3,'direct',['Portfolio analytics','Python','Fixed income','SQL'],"Produce risk and performance analytics for fixed income portfolio managers using Python and SQL."),
+ J(19,'Client Reporting Manager','Kestrel Investment Partners','asset_management','Client service','London','London',60000,72000,10,4,'direct',['Client reporting','Performance measurement','Excel'],"Own quarterly client reporting and performance attribution for institutional mandates."),
+ J(20,'Financial Controller','Albion Mutual','accountancy_finance','Finance','Chelmsford','Essex',75000,85000,3,3,'direct',['IFRS 17','Solvency II','ACA','Month-end','Team leadership'],"Lead month-end, IFRS 17 and Solvency II reporting for a mutual insurer with a team of six."),
+ J(21,'Insurance Finance Manager','Greyfriars MGA','accountancy_finance','Finance','London EC3','London',70000,82000,2,2,'direct',['IFRS 17','Solvency II reporting','ACA','Month-end'],"Run month-end and quarterly reporting to capacity providers, including IFRS 17 and Solvency II returns."),
+ J(22,'Audit Senior, Financial Services','Thornbury & Co','accountancy_finance','Audit','Chelmsford','Essex',42000,50000,11,6,'direct',['Audit','ACA','Financial services'],"Run audits of insurers, brokers and wealth managers for a growing Essex practice."),
+ J(23,'Financial Controller, Insurance','Sterling Talent','accountancy_finance','Finance','London','London',80000,90000,2,5,'agency',['IFRS 17','ACA','Solvency II'],"Our client, a Lloyd's managing agent, is recruiting a financial controller."),
+ J(24,'Data Engineer','Stanmore Re','it_tech','Data','London','London',70000,85000,1,4,'direct',['Python','SQL','dbt','Azure'],"Build the reinsurance data platform on Azure with dbt and Python, feeding pricing and claims analytics."),
+ J(25,'Guidewire Business Analyst','Albion Mutual','it_tech','Business analysis','Chelmsford','Essex',55000,65000,6,3,'direct',['Guidewire','Business analysis','Claims systems'],"Gather requirements and test changes for the Guidewire ClaimCenter rollout."),
+ J(26,'BI Developer','Pemberton Bank','it_tech','Data','London','London',55000,65000,4,2,'direct',['Power BI','SQL','DAX'],"Build Power BI dashboards and SQL data models for the lending and risk teams."),
+ J(27,'Claims Handler, Liability','Harbour Lane Recruitment','insurance','Claims','Chelmsford','Essex',36000,42000,2,5,'agency',['Liability','Casualty claims'],"Our client, a regional insurer, is looking for a liability claims handler."),
+];
+const SWEEP_JOBS=[
+ J(28,'Senior Delegated Authority Underwriter','Kinsale Marine','insurance','Delegated authority','London EC3','London',80000,95000,0,4,'direct',['Delegated authority','Coverholder audits',"Lloyd's",'Binders','Property'],"Underwrite and audit a portfolio of property binders and coverholders for a Lloyd's marine and property carrier."),
+ J(29,'Pensions Administration Team Leader','Ferrymead Pensions','pensions','Administration','Colchester','Essex',42000,48000,0,4,'direct',['Pensions administration','Defined benefit','Team leadership','Calculations'],"Lead eight administrators on defined benefit calculations, retirements and transfers, and check complex cases."),
+ J(30,'Head of Financial Reporting','Harrowgate Life','accountancy_finance','Finance','Southend-on-Sea','Essex',85000,98000,0,4,'direct',['IFRS 17','Solvency II reporting','ACA','Team leadership'],"Lead IFRS 17 and Solvency II reporting for a life insurer and manage a team of five."),
+];
+function C(id,first,last,title,emp,loc,area,yrs,exp,sectors,skills,summary,up){return {id,first,last,title,emp,loc,area,yrs,exp,sectors,skills,summary,up};}
+const BASE_CANDS=[
+ C(1,'Hannah','Clarke','Property Underwriter','Blackwall Syndicate','London','London',7,92000,['insurance'],['Property',"Lloyd's",'Delegated authority','Binders','Excel'],"Seven years underwriting UK and European property on a £38m open-market and binder book at a Lloyd's syndicate. ACII qualified. Audits coverholders and wants more pricing input.",3),
+ C(2,'Amelia','Shaw','Finance Manager','Pembroke Re','London','London',9,80000,['accountancy_finance','insurance'],['IFRS 17','Solvency II reporting','ACA','Month-end','Team leadership'],"ACA qualified finance manager at a reinsurer. Led the IFRS 17 transition for the London branch and runs quarterly Solvency II reporting with a team of four.",5),
+ C(3,'Daniel','Okoro','Senior Pensions Administrator','Bramwell Pensions Services','Brentwood','Essex',5,40000,['pensions'],['Pensions administration','Defined benefit','Calculations','Excel','Pensions legislation'],"Five years on defined benefit schemes: transfer values, retirement quotes and GMP equalisation calculations. Checks junior administrators' work.",2),
+ C(4,'Marcus','Webb','Credit Risk Analyst','Northgate Bank','Chelmsford','Essex',4,62000,['banking'],['Credit risk','SQL','Python','IFRS 9'],"Builds IFRS 9 expected credit loss models in Python and SQL for a retail and SME lending book and presents monthly risk reporting.",8),
+ C(5,'Grace','Adebayo','Data Engineer','Lumen Insurance Services','London','London',6,78000,['it_tech','insurance'],['Python','SQL','dbt','Azure','Airflow'],"Runs an Azure data platform for a claims business: 120 dbt models, Airflow orchestration and Power BI feeds for underwriting and claims teams.",1),
+ C(6,'Tom','Reilly','Claims Team Leader','Rowan Insurance','Southend-on-Sea','Essex',11,58000,['insurance'],['Casualty claims','Liability','Team leadership','Reserving','Negotiation'],"Leads six liability handlers on employers' and public liability claims up to £500k reserve. CII Diploma qualified and sets reserves on complex files.",4),
+];
+const SAMPLE_CVS=[
+ {file:'Chloe_Turner_CV.pdf',c:C(0,'Chloe','Turner','Delegated Authority Executive','Ashgrove Specialty','London','London',6,74000,['insurance'],['Delegated authority','Coverholder audits','Bordereaux',"Lloyd's",'Binders'],"Six years in delegated authority at a Lloyd's managing agent. Runs coverholder audits, checks bordereaux and manages binder renewals for 40 coverholders.",0)},
+ {file:'Ravi Patel - CV 2026.docx',c:C(0,'Ravi','Patel','Pensions Actuarial Analyst','Holloway Actuarial','Chelmsford','Essex',3,60000,['pensions'],['Actuarial','Defined benefit','Valuations','Python','Excel'],"Actuarial analyst on defined benefit valuations and funding updates. Automates valuation data checks in Python. Four exams passed.",0)},
+ {file:'CV_Leah_Morgan.pdf',c:C(0,'Leah','Morgan','Compliance Analyst','Brookfield Mutual','Colchester','Essex',5,52000,['insurance','banking'],['Consumer Duty','FCA','Compliance monitoring','AML'],"Compliance analyst running Consumer Duty outcome testing and FCA regulatory change for an insurer, with earlier AML experience at a building society.",0)},
+];
+const SOURCES=()=>[
+ {id:1,name:'London insurance careers directory',type:'Careers directory',detail:'214 employer careers pages',status:'ok',last:'38 min ago',fetched:1840,newc:12,live:1206,on:true},
+ {id:2,name:'Workday job boards',type:'ATS',detail:'31 employers',status:'ok',last:'1 hour ago',fetched:612,newc:5,live:584,on:true},
+ {id:3,name:'Greenhouse and Lever boards',type:'ATS',detail:'22 employers',status:'ok',last:'1 hour ago',fetched:298,newc:3,live:287,on:true},
+ {id:4,name:'Google Jobs, UK financial services',type:'Aggregator',detail:'38 saved queries',status:'ok',last:'3 hours ago',fetched:1122,newc:0,live:941,on:true},
+ {id:5,name:'Reed',type:'Job board',detail:'Financial services categories',status:'warn',msg:'Rate limited on the last run. Retrying automatically in 20 minutes.',last:'2 hours ago',fetched:420,newc:0,live:512,on:true},
+ {id:6,name:'Adzuna',type:'Job board',detail:'Financial services categories',status:'ok',last:'2 hours ago',fetched:386,newc:4,live:382,on:true},
+ {id:7,name:'Meridian Specialty careers page',type:'Employer site',detail:'meridianspecialty.example/careers',status:'bad',msg:'Careers page moved. The old address returns 404.',last:'1 day ago',fetched:0,newc:0,live:0,on:true},
+];
+function buildState(){
+  const s={jobs:BASE_JOBS.map(j=>Object.assign({},j,{skills:j.skills.slice()})),cands:BASE_CANDS.map(c=>Object.assign({},c)),sources:SOURCES(),
+    status:{'2-21':'shortlisted','3-8':'pushed','4-13':'shortlisted','6-3':'shortlisted','5-26':'dismissed'},
+    swept:false,nextCand:7,nextJob:31,market:{insurance:1284,banking:947,pensions:412,asset_management:538,accountancy_finance:463,it_tech:268},
+    matchCand:'all',matchTab:'new',openWhy:{},
+    q:{text:'',sector:'all',area:'any',min:0,recruiters:false,sort:'best'},
+    saved:[{id:1,name:'Insurance underwriters, London, £70k+',q:'underwriter',sector:'insurance',area:'London',min:70000,freq:'Hourly',on:true},{id:2,name:'Pensions roles in Essex',q:'',sector:'pensions',area:'Essex',min:0,freq:'Daily digest',on:true},{id:3,name:'IFRS 17 finance roles',q:'IFRS 17',sector:'all',area:'any',min:0,freq:'Daily digest',on:true}],
+    alerts:[
+      {id:1,kind:'search',t:'2 new jobs for "Insurance underwriters, London, £70k+"',s:'Senior Property Underwriter at Meridian Specialty, Senior Property Underwriter via Harbour Lane Recruitment',when:'Today, 08:10',unread:true,go:'search'},
+      {id:2,kind:'match',t:'New 86% match for Grace Adebayo',s:'Data Engineer at Stanmore Re, posted yesterday',when:'Today, 07:52',unread:true,go:'matches'},
+      {id:3,kind:'source',t:'Meridian Specialty careers page is failing',s:'The page moved. Update the address on Sources to keep its jobs coming in.',when:'Yesterday, 18:30',unread:true,go:'sources'},
+      {id:4,kind:'search',t:'1 new job for "IFRS 17 finance roles"',s:'Insurance Finance Manager at Greyfriars MGA',when:'Yesterday, 11:05',unread:false,go:'search'},
+    ],
+    digest:{on:true,time:'07:30'},
+    folders:[{id:1,name:'Q4 insurance targets',vis:'team'},{id:2,name:'Essex pensions',vis:'team'},{id:3,name:'Finance leaders',vis:'personal'}],
+    specItems:[{id:1,f:1,j:2,note:'Greyfriars are growing fast. Pitch Hannah and Chloe-type DA profiles.'},{id:2,f:1,j:5},{id:3,f:1,j:4},{id:4,f:2,j:8},{id:5,f:2,j:11},{id:6,f:3,j:20}],
+    contacts:{},nextSpec:7,nextFolder:4,folderSel:1,specTab:'team',
+    audit:[
+      {t:'Today, 08:02',u:'Sophie Lane',a:'Candidate shortlisted',d:'Amelia Shaw for Insurance Finance Manager, Greyfriars MGA'},
+      {t:'Yesterday, 16:40',u:'James Okafor',a:'Pushed to CRM',d:'Daniel Okoro for Pensions Administrator, Northbank Pensions Trust'},
+      {t:'Yesterday, 15:12',u:'Sophie Lane',a:'CV uploaded',d:'Grace Adebayo, Data Engineer'},
+      {t:'Yesterday, 09:30',u:'Priya Desai',a:'Saved search created',d:'IFRS 17 finance roles'},
+      {t:'2 days ago',u:'Sophie Lane',a:'Team member invited',d:'priya.desai@fenwickhale.example as Recruiter'},
+      {t:'3 days ago',u:'System',a:'Retention review',d:'2 candidates reached 24 months without contact and were flagged'},
+    ],
+    crm:[{t:'Yesterday, 16:40',d:'Daniel Okoro → Pensions Administrator',ok:true}],
+    retention:{months:24,auto:true},
+    rolesAt:'2 hours ago',
+  };
+  s.specItems.forEach(it=>{s.contacts[it.id]=genContacts(s.jobs.find(j=>j.id===it.j),it.id);});
+  return s;
+}
+/* fictional contact generator for spec lists */
+const FN=['Helen','David','Rachel','James','Sofia','Mark','Laura','Owen','Nadia','Simon','Ellie','Peter','Hina','Craig','Beth'];
+const LN=['Marsh','Okafor','Lin','Porter','Marques','Doyle','Bennett','Hughes','Rahman','Fraser','Cole','Grant','Sato','Webster','Lowe'];
+const TA_T=['Talent Acquisition Manager','Head of Talent','Talent Partner','Senior Recruiter'];
+function genContacts(j,seed){const k=(j.id*7+seed*3);const dom=j.co.toLowerCase().replace(/&/g,'and').replace(/[^a-z]+/g,'')+'.example';
+  const mk=(i,type,title,conf)=>{const f=FN[(k+i*5)%FN.length],l=LN[(k+i*3+1)%LN.length];return {id:seed*10+i,name:f+' '+l,title,email:(f+'.'+l).toLowerCase()+'@'+dom,phone:i===1?'':'020 7946 0'+String(100+((k*13+i*7)%900)).padStart(3,'0'),type,conf};};
+  const hm={Underwriting:'Head of Property Underwriting','Delegated authority':'Head of Delegated Authority',Claims:'Claims Manager',Actuarial:'Chief Actuary',Compliance:'Chief Risk Officer',Administration:'Head of Administration',Governance:'Head of Pensions',Technical:'Technical Director',Operations:'COO',Risk:'Head of Credit Risk','Financial crime':'MLRO',Treasury:'Head of Treasury',Investment:'Head of Fixed Income','Client service':'Head of Client Service',Finance:'Chief Financial Officer',Audit:'Audit Partner',Data:'Head of Data','Business analysis':'Head of Change'}[j.family]||'Hiring Manager';
+  return [mk(0,'ta',TA_T[k%TA_T.length],'high'),mk(1,'hm',hm,k%3===0?'guess':'high')];
+}
+let state=buildState();
+const job=id=>state.jobs.find(j=>j.id===id);
+const cand=id=>state.cands.find(c=>c.id===id);
+const name=c=>c.first+' '+c.last;
+const jobsLive=()=>state.jobs.filter(j=>{const s=state.sources.find(x=>x.id===j.src);return !s||s.on;});
+const marketTotal=()=>Object.values(state.market).reduce((a,b)=>a+b,0);
+function srcBadge(j){if(j.kind==='agency')return `<span class="src agency">${ic('users')}Agency posting</span>`;const d=j.src===1||j.src===7||j.src===8;return `<span class="src ${d?'direct':''}">${ic(d?'building':'globe')}${d?'Direct employer site':'Via '+SRC_KIND[j.src]}</span>`;}
+const salary=j=>`${kf(j.min)} to ${kf(j.max)}`;
+const posted=d=>d<=0?'Posted today':d===1?'Posted yesterday':`Posted ${d} days ago`;
+
+/* ---------- explainable seven-factor scoring ---------- */
+const STOP=new Set(['senior','head','of','and','the','lead','team','leader','manager','executive','specialist','technical',',','analyst']);
+const toks=s=>s.toLowerCase().replace(/[^a-z0-9' ]/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w));
+const WORDS=s=>new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>4&&w!=='lloyd'));
+const RELATED={insurance:['accountancy_finance','it_tech'],accountancy_finance:['insurance','banking'],banking:['accountancy_finance','asset_management'],asset_management:['banking'],pensions:['asset_management'],it_tech:['insurance','banking']};
+function score(c,j){
+  const cs=new Set(c.skills.map(s=>s.toLowerCase()));
+  const hits=j.skills.filter(s=>cs.has(s.toLowerCase())),miss=j.skills.filter(s=>!cs.has(s.toLowerCase()));
+  const f={};
+  f.skills={v:hits.length/j.skills.length,n:`${hits.length} of ${j.skills.length} required skills on the CV`};
+  const jt=toks(j.title),ct=new Set(toks(c.title));const common=jt.filter(w=>ct.has(w));
+  f.title={v:c.title.toLowerCase()===j.title.toLowerCase()?1:common.length?Math.min(.9,common.length/Math.max(1,jt.length)*.8+.15):.12,n:common.length?`Titles share "${common.join(' ')}"`:`${c.title} is a different job title`};
+  f.industry=c.sectors.includes(j.sector)?{v:1,n:`Works in ${SECTORS[j.sector].toLowerCase()} now`}:(c.sectors.some(s=>(RELATED[s]||[]).includes(j.sector))?{v:.4,n:`Related sector: ${c.sectors.map(s=>SECTORS[s]).join(', ')}`}:{v:.1,n:`No ${SECTORS[j.sector].toLowerCase()} experience`});
+  const town=j.loc.replace(/ EC\d.*/,'');
+  f.location=c.loc===town?{v:1,n:`Lives in ${town}`}:c.area===j.area?{v:.85,n:`${c.loc} to ${town}, same area`}:(c.area==='Essex'&&j.area==='London')?{v:.6,n:`${c.loc} to London, about an hour by train`}:{v:.4,n:`London to ${town} is a reverse commute`};
+  const cw=WORDS(c.summary+' '+c.skills.join(' ')),jw=[...WORDS(j.desc+' '+j.skills.join(' '))].filter(w=>cw.has(w));
+  f.semantic={v:Math.min(.9,.3+jw.length*.12),n:jw.length?`CV and advert both talk about ${jw.slice(0,3).join(', ')}`:'CV and advert describe different work'};
+  if(c.exp>=j.min*.9&&c.exp<=j.max)f.comp={v:1,n:`Expects ${kf(c.exp)}, inside the ${salary(j)} band`};
+  else if(c.exp<j.min*.9)f.comp={v:.8,n:`Expects ${kf(c.exp)}, below the band`};
+  else{const o=c.exp/j.max-1;f.comp={v:Math.max(0,1-o*4),n:`Expects ${kf(c.exp)}, ${Math.round(o*100)}% above the top of the band`};}
+  f.recency=j.days<=2?{v:1,n:posted(j.days)}:j.days<=7?{v:.8,n:posted(j.days)}:j.days<=14?{v:.55,n:posted(j.days)}:{v:.35,n:posted(j.days)};
+  const total=Math.min(97,Math.round(WEIGHTS.reduce((t,[k,,w])=>t+f[k].v*w,0)));
+  return {score:total,f,hits,miss};
+}
+const cls=s=>s>=70?'s-hi':s>=50?'s-mid':'s-lo';
+function matchesFor(c){return jobsLive().filter(j=>j.kind!=='agency').map(j=>({c,j,m:score(c,j)})).filter(x=>x.m.score>=30).sort((a,b)=>b.m.score-a.m.score).slice(0,25);}
+function allMatches(){const out=[];state.cands.forEach(c=>matchesFor(c).forEach(x=>out.push(x)));return out;}
+const stOf=(c,j)=>state.status[c.id+'-'+j.id]||'new';
+function logAudit(a,d,u){state.audit.unshift({t:'Today, '+now(),u:u||'Sophie Lane',a,d});}
+function fresh(x){return x.m.score>=60&&(x.c.up<=1||x.j.days<=1)&&stOf(x.c,x.j)==='new';}
+
+/* ---------- dashboard ---------- */
+function renderDashboard(){
+  const all=allMatches();const newM=all.filter(fresh).length;const sl=all.filter(x=>stOf(x.c,x.j)==='shortlisted').length;
+  const mk=state.market,max=Math.max(...Object.values(mk));
+  const top=all.filter(x=>stOf(x.c,x.j)==='new').sort((a,b)=>b.m.score-a.m.score).slice(0,5);
+  $('#page-dashboard').innerHTML=`<div class="page-head"><div><h1>Dashboard</h1><p>Market and pipeline overview for Fenwick Hale Search.</p></div><div class="row wrap"><button class="btn btn-out" data-nav="search">${ic('search')}Search jobs</button><button class="btn btn-pri" data-nav="upload">${ic('upload')}Upload a CV</button></div></div>
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="t">Active candidates${ic('users')}</div><div class="v">${state.cands.length}</div><div class="s">with parsed CVs</div></div>
+    <div class="kpi k-acc"><div class="t">New matches${ic('spark')}</div><div class="v">${newM}</div><div class="s">last 24 hours</div></div>
+    <div class="kpi k-hi"><div class="t">Live jobs${ic('brief')}</div><div class="v">${marketTotal().toLocaleString('en-GB')}</div><div class="s">across 6 sectors</div></div>
+    <div class="kpi"><div class="t">Shortlisted${ic('target')}</div><div class="v">${sl}</div><div class="s">ready to present</div></div>
+    <div class="kpi"><div class="t">Active sources${ic('db')}</div><div class="v">${state.sources.filter(s=>s.on).length}</div><div class="s">${state.sources.filter(s=>s.status!=='ok').length} need attention</div></div>
+  </div>
+  <div class="card" id="industry"><div class="card-h"><div><div class="card-t">Jobs by industry</div><div class="card-s">Live vacancies, recruitment agencies excluded. Click a sector to search it.</div></div><button class="btn btn-sm btn-ghost" data-nav="roles">View top roles ${ic('arrow')}</button></div>
+    <div class="ind-grid">${Object.keys(mk).map(s=>`<button class="ind" data-sector-go="${s}"><div class="top"><span class="row" style="gap:8px">${secDot(s)}${SECTORS[s]}</span><span class="n" style="color:var(${SEC_VAR[s]})">${mk[s].toLocaleString('en-GB')}</span></div><div class="bar"><span style="width:${Math.max(8,mk[s]/max*100)}%;background:var(${SEC_VAR[s]});opacity:.75"></span></div></button>`).join('')}</div></div>
+  <div class="grid-32">
+    <div class="card" id="dash-matches"><div class="card-h"><div><div class="card-t">Best new matches</div><div class="card-s">Scored on skills, title, industry, location, meaning, salary and recency</div></div><button class="btn btn-sm btn-ghost" data-nav="matches">All matches ${ic('arrow')}</button></div>
+      ${top.map(x=>`<div class="list-row"><span class="sc-sm ${cls(x.m.score)}">${x.m.score}%</span><div class="grow"><div class="small strong">${esc(name(x.c))} → ${esc(x.j.title)}</div><div class="xs muted">${esc(x.j.co)} · ${esc(x.j.loc)} · ${salary(x.j)}</div></div><button class="btn btn-sm btn-out" data-open-match="${x.c.id}-${x.j.id}">Review</button></div>`).join('')||'<div class="empty">No new matches. Upload a CV to create some.</div>'}
+    </div>
+    <div class="card"><div class="card-h"><div><div class="card-t">Top roles by industry</div><div class="card-s">AI-analysed hiring patterns · updated ${esc(state.rolesAt)}</div></div></div>
+      ${['insurance','pensions','accountancy_finance'].map(s=>`<div style="margin-bottom:12px"><div class="row small strong" style="gap:8px;margin-bottom:4px">${secDot(s)}${SECTORS[s]}</div>${ROLES[s].slice(0,3).map((r,i)=>`<div class="row small" style="justify-content:space-between;padding:3px 0"><span><span class="mono dim" style="display:inline-block;width:16px">${i+1}</span>${esc(r[0])}</span><span class="acc strong xs">${r[1]} cos.</span></div>`).join('')}</div>`).join('')}
+      <button class="btn btn-sm btn-ghost" data-nav="roles">Full analysis ${ic('arrow')}</button></div>
+  </div>`;
+}
+
+/* ---------- top roles ---------- */
+const ROLES={
+ insurance:[['Claims Handler',86,['Albion Mutual','Harrowgate Life','Rowan Insurance','Brookfield Mutual']],['Property Underwriter',41,['Meridian Specialty','Oakfield Syndicates','Kinsale Marine']],['Delegated Authority Manager',33,['Greyfriars MGA','Ashgrove Specialty','Kinsale Marine']],['Compliance Manager',29,['Harrowgate Life','Albion Mutual']],['Pricing Actuary',22,['Stanmore Re','Pembroke Re']],['Marine Underwriter',18,['Oakfield Syndicates','Kinsale Marine']]],
+ banking:[['KYC Analyst',64,['Pemberton Bank','Northgate Bank']],['Credit Risk Analyst',38,['Pemberton Bank','Northgate Bank','Lyndhurst Building Society']],['Financial Crime Manager',21,['Lyndhurst Building Society','Pemberton Bank']],['Treasury Analyst',14,['Lyndhurst Building Society']]],
+ pensions:[['Pensions Administrator',52,['Northbank Pensions Trust','Ferrymead Pensions','Bramwell Pensions Services']],['Pensions Actuarial Analyst',19,['Castlegate Consulting','Holloway Actuarial']],['Trustee Executive',12,['Northbank Pensions Trust']],['Pensions Technical Specialist',11,['Ferrymead Pensions']]],
+ asset_management:[['Investment Operations Analyst',44,['Castleford Asset Management','Kestrel Investment Partners']],['Client Reporting Manager',17,['Kestrel Investment Partners']],['Portfolio Analyst',15,['Castleford Asset Management']]],
+ accountancy_finance:[['Management Accountant',48,['Harrowgate Life','Albion Mutual']],['Financial Controller',27,['Albion Mutual','Greyfriars MGA']],['Audit Senior',24,['Thornbury & Co']],['Insurance Finance Manager',16,['Greyfriars MGA','Pembroke Re']]],
+ it_tech:[['Data Engineer',31,['Stanmore Re','Lumen Insurance Services']],['BI Developer',22,['Pemberton Bank']],['Guidewire Business Analyst',9,['Albion Mutual']]],
+};
+function renderRoles(){
+  $('#page-roles').innerHTML=`<div class="page-head"><div><h1>Top roles</h1><p>What employers are hiring for most, grouped by sector, with the companies behind each role. Refreshed from live postings.</p></div><button class="btn btn-out" id="roles-refresh" data-roles-refresh>${ic('refresh')}Refresh analysis</button></div>
+  <div class="grid-2" id="roles-grid">${Object.keys(ROLES).map(s=>`<div class="card"><div class="card-h"><div class="row card-t" style="gap:8px">${secDot(s)}${SECTORS[s]}</div><span class="pill">top ${ROLES[s].length}</span></div>
+    ${ROLES[s].map((r,i)=>`<details class="list-row" style="display:block"><summary class="row" style="cursor:pointer;list-style:none"><span class="mono dim xs" style="width:16px">${i+1}</span><span class="grow small">${esc(r[0])}</span><span class="acc strong xs">${r[1]} cos.</span>${ic('chev','width:14px;height:14px;color:var(--fg3)')}</summary>
+      <div class="chips" style="margin:8px 0 2px 26px">${r[2].map(c=>`<button class="chip" style="cursor:pointer" data-co-search="${esc(c)}">${ic('building')}${esc(c)}</button>`).join('')}</div></details>`).join('')}</div>`).join('')}</div>
+  <p class="xs muted" style="margin-top:12px">Last analysed ${esc(state.rolesAt)}. Counts are companies with at least one live posting for that role.</p>`;
+}
+
+/* ---------- upload CV ---------- */
+let upBusy=false,lastUpload=null;
+function renderUpload(){
+  const used=new Set(state.cands.map(c=>name(c)));
+  $('#page-upload').innerHTML=`<div class="page-head"><div><h1>Upload a CV</h1><p>Drop in a CV and it is read, turned into a candidate profile and matched against every live job, with the reasons for each score.</p></div></div>
+  <div class="grid-32"><div>
+    <div class="drop" id="cv-drop"><div class="big">${ic('upload')}</div><div class="strong">Drop a CV here or <label for="cv-file" class="acc" style="text-decoration:underline;cursor:pointer">choose a file</label></div><div class="small muted" style="margin-top:4px">PDF, Word or text, up to 10MB</div><input type="file" id="cv-file" hidden accept=".pdf,.doc,.docx,.txt"></div>
+    <div class="label" style="margin-top:18px">No CV to hand? Try a sample</div>
+    <div class="samples" id="samples">${SAMPLE_CVS.map((s,i)=>`<button class="sample" data-sample="${i}" ${used.has(name(s.c))||upBusy?'disabled':''}><span class="fi">${/docx$/.test(s.file)?'DOCX':'PDF'}</span><span style="min-width:0"><span class="small strong" style="display:block">${esc(name(s.c))}</span><span class="xs muted" style="display:block">${esc(s.c.title)}</span>${used.has(name(s.c))?'<span class="xs acc">Uploaded</span>':''}</span></button>`).join('')}</div>
+  </div>
+  <div class="card" id="up-panel" style="margin:0">${lastUpload?uploadResult(lastUpload):`<div class="card-t" style="margin-bottom:10px">What happens</div><div class="steps">${UP_STEPS.map(t=>`<div class="pstep"><span class="st"></span>${t}</div>`).join('')}</div><p class="small muted" style="margin-top:14px">Matching takes seconds. When new jobs arrive later, the candidate is re-matched and you get an alert.</p>`}</div></div>`;
+  const dz=$('#cv-drop');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f)readCv(f);});
+  $('#cv-file').addEventListener('change',e=>{const f=e.target.files[0];if(f)readCv(f);});
+}
+const UP_STEPS=['Upload the file securely','Extract the text','Build the candidate profile with AI','Match against live jobs'];
+const SKILL_DICT=[...new Set(BASE_JOBS.concat(SWEEP_JOBS).flatMap(j=>j.skills).concat(BASE_CANDS.flatMap(c=>c.skills)))];
+const TOWNS=['London','Chelmsford','Brentwood','Basildon','Southend-on-Sea','Colchester','Romford','Ipswich'];
+function readCv(f){
+  if(upBusy)return;
+  const base=f.name.replace(/\.[a-z0-9]+$/i,'').replace(/[_\-.]+/g,' ').replace(/\b(cv|resume|final|updated|20\d\d|v\d+)\b/ig,' ').replace(/\s+/g,' ').trim().split(' ').filter(w=>/^[A-Za-z']+$/.test(w));
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();
+  const c=C(0,base[0]?cap(base[0]):'New',base.length>1?cap(base[base.length-1]):'Candidate','Title to confirm','From CV','London','London',0,0,['insurance'],[],'',0);
+  if(/\.txt$/i.test(f.name)){const r=new FileReader();r.onload=()=>{const t=String(r.result||'');const lines=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+      const nm=lines.find(l=>/^[A-Z][a-z]+ [A-Z][a-z'-]+$/.test(l));if(nm){[c.first,c.last]=nm.split(' ');}
+      c.skills=SKILL_DICT.filter(s=>t.toLowerCase().includes(s.toLowerCase()));
+      const town=TOWNS.find(x=>t.includes(x));if(town){c.loc=town;c.area=town==='London'?'London':'Essex';}
+      const sal=(t.match(/£\s?(\d{2,3})(?:,(\d{3})|k)/i));if(sal)c.exp=parseInt(sal[1],10)*1000;
+      const secs=Object.keys(SECTORS).filter(s=>BASE_JOBS.some(j=>j.sector===s&&j.skills.some(k=>c.skills.includes(k))));if(secs.length)c.sectors=secs.slice(0,2);
+      const tl=lines.find(l=>/(underwriter|analyst|manager|actuary|administrator|engineer|handler|accountant|controller|executive|officer|director)/i.test(l));if(tl)c.title=tl.slice(0,60);
+      c.summary=lines.slice(0,6).join(' ').slice(0,260);if(!c.exp)c.exp=55000;
+      runUpload(c,f.name,true);};r.readAsText(f);}
+  else{c.exp=55000;c.summary=`Imported from ${f.name}.`;runUpload(c,f.name,false);}
+}
+async function runUpload(c,file,parsed){
+  upBusy=true;lastUpload=null;if(cur==='upload')renderUpload();
+  const p=$('#up-panel');
+  p.innerHTML=`<div class="card-t" style="margin-bottom:4px">${esc(file)}</div><div class="xs muted" style="margin-bottom:12px">Processing</div><div class="steps" id="up-steps">${UP_STEPS.map((t,i)=>`<div class="pstep" id="ps-${i}"><span class="st"></span>${t}${i===3?` <span class="dim xs">(${marketTotal().toLocaleString('en-GB')} jobs)</span>`:''}</div>`).join('')}</div>`;
+  for(let i=0;i<4;i++){const el=$('#ps-'+i);if(el)el.className='pstep doing';await sleep(i===2?1100:650);const e2=$('#ps-'+i);if(e2){e2.className='pstep done';e2.querySelector('.st').innerHTML=ic('check');}}
+  c.id=state.nextCand++;c.up=0;state.cands.push(c);
+  logAudit('CV uploaded',`${name(c)}, ${c.title}`);
+  lastUpload={c:c.id,parsed,file};upBusy=false;
+  if(cur==='upload')renderUpload();updateBadges();
+  const n=matchesFor(c).length;toast(`${esc(name(c))} added with ${n} matches.`);
+  if(tourOn)setTimeout(placeTour,40);
+}
+function uploadResult(u){
+  const c=cand(u.c);if(!c)return '';const ms=matchesFor(c);
+  return `<div class="row" style="justify-content:space-between;margin-bottom:12px"><span class="status-strip acc">${ic('check')}Profile built</span><span class="xs muted">${esc(u.file)}</span></div>
+  <div class="parsed"><div class="row" style="align-items:flex-start"><span class="avatar av-lg">${initials(name(c))}</span><div class="grow"><div style="font-size:17px;font-weight:600">${esc(name(c))}</div><div class="small muted">${esc(c.title)}${c.emp&&c.emp!=='From CV'?' at '+esc(c.emp):''}</div><div class="meta" style="margin-top:6px"><span>${ic('pin')}${esc(c.loc)}</span>${c.yrs?`<span>${ic('clock')}${c.yrs} years</span>`:''}<span>${ic('pound')}Expects ${kf(c.exp)}</span></div></div></div>
+    <div class="chips" style="margin-top:12px">${c.sectors.map(secChip).join('')}${c.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')||'<span class="xs muted">No skills found in the file name</span>'}</div>
+    ${c.summary?`<p class="small muted" style="margin-top:10px">${esc(c.summary)}</p>`:''}
+    ${u.parsed?'':`<p class="xs muted" style="margin-top:10px">In the live product the full text of PDF and Word CVs is read. This demo reads .txt files, so for this file it used the file name.</p>`}</div>
+  <div class="label" style="margin:16px 0 6px">Top matches</div>
+  ${ms.slice(0,3).map(x=>`<div class="list-row"><span class="sc-sm ${cls(x.m.score)}">${x.m.score}%</span><div class="grow"><div class="small strong">${esc(x.j.title)}</div><div class="xs muted">${esc(x.j.co)} · ${salary(x.j)}</div></div></div>`).join('')||'<div class="small muted">No jobs scored 30% or more. Add skills to the profile to improve matching.</div>'}
+  <div class="row wrap" style="margin-top:12px"><button class="btn btn-pri" data-see-matches="${c.id}">${ic('target')}See all ${ms.length} matches</button><button class="btn btn-out" data-cand="${c.id}">Open profile</button></div>`;
+}
+
+/* ---------- candidates ---------- */
+function renderCandidates(){
+  const rows=state.cands.slice().sort((a,b)=>a.up-b.up);
+  $('#page-candidates').innerHTML=`<div class="page-head"><div><h1>Candidates</h1><p>Everyone you have uploaded, with their best live match. Open a candidate to see their profile and full match list.</p></div><div class="row wrap"><button class="btn btn-out" data-rematch>${ic('refresh')}Re-match all</button><button class="btn btn-pri" data-nav="upload">${ic('upload')}Upload CV</button></div></div>
+  <div class="card" id="cand-table" style="padding:6px 16px"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Candidate</th><th>Location</th><th>Sectors</th><th>Expects</th><th>Matches</th><th>Best match</th><th>Uploaded</th></tr></thead><tbody>
+  ${rows.map(c=>{const ms=matchesFor(c);const b=ms[0];return `<tr class="click" data-cand="${c.id}"><td><div class="who"><span class="avatar">${initials(name(c))}</span><div style="min-width:0"><b>${esc(name(c))}</b><span>${esc(c.title)}</span></div></div></td><td>${esc(c.loc)}</td><td><div class="chips">${c.sectors.map(secChip).join('')}</div></td><td class="tnum">${kf(c.exp)}</td><td class="tnum">${ms.filter(x=>x.m.score>=60).length} strong · ${ms.length} total</td><td>${b?`<span class="sc-sm ${cls(b.m.score)}">${b.m.score}%</span> <span class="small">${esc(b.j.title)}</span>`:'<span class="dim">None yet</span>'}</td><td class="small muted">${ago(c.up)}</td></tr>`;}).join('')}
+  </tbody></table></div></div>`;
+}
+function openCand(id){
+  const c=cand(id);const ms=matchesFor(c);
+  openModal(esc(name(c)),`<div class="row msec" style="align-items:flex-start"><span class="avatar av-lg">${initials(name(c))}</span><div class="grow"><div style="font-size:17px;font-weight:600">${esc(name(c))}</div><div class="small muted">${esc(c.title)} at ${esc(c.emp)}</div><div class="meta" style="margin-top:6px"><span>${ic('pin')}${esc(c.loc)}</span><span>${ic('clock')}${c.yrs} years</span><span>${ic('pound')}Expects ${kf(c.exp)}</span></div></div></div>
+    <div class="msec"><div class="label" style="margin-bottom:6px">AI profile summary</div><p class="small">${esc(c.summary)}</p></div>
+    <div class="msec"><div class="label" style="margin-bottom:6px">Sectors and skills</div><div class="chips">${c.sectors.map(secChip).join('')}${c.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div></div>
+    <div class="msec"><div class="label" style="margin-bottom:4px">Top matches (${ms.length})</div>${ms.slice(0,6).map(x=>`<div class="list-row"><span class="sc-sm ${cls(x.m.score)}">${x.m.score}%</span><div class="grow"><div class="small strong">${esc(x.j.title)}</div><div class="xs muted">${esc(x.j.co)} · ${esc(x.j.loc)} · ${salary(x.j)}</div></div>${stPill(stOf(c,x.j))}</div>`).join('')}</div>`,
+    `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-pri" data-see-matches="${c.id}">${ic('target')}Review matches</button>`,true);
+}
+function stPill(s){return {new:'<span class="pill p-line">New</span>',shortlisted:`<span class="pill p-ok">${ic('star')}Shortlisted</span>`,pushed:`<span class="pill p-hi">${ic('crm')}In CRM</span>`,dismissed:'<span class="pill">Dismissed</span>'}[s];}
+
+/* ---------- matches ---------- */
+function whyHtml(m){return `<div class="bars">${WEIGHTS.map(([k,l,w])=>`<div class="fbar"><span class="small">${l}</span><span class="w">${w}%</span><div class="track"><span style="width:${Math.round(m.f[k].v*100)}%"></span></div><span class="note">${esc(m.f[k].n)} · ${Math.round(m.f[k].v*w)} of ${w} points</span></div>`).join('')}</div>`;}
+function renderMatches(){
+  const all=allMatches();const cf=state.matchCand,tab=state.matchTab;
+  const pool=all.filter(x=>cf==='all'||x.c.id===+cf);
+  const counts={new:0,shortlisted:0,pushed:0,dismissed:0};pool.forEach(x=>counts[stOf(x.c,x.j)]++);
+  const list=pool.filter(x=>stOf(x.c,x.j)===tab).sort((a,b)=>b.m.score-a.m.score).slice(0,30);
+  const firstKey=list[0]?list[0].c.id+'-'+list[0].j.id:null;
+  $('#page-matches').innerHTML=`<div class="page-head"><div><h1>Matches</h1><p>Every score shows its working: seven weighted factors, each with a plain-English reason. Shortlist the good ones and push them to your CRM.</p></div></div>
+  <div class="row wrap" style="margin-bottom:14px;justify-content:space-between"><div class="fchips" id="mcand"><button class="fchip ${cf==='all'?'on':''}" data-mcand="all">All candidates</button>${state.cands.map(c=>`<button class="fchip ${String(c.id)===String(cf)?'on':''}" data-mcand="${c.id}">${esc(name(c))}</button>`).join('')}</div></div>
+  <div class="tabs">${[['new','New'],['shortlisted','Shortlisted'],['pushed','Pushed to CRM'],['dismissed','Dismissed']].map(([k,l])=>`<button class="tab ${tab===k?'on':''}" data-mtab="${k}">${l}<span class="n">${counts[k]}</span></button>`).join('')}</div>
+  <div class="jobs" id="match-list">${list.map((x,i)=>{const key=x.c.id+'-'+x.j.id;const open=state.openWhy[key]!==undefined?state.openWhy[key]:key===firstKey;const st=stOf(x.c,x.j);
+    return `<article class="job" id="${i===0?'match-first':'m-'+key}" data-mkey="${key}"><div class="score ${cls(x.m.score)}">${x.m.score}<small>MATCH</small></div><div class="body">
+      <div class="row wrap" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><div class="jt">${esc(x.j.title)}</div><div class="co">${esc(x.j.co)} · for <b style="color:var(--fg)">${esc(name(x.c))}</b></div></div>${secChip(x.j.sector)}</div>
+      <div class="meta"><span>${ic('pin')}${esc(x.j.loc)}</span><span>${ic('pound')}${salary(x.j)}</span><span>${ic('clock')}${posted(x.j.days)}</span>${srcBadge(x.j)}</div>
+      <div class="chips">${x.m.hits.map(s=>`<span class="chip hit">${ic('check')}${esc(s)}</span>`).join('')}${x.m.miss.map(s=>`<span class="chip miss">${esc(s)}</span>`).join('')}</div>
+      ${open?`<div class="why" id="${i===0?'why-first':''}">${whyHtml(x.m)}</div>`:''}
+      <div class="acts" id="${i===0?'acts-first':''}"><button class="btn btn-sm btn-ghost" data-why="${key}">${open?'Hide':'Why this score?'}</button>
+        ${st!=='shortlisted'&&st!=='pushed'?`<button class="btn btn-sm btn-soft" data-mstat="${key}|shortlisted">${ic('star')}Shortlist</button>`:''}
+        ${st!=='pushed'?`<button class="btn btn-sm btn-out" data-push="${key}">${ic('crm')}Push to CRM</button>`:''}
+        <button class="btn btn-sm btn-out" data-tospec="${x.j.id}">${ic('clip')}Send to Spec List</button>
+        <button class="btn btn-sm btn-ghost" data-job="${x.j.id}">${ic('ext')}View job</button>
+        ${st!=='dismissed'?`<button class="btn btn-sm btn-bad" data-mstat="${key}|dismissed">${ic('x')}Dismiss</button>`:`<button class="btn btn-sm btn-ghost" data-mstat="${key}|new">Restore</button>`}</div>
+    </div></article>`;}).join('')||`<div class="empty">Nothing here yet. ${tab==='new'?'Upload a CV to create new matches.':'Matches you move here will show up in this list.'}</div>`}</div>`;
+}
+function openPush(key){const [ci,ji]=key.split('-').map(Number);const c=cand(ci),j=job(ji),m=score(c,j);
+  openModal('Push to CRM',`<p class="small muted" style="margin-bottom:12px">This sends the candidate, the job and the match reasons to your CRM as a new application, so the rest of your team can work it there.</p>
+    <div class="card" style="margin-bottom:12px;padding:14px"><div class="row"><span class="sc-sm ${cls(m.score)}">${m.score}%</span><div class="grow"><div class="small strong">${esc(name(c))} → ${esc(j.title)}</div><div class="xs muted">${esc(j.co)} · ${esc(j.loc)}</div></div></div></div>
+    <div class="fg"><label class="fl" for="crm-stage">Starting stage in your CRM</label><select class="inp" id="crm-stage"><option>Longlist</option><option selected>Shortlist</option><option>To contact</option></select></div>
+    <div class="fg" style="margin-top:10px"><label class="fl" for="crm-note">Note for the team</label><textarea class="inp" id="crm-note" rows="3">${esc(`${m.score}% match. ${m.f.skills.n}. ${m.f.comp.n}.`)}</textarea></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-push-go="${key}">${ic('crm')}Push to CRM</button>`);}
+
+/* ---------- job search ---------- */
+function searchResults(){
+  const q=state.q,t=q.text.trim().toLowerCase();
+  let r=jobsLive().filter(j=>(q.recruiters||j.kind!=='agency')&&(q.sector==='all'||j.sector===q.sector)&&(q.area==='any'||j.area===q.area)&&j.max>=q.min&&(!t||(j.title+' '+j.co+' '+j.skills.join(' ')+' '+j.desc).toLowerCase().includes(t)));
+  if(q.sort==='new')r.sort((a,b)=>a.days-b.days);else if(q.sort==='salary')r.sort((a,b)=>b.max-a.max);
+  else r.sort((a,b)=>(a.kind==='agency')-(b.kind==='agency')||rel(b,t)-rel(a,t)||a.days-b.days);
+  return r;
+}
+function rel(j,t){if(!t)return 0;return (j.title.toLowerCase().includes(t)?3:0)+(j.skills.join(' ').toLowerCase().includes(t)?1:0);}
+function renderSearch(){
+  const page=$('#page-search'),q=state.q;
+  if(!page.dataset.built){
+    page.innerHTML=`<div class="page-head"><div><h1>Job search</h1><p>Search live vacancies from employer sites, ATS boards and job boards. Direct employers come first and recruitment agency postings are hidden unless you ask for them.</p></div><button class="btn btn-soft" data-save-search id="save-btn">${ic('bell')}Save search and alert me</button></div>
+    <div class="card" id="search-panel"><form class="search-bar" id="search-form"><div class="search-in">${ic('search')}<input class="inp" id="sq" placeholder="Job title, skill or employer, e.g. IFRS 17" autocomplete="off"></div>
+      <select class="inp" id="sarea" style="width:auto" aria-label="Location"><option value="any">Anywhere</option><option value="London">London</option><option value="Essex">Essex</option></select>
+      <select class="inp" id="smin" style="width:auto" aria-label="Minimum salary"><option value="0">Any salary</option><option value="50000">£50k+</option><option value="70000">£70k+</option><option value="90000">£90k+</option></select>
+      <select class="inp" id="ssort" style="width:auto" aria-label="Sort"><option value="best">Best match</option><option value="new">Newest</option><option value="salary">Highest salary</option></select></form>
+      <div class="row wrap" style="margin-top:12px;justify-content:space-between"><div class="fchips" id="sec-chips"></div>
+      <label class="row small" id="rec-toggle" style="cursor:pointer"><button type="button" class="toggle" id="rec-btn" data-recruiters aria-label="Include recruitment agencies"></button>Include recruitment agencies</label></div></div>
+    <div id="search-out"></div>`;
+    page.dataset.built='1';
+    $('#search-form').addEventListener('submit',e=>e.preventDefault());
+  }
+  $('#sq').value!==q.text&&document.activeElement!==$('#sq')&&($('#sq').value=q.text);
+  $('#sarea').value=q.area;$('#smin').value=String(q.min);$('#ssort').value=q.sort;
+  const b=$('#rec-btn');b.classList.toggle('on',q.recruiters);b.setAttribute('aria-pressed',q.recruiters);
+  $('#sec-chips').innerHTML=`<button class="fchip ${q.sector==='all'?'on':''}" data-sec="all">All sectors</button>`+Object.keys(SECTORS).map(s=>`<button class="fchip ${q.sector===s?'on':''}" data-sec="${s}">${secDot(s)}${SECTORS[s]}</button>`).join('');
+  const r=searchResults();const hidden=q.recruiters?0:jobsLive().filter(j=>j.kind==='agency'&&(q.sector==='all'||j.sector===q.sector)).length;
+  $('#search-out').innerHTML=`<div class="row wrap" style="justify-content:space-between;margin-bottom:10px"><span class="small muted">${r.length} jobs in this demo's sample of ${marketTotal().toLocaleString('en-GB')} live vacancies${hidden?` · ${hidden} agency postings hidden`:''}</span></div>
+  <div class="jobs" id="results">${r.map((j,i)=>{const best=state.cands.map(c=>({c,m:score(c,j)})).sort((a,b)=>b.m.score-a.m.score)[0];
+    return `<article class="job ${j.fresh?'new-flag':''}" id="${i===0?'result-first':''}"><div class="body"><div class="row wrap" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><div class="jt">${esc(j.title)}${j.days===0?' <span class="pill p-hi">New</span>':''}</div><div class="co">${esc(j.co)}</div></div>${secChip(j.sector)}</div>
+      <div class="meta"><span>${ic('pin')}${esc(j.loc)}</span><span>${ic('pound')}${salary(j)}</span><span>${ic('clock')}${posted(j.days)}</span>${srcBadge(j)}</div>
+      <p class="small muted">${esc(j.desc)}</p>
+      <div class="acts"><button class="btn btn-sm btn-soft" data-job-match="${j.id}">${ic('target')}Match my candidates${best&&best.m.score>=60?` <span class="xs">(best ${best.m.score}%)</span>`:''}</button><button class="btn btn-sm btn-out" data-tospec="${j.id}">${ic('clip')}Send to Spec List</button><button class="btn btn-sm btn-ghost" data-job="${j.id}">${ic('ext')}View job</button></div></div></article>`;}).join('')||'<div class="empty">No jobs match those filters. Try another sector or remove the salary filter.</div>'}</div>`;
+}
+function openJob(id){const j=job(id);
+  openModal(`${esc(j.title)}`,`<div class="row wrap msec" style="justify-content:space-between"><div><div class="strong">${esc(j.co)}</div><div class="meta" style="margin-top:4px"><span>${ic('pin')}${esc(j.loc)}</span><span>${ic('pound')}${salary(j)}</span><span>${ic('clock')}${posted(j.days)}</span></div></div>${secChip(j.sector)}</div>
+    <div class="msec"><p>${esc(j.desc)}</p></div>
+    <div class="msec"><div class="label" style="margin-bottom:6px">Key skills</div><div class="chips">${j.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div></div>
+    <div class="msec grid-2"><div>${kvs([['Source',srcBadge(j)],['Job family',esc(j.family)],['Employer type',j.kind==='agency'?'Recruitment agency':'Direct employer']])}</div><div>${kvs([['Companies House',j.kind==='agency'?'Not checked':'Active company'],['Duplicates merged',j.src===4?'1 (same advert on the employer site)':'None'],['Apply link','Opens the original advert']])}</div></div>
+    <div class="msec"><div class="label" style="margin-bottom:4px">Your best candidates for this job</div>${state.cands.map(c=>({c,m:score(c,j)})).sort((a,b)=>b.m.score-a.m.score).slice(0,3).map(x=>`<div class="list-row"><span class="sc-sm ${cls(x.m.score)}">${x.m.score}%</span><div class="grow"><div class="small strong">${esc(name(x.c))}</div><div class="xs muted">${esc(x.m.f.skills.n)} · ${esc(x.m.f.comp.n)}</div></div></div>`).join('')}</div>
+    <p class="xs muted">In the live product, View job opens the employer's original advert.</p>`,
+    `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-out" data-tospec="${j.id}">${ic('clip')}Send to Spec List</button>`,true);}
+function kvs(a){return a.map(([k,v])=>`<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');}
+function openJobMatch(id){const j=job(id);const r=state.cands.map(c=>({c,m:score(c,j)})).sort((a,b)=>b.m.score-a.m.score);
+  openModal(`Match candidates · ${esc(j.title)}`,`<div class="small muted" style="margin-bottom:10px">${esc(j.co)} · ${esc(j.loc)} · ${salary(j)}</div>${r.map((x,i)=>`<div class="list-row" style="align-items:flex-start"><span class="sc-sm ${cls(x.m.score)}">${x.m.score}%</span><div class="grow"><div class="small strong">${esc(name(x.c))} <span class="muted" style="font-weight:400">· ${esc(x.c.title)}</span></div><div class="xs muted">${esc(x.m.f.skills.n)}. ${esc(x.m.f.location.n)}. ${esc(x.m.f.comp.n)}.</div>${i===0?`<div style="margin-top:10px">${whyHtml(x.m)}</div>`:''}</div>${x.m.score>=30?`<button class="btn btn-sm btn-soft" data-mstat="${x.c.id}-${j.id}|shortlisted">${ic('star')}Shortlist</button>`:''}</div>`).join('')}`,`<button class="btn btn-ghost" data-close>Close</button>`,true);}
+function openSaveSearch(){const q=state.q;const parts=[q.text&&`"${q.text}"`,q.sector!=='all'&&SECTORS[q.sector],q.area!=='any'&&q.area,q.min&&kf(q.min)+'+'].filter(Boolean);
+  openModal('Save search and alerts',`<div class="fg"><label class="fl" for="ss-name">Name</label><input class="inp" id="ss-name" value="${esc(parts.join(', ')||'All financial services jobs')}"></div>
+    <div class="fg" style="margin-top:12px"><label class="fl" for="ss-freq">Alert me</label><select class="inp" id="ss-freq"><option>Hourly</option><option selected>Daily digest</option><option>Weekly</option><option>No alerts, just save</option></select></div>
+    <p class="small muted" style="margin-top:12px">Right now ${searchResults().length} jobs match. You'll only be alerted to new ones.</p>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-save-go>${ic('bell')}Save search</button>`);}
+
+/* ---------- spec lists ---------- */
+function renderSpec(){
+  const tab=state.specTab;const fs=state.folders.filter(f=>f.vis===(tab==='team'?'team':'personal'));
+  if(!fs.some(f=>f.id===state.folderSel))state.folderSel=fs[0]?fs[0].id:null;
+  const f=state.folders.find(x=>x.id===state.folderSel);const items=f?state.specItems.filter(i=>i.f===f.id):[];
+  $('#page-spec').innerHTML=`<div class="page-head"><div><h1>Spec lists</h1><p>Build target lists of live vacancies to pitch candidates into. Each job gets its talent acquisition and hiring manager contacts found for you, ready for business development.</p></div><button class="btn btn-pri" data-new-folder>${ic('plus')}New folder</button></div>
+  <div class="tabs">${[['team','Team lists'],['personal','My lists']].map(([k,l])=>`<button class="tab ${tab===k?'on':''}" data-spectab="${k}">${l}<span class="n">${state.folders.filter(x=>x.vis===k).length}</span></button>`).join('')}</div>
+  <div class="spec-layout"><div class="folders" id="folders">${fs.map(x=>`<button class="folder ${x.id===state.folderSel?'on':''}" data-folder="${x.id}">${ic('folder')}<span class="grow" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.name)}</span><span class="c">${state.specItems.filter(i=>i.f===x.id).length}</span></button>`).join('')||'<div class="small muted">No folders yet.</div>'}</div>
+  <div id="spec-main" style="min-width:0">${f?`<div class="row" style="justify-content:space-between;margin-bottom:12px"><div class="row"><span class="strong">${esc(f.name)}</span><span class="xs muted">${items.length} job${items.length===1?'':'s'} · ${f.vis==='team'?'shared with the team':'only you'}</span></div><button class="btn btn-sm btn-ghost" data-nav="search">${ic('plus')}Add jobs from search</button></div>
+    ${items.map(it=>specCard(it)).join('')||'<div class="empty">No jobs in this folder yet. Use Send to Spec List on Job Search or Matches.</div>'}`:'<div class="empty">Create a folder to get started.</div>'}</div></div>`;
+}
+function specCard(it){const j=job(it.j);const cs=state.contacts[it.id];
+  const grp=(t,l,icn)=>{const g=(cs||[]).filter(c=>c.type===t);return g.length?`<div class="ctype">${ic(icn)}${l}</div>${g.map(c=>`<div class="contact"><div class="grow"><div class="row wrap" style="gap:6px"><b>${esc(c.name)}</b>${c.conf==='guess'?'<span class="pill p-warn" style="font-size:10.5px">Best guess</span>':''}${c.manual?'<span class="pill p-line" style="font-size:10.5px">Added by you</span>':''}</div><div class="xs muted">${esc(c.title)}</div><div class="ln">${c.email?`<span>${ic('mail')}${esc(c.email)}</span>`:''}${c.phone?`<span>${ic('phone')}${esc(c.phone)}</span>`:''}<span>${ic('linked')}LinkedIn profile</span></div></div><button class="icon-btn" style="width:28px;height:28px" data-del-contact="${it.id}|${c.id}" aria-label="Remove ${esc(c.name)}">${ic('trash','width:14px;height:14px')}</button></div>`).join('')}`:'';};
+  return `<div class="card" style="padding:16px" id="spec-${it.id}"><div class="row wrap" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><div class="strong">${esc(j.title)}</div><div class="meta" style="margin-top:3px"><span>${ic('building')}${esc(j.co)}</span><span>${ic('pin')}${esc(j.loc)}</span><span>${ic('pound')}${salary(j)}</span></div></div>${secChip(j.sector)}</div>
+    ${it.note?`<p class="small muted" style="border-left:2px solid var(--line2);padding-left:8px;margin-top:8px;font-style:italic">${esc(it.note)}</p>`:''}
+    ${cs===null?`<div class="row small muted" style="margin-top:12px">${ic('refresh','animation:spin .8s linear infinite')}Finding contacts at ${esc(j.co)}…</div>`:grp('ta','Talent acquisition','users')+grp('hm','Hiring manager','brief')}
+    <div class="acts row wrap" style="margin-top:12px;gap:6px"><button class="btn btn-sm btn-out" data-enrich="${it.id}">${ic('refresh')}Re-run contact search</button><button class="btn btn-sm btn-ghost" data-add-contact="${it.id}">${ic('plus')}Add contact</button><button class="btn btn-sm btn-bad" data-rm-spec="${it.id}">${ic('trash')}Remove</button></div></div>`;}
+async function enrich(id){state.contacts[id]=null;if(cur==='spec')renderSpec();await sleep(1400);const it=state.specItems.find(x=>x.id===id);if(!it)return;state.contacts[id]=genContacts(job(it.j),id+Math.floor(Math.random()*5));if(cur==='spec')renderSpec();toast(`Contacts found at ${esc(job(it.j).co)}.`);}
+function openToSpec(jid){const j=job(jid);
+  openModal('Send to Spec List',`<div class="small muted" style="margin-bottom:12px">${esc(j.title)} · ${esc(j.co)}</div>
+    <div class="fg"><label class="fl" for="ts-folder">Folder</label><select class="inp" id="ts-folder">${state.folders.map(f=>`<option value="${f.id}">${esc(f.name)} (${f.vis==='team'?'team':'mine'})</option>`).join('')}<option value="new">New folder…</option></select></div>
+    <div class="fg" style="margin-top:10px" id="ts-new-wrap" hidden><label class="fl" for="ts-new">New folder name</label><input class="inp" id="ts-new" placeholder="e.g. City MGAs to pitch"></div>
+    <div class="fg" style="margin-top:10px"><label class="fl" for="ts-note">Note (optional)</label><input class="inp" id="ts-note" placeholder="Who you would pitch into this role"></div>
+    <p class="xs muted" style="margin-top:10px">Talent acquisition and hiring manager contacts at ${esc(j.co)} are found automatically.</p>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-tospec-go="${jid}">${ic('clip')}Add to list</button>`);
+  $('#ts-folder').addEventListener('change',e=>{$('#ts-new-wrap').hidden=e.target.value!=='new';});}
+
+/* ---------- sources ---------- */
+const ST={ok:['p-ok','Healthy'],warn:['p-warn','Degraded'],bad:['p-bad','Failing'],run:['p-line','Running']};
+function renderSources(){
+  $('#page-sources').innerHTML=`<div class="page-head"><div><h1>Sources</h1><p>Where your vacancies come from. Each source is checked on a schedule, duplicates across sources are merged, and you are told when one needs attention.</p></div><button class="btn btn-pri" data-add-source>${ic('plus')}Add a source</button></div>
+  <div class="card" id="src-table" style="padding:6px 16px"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Source</th><th>Type</th><th>Health</th><th>Last run</th><th>Last run result</th><th>Live jobs</th><th>Active</th><th></th></tr></thead><tbody>
+  ${state.sources.map(s=>`<tr id="src-${s.id}"><td><div class="strong small">${esc(s.name)}</div><div class="xs muted">${esc(s.detail)}</div>${s.msg?`<div class="xs" style="color:var(${s.status==='bad'?'--bad':'--warn'});margin-top:2px">${esc(s.msg)}</div>`:''}</td><td class="small">${esc(s.type)}</td><td><span class="pill ${ST[s.status][0]}">${s.status==='run'?ic('refresh','animation:spin .8s linear infinite'):''}${ST[s.status][1]}</span></td><td class="small muted">${esc(s.last)}</td><td class="small tnum">${s.fetched.toLocaleString('en-GB')} fetched · <b class="${s.newc?'acc':''}">${s.newc} new</b></td><td class="tnum">${s.live.toLocaleString('en-GB')}</td>
+    <td><button class="toggle ${s.on?'on':''}" data-src-toggle="${s.id}" aria-pressed="${s.on}" aria-label="${s.on?'Pause':'Resume'} ${esc(s.name)}"></button></td>
+    <td style="white-space:nowrap">${s.status==='bad'?`<button class="btn btn-sm btn-hi" data-src-fix="${s.id}">Fix address</button>`:`<button class="btn btn-sm btn-out" id="${s.id===4?'run-google':''}" data-src-run="${s.id}" ${s.status==='run'||!s.on?'disabled':''}>${ic('refresh')}Run now</button>`}</td></tr>`).join('')}
+  </tbody></table></div></div>
+  <div class="grid-2" style="margin-top:18px"><div class="card"><div class="card-t" style="margin-bottom:10px">How duplicates are handled</div><p class="small muted">The same vacancy often appears on an employer's site, its ATS and two job boards. VacancyMatch keeps one copy, preferring the direct employer advert, so each job is matched and alerted once.</p></div>
+  <div class="card"><div class="card-t" style="margin-bottom:10px">Schedule</div>${kvs([['Employer sites and ATS boards','Every hour'],['Job boards and Google Jobs','Every 3 hours'],['Expired job sweep','Daily at 02:00'],['Saved search alerts','Hourly, plus daily digest']])}</div></div>`;
+}
+async function runSource(id){
+  const s=state.sources.find(x=>x.id===id);if(!s||s.status==='run')return;const prev=s.status;s.status='run';if(cur==='sources')renderSources();
+  await sleep(1800);s.last='Just now';s.status=prev==='warn'?'ok':prev;delete s.msg;
+  if(id===4&&!state.swept){
+    state.swept=true;const added=SWEEP_JOBS.map(j=>Object.assign({},j,{fresh:true}));state.jobs.push(...added);
+    added.forEach(j=>state.market[j.sector]++);s.fetched+=46;s.newc=3;s.live+=3;
+    const newAlerts=[];
+    state.saved.forEach(ss=>{const hits=added.filter(j=>fitsSaved(ss,j));if(hits.length&&ss.on)newAlerts.push({kind:'search',t:`${hits.length} new job${hits.length>1?'s':''} for "${ss.name}"`,s:hits.map(j=>`${j.title} at ${j.co}`).join(', '),go:'search'});});
+    added.forEach(j=>{const b=state.cands.map(c=>({c,m:score(c,j)})).sort((x,y)=>y.m.score-x.m.score)[0];const c=b.c,m=b.m;if(m.score>=70)newAlerts.push({kind:'match',t:`New ${m.score}% match for ${name(c)}`,s:`${j.title} at ${j.co}, posted today`,go:'matches',mc:c.id});});
+    newAlerts.reverse().forEach(a=>state.alerts.unshift(Object.assign({id:Date.now()+Math.random(),when:'Today, '+now(),unread:true},a)));
+    logAudit('Source run','Google Jobs: 46 fetched, 3 new jobs','System');
+    if(cur==='sources')renderSources();updateBadges();
+    toast(`3 new jobs found. Candidates re-matched and ${newAlerts.length} alerts raised.`);
+  }else{const f=20+((id*17+s.fetched)%40);s.fetched+=f;s.newc=0;if(cur==='sources')renderSources();toast(`${esc(s.name)}: ${f} fetched, 0 new. They were already found through other sources.`);}
+}
+function fitsSaved(ss,j){const t=(ss.q||'').toLowerCase();return (ss.sector==='all'||j.sector===ss.sector)&&(ss.area==='any'||j.area===ss.area)&&j.max>=ss.min&&(!t||(j.title+' '+j.skills.join(' ')).toLowerCase().includes(t));}
+
+/* ---------- alerts ---------- */
+function renderAlerts(){
+  const un=state.alerts.filter(a=>a.unread).length;
+  $('#page-alerts').innerHTML=`<div class="page-head"><div><h1>Alerts</h1><p>New jobs for your saved searches and new matches for your candidates, as they happen and in one morning digest.</p></div>${un?`<button class="btn btn-out" data-read-all>${ic('check')}Mark all as seen</button>`:''}</div>
+  <div class="grid-32"><div class="card" id="alert-inbox"><div class="card-h"><div class="card-t">Inbox</div><span class="pill ${un?'p-ok':''}">${un} unread</span></div>
+    ${state.alerts.map(a=>`<div class="alert ${a.unread?'unread':''}"><div class="ai">${ic(a.kind==='match'?'target':a.kind==='source'?'alert':'bell')}</div><div class="grow"><div class="t small">${esc(a.t)}</div><div class="xs muted">${esc(a.s)}</div><div class="xs dim" style="margin-top:3px">${esc(a.when)}</div></div><div class="row" style="gap:4px;flex-shrink:0"><button class="btn btn-sm btn-out" data-alert-go="${a.id}">Open</button>${a.unread?`<button class="btn btn-sm btn-ghost" data-alert-seen="${a.id}">Seen</button>`:''}</div></div>`).join('')||'<div class="empty">No alerts yet.</div>'}</div>
+  <div class="stack"><div class="card" id="digest-card"><div class="card-h"><div><div class="card-t">Morning digest</div><div class="card-s">One email with everything new since yesterday</div></div><button class="toggle ${state.digest.on?'on':''}" data-digest-toggle aria-pressed="${state.digest.on}" aria-label="Morning digest"></button></div>
+      <div class="row wrap"><label class="fl" for="dg-time">Send at</label><select class="inp" id="dg-time" style="width:auto">${['06:30','07:30','08:30'].map(t=>`<option ${t===state.digest.time?'selected':''}>${t}</option>`).join('')}</select><span class="xs muted">UK time, weekdays</span></div>
+      <button class="btn btn-soft" style="margin-top:12px" data-digest-preview>${ic('mail')}Preview tomorrow's digest</button></div>
+    <div class="card"><div class="card-h"><div class="card-t">Saved searches</div><span class="xs muted">${state.saved.length} of 25</span></div>
+      ${state.saved.map(s=>`<div class="list-row"><div class="grow"><button class="linkbtn" style="color:var(--fg);text-decoration:none;font-size:13px" data-run-saved="${s.id}">${esc(s.name)}</button><div class="xs muted">${esc(s.freq)} · ${jobsLive().filter(j=>fitsSaved(s,j)).length} matching jobs now</div></div><button class="toggle ${s.on?'on':''}" data-saved-toggle="${s.id}" aria-pressed="${s.on}" aria-label="Alerts for ${esc(s.name)}"></button></div>`).join('')}</div></div></div>`;
+}
+function digestHtml(){const all=allMatches().filter(x=>stOf(x.c,x.j)==='new'&&x.m.score>=70).sort((a,b)=>(a.j.days-b.j.days)||(b.m.score-a.m.score)).slice(0,4);
+  const nj=state.jobs.filter(j=>j.days<=1&&j.kind!=='agency').slice(-4).reverse();
+  return `<div class="paper"><div class="sub">VacancyMatch · Fenwick Hale Search</div><h2>Good morning, Sophie</h2><div class="sub">Your digest for ${new Date(Date.now()+864e5).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+  <h3>Strongest new matches</h3>${all.map(x=>`<div class="pj"><b><span class="sc">${x.m.score}%</span>${esc(name(x.c))} → ${esc(x.j.title)}</b><span>${esc(x.j.co)} · ${esc(x.j.loc)} · ${salary(x.j)}. ${esc(x.m.f.skills.n)}.</span></div>`).join('')}
+  <h3>New jobs for your saved searches</h3>${nj.map(j=>`<div class="pj"><b>${esc(j.title)}</b><span>${esc(j.co)} · ${esc(j.loc)} · ${salary(j)}</span></div>`).join('')}
+  <h3>Sources</h3><p>${state.sources.filter(s=>s.status==='ok').length} of ${state.sources.length} sources healthy.${state.sources.some(s=>s.status==='bad')?' One needs a new address.':''}</p>
+  <span class="cta">Open VacancyMatch</span><div class="foot">Sent to sophie.lane@fenwickhale.example · change digest settings in Alerts.</div></div>`;}
+
+/* ---------- compliance ---------- */
+function renderCompliance(){
+  $('#page-compliance').innerHTML=`<div class="page-head"><div><h1>Compliance</h1><p>A full record of who did what, CV retention under UK GDPR, and what was sent to your CRM. Owners and admins only.</p></div><button class="btn btn-out" data-export>${ic('file')}Export audit log</button></div>
+  <div class="grid-32"><div class="card" id="audit" style="padding:6px 16px"><div class="card-h" style="margin:12px 0 4px"><div class="card-t">Audit log</div><span class="xs muted">Your actions in this demo appear here</span></div><div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead><tbody>
+    ${state.audit.slice(0,14).map(a=>`<tr><td class="small muted" style="white-space:nowrap">${esc(a.t)}</td><td class="small">${esc(a.u)}</td><td class="small strong">${esc(a.a)}</td><td class="small muted">${esc(a.d)}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="stack"><div class="card"><div class="card-t" style="margin-bottom:10px">CV retention</div>
+      <div class="row wrap" style="justify-content:space-between"><label class="fl" for="ret-m">Keep CVs without contact for</label><select class="inp" id="ret-m" style="width:auto">${[12,24,36].map(m=>`<option value="${m}" ${m===state.retention.months?'selected':''}>${m} months</option>`).join('')}</select></div>
+      <div class="row" style="justify-content:space-between;margin-top:12px"><span class="small">Delete automatically after review period</span><button class="toggle ${state.retention.auto?'on':''}" data-ret-auto aria-pressed="${state.retention.auto}" aria-label="Automatic deletion"></button></div>
+      <div class="row" style="margin-top:12px;justify-content:space-between"><span class="pill p-warn">2 candidates due for review</span><button class="btn btn-sm btn-out" data-review>Review now</button></div></div>
+    <div class="card"><div class="card-t" style="margin-bottom:6px">CRM sync</div>${state.crm.slice(0,5).map(e=>`<div class="list-row"><span class="pill p-ok">${ic('check')}Sent</span><div class="grow small">${esc(e.d)}</div><span class="xs muted">${esc(e.t)}</span></div>`).join('')}</div>
+    <div class="card"><div class="card-t" style="margin-bottom:6px">Team and access</div>${[['Sophie Lane','Owner'],['James Okafor','Admin'],['Priya Desai','Recruiter'],['Finance team','Viewer, read only']].map(([n,r])=>`<div class="kv"><span class="k">${n}</span><span class="v">${r}</span></div>`).join('')}</div></div></div>`;
+}
+
+/* ---------- navigation, modal, toast ---------- */
+const PAGES={dashboard:['Dashboard',renderDashboard],upload:['Upload CV',renderUpload],candidates:['Candidates',renderCandidates],matches:['Matches',renderMatches],roles:['Top Roles',renderRoles],search:['Job Search',renderSearch],spec:['Spec Lists',renderSpec],sources:['Sources',renderSources],alerts:['Alerts',renderAlerts],compliance:['Compliance',renderCompliance]};
+let cur='dashboard';
+function nav(p){if(!PAGES[p])p='dashboard';cur=p;$$('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));$$('.nav-item').forEach(x=>{const on=x.dataset.nav===p;x.classList.toggle('active',on);on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current');});PAGES[p][1]();updateBadges();$('#content').scrollTop=0;$('#app').classList.remove('drawer-open');}
+function render(){PAGES[cur][1]();updateBadges();if(tourOn)setTimeout(placeTour,30);}
+function updateBadges(){const a=state.alerts.filter(x=>x.unread).length,b=$('#badge-a');b.textContent=a;b.hidden=!a;const m=allMatches().filter(fresh).length,c=$('#badge-m');c.textContent=m;c.hidden=!m;}
+function openModal(t,b,f,wide){$('#modal-t').innerHTML=t;$('#modal-b').innerHTML=b;$('#modal-b').scrollTop=0;$('#modal-f').innerHTML=f||'';$('#modal').classList.toggle('wide',!!wide);$('#modal-overlay').hidden=false;document.body.classList.add('modal-open');}
+function closeModal(){$('#modal-overlay').hidden=true;document.body.classList.remove('modal-open');if(tourOn)setTimeout(placeTour,30);}
+let tT;function toast(msg){const t=$('#toast');t.innerHTML=ic('check')+'<span>'+msg+'</span>';t.className='toast show';clearTimeout(tT);tT=setTimeout(()=>{t.className='toast';},4000);}
+function themeNow(){const d=document.documentElement.dataset.theme;return d||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+function syncThemeIcon(){$('#theme-btn').innerHTML=ic(themeNow()==='dark'?'sun':'moon');}
+
+/* ---------- tour ---------- */
+const TOUR=[
+ {center:true,title:'Welcome to VacancyMatch',body:'You are Sophie Lane, owner of Fenwick Hale Search, a sample recruitment boutique placing insurance, pensions, banking and finance people across London and Essex. Every button works, so try things as you go. Nothing is saved and nothing is sent. The tour takes about 8 minutes.'},
+ {page:'dashboard',sel:'#kpis',title:'The live market and your pipeline',body:'Live vacancies across six financial services sectors, new matches in the last 24 hours, your shortlist and the health of your sources, on one screen.'},
+ {page:'dashboard',sel:'#industry',title:'See where the hiring is',body:'Jobs by industry, with recruitment agency postings left out so you see real employer demand. Click a sector to search it.'},
+ {page:'upload',sel:'#cv-drop',title:'Upload a CV, get matches in seconds',body:'Drop in a CV and AI turns it into a profile with skills, sectors, location and salary, then scores it against every live job. Try one of the sample CVs below now.'},
+ {page:'matches',sel:'#match-first',title:'Scores that show their working',body:'Every match is scored on seven weighted factors: skills, job title, industry, location, meaning, salary and how recently the job was posted. Each bar has a plain-English reason, so you can trust a score or overrule it.'},
+ {page:'matches',sel:'#acts-first',title:'Act on a match',body:'Shortlist it, push the candidate and job to your CRM with the reasons attached, send the vacancy to a spec list for business development, or dismiss it so it never comes back.'},
+ {page:'search',sel:'#search-panel',title:'Search the live market, cleanly',body:'Search by title, skill or employer and filter by sector, location and salary. Direct employer adverts come first and agency postings are hidden. Turn on Include recruitment agencies to see them.'},
+ {page:'search',sel:'#save-btn',title:'Let the jobs come to you',body:'Save any search and choose hourly alerts or a daily digest. You are only told about jobs that are new since you last looked.'},
+ {page:'spec',sel:'#spec-main',title:'Spec lists with contacts found for you',body:'Collect live vacancies into lists to pitch into. For each job, the talent acquisition lead and likely hiring manager are found with email and phone, and uncertain ones are marked as a best guess.'},
+ {page:'sources',sel:'#src-table',title:'Know where every job came from',body:'Employer careers sites, ATS boards, Google Jobs and job boards, each with a health check. Click Run now on Google Jobs to watch three new jobs arrive, get re-matched and raise alerts.'},
+ {page:'alerts',sel:'#alert-inbox',title:'Alerts and a morning digest',body:'New jobs for saved searches, new high-scoring matches and source problems land here. Preview the morning digest to see the email your team gets each weekday.'},
+ {page:'compliance',sel:'#audit',title:'Built for compliance',body:'Every upload, shortlist, push and setting change is logged with who did it. CV retention runs on your UK GDPR schedule, and viewers can be given read-only access.'},
+ {center:true,final:true,title:'That\'s VacancyMatch',body:'Live vacancy intelligence and explainable candidate matching for specialist financial services recruiters. Every plan starts with a 7-day free trial, no card needed.'},
+];
+let tourOn=false,tourIdx=0;
+function startTour(i){tourOn=true;$('#tour-card').hidden=false;showStep(i||0);}
+function endTour(){tourOn=false;['#tour-card','#tour-spot','#tour-backdrop'].forEach(s=>{$(s).hidden=true;});}
+function showStep(i){tourIdx=i;const st=TOUR[i];if(!$('#modal-overlay').hidden)closeModal();if(st.page&&st.page!==cur)nav(st.page);renderTourCard();const el=st.sel&&$(st.sel);if(el)el.scrollIntoView({block:innerWidth<=860?'start':'center'});requestAnimationFrame(()=>requestAnimationFrame(placeTour));}
+function renderTourCard(){const st=TOUR[tourIdx],i=tourIdx,n=TOUR.length-2;let h=`<button class="tour-x" data-tour="end" aria-label="Close tour">${ic('x')}</button>`;
+  if(st.center)h+=`<div class="tour-mark">${ic(st.final?'rocket':'target')}</div>`;else h+=`<div class="tour-step">Step ${i} of ${n}</div>`;
+  h+=`<h2 class="tour-title">${st.title}</h2><p class="tour-body">${st.body}</p>`;
+  if(i===0)h+=`<div class="tour-actions"><button class="btn btn-ghost" data-tour="end">Explore on my own</button><button class="btn btn-pri" data-tour="next">Start the tour</button></div>`;
+  else if(st.final)h+=`<div class="prices"><div class="price"><b>Core</b><div class="amt">£120</div>per user a month</div><div class="price"><b>Professional</b><div class="amt">£220</div>per user a month</div><div class="price"><b>Business</b><div class="amt">Team pricing</div>5 seats and up</div></div><div class="tour-final"><a class="btn btn-pri" href="${TRIAL}" target="_blank" rel="noopener">${ic('rocket')}Start your free trial</a><a class="btn btn-out" href="${PRICING}" target="_blank" rel="noopener">See pricing</a><button class="btn btn-ghost" data-tour="end">Keep exploring</button></div>`;
+  else h+=`<div class="tour-prog"><span style="width:${i/n*100}%"></span></div><div class="tour-actions"><button class="btn btn-sm btn-ghost" data-tour="back">Back</button><button class="btn btn-sm btn-pri" data-tour="next">${i===n?'Finish':'Next'}</button></div>`;
+  $('#tour-card').innerHTML=h;}
+function placeTour(){if(!tourOn)return;const st=TOUR[tourIdx],card=$('#tour-card'),spot=$('#tour-spot'),bd=$('#tour-backdrop');
+  const el=st.sel?$(st.sel):null;const visible=el&&el.offsetParent!==null;card.style.left='';card.style.top='';
+  if(st.center||!visible){spot.hidden=true;bd.hidden=!st.center;card.classList.remove('dock');card.classList.toggle('center',!!st.center);if(!st.center)card.classList.add('dock');return;}
+  bd.hidden=true;card.classList.remove('center');
+  const r=el.getBoundingClientRect(),p=6;const top=Math.max(4,r.top-p),left=Math.max(4,r.left-p),bottom=Math.min(innerHeight-4,r.bottom+p),right=Math.min(innerWidth-4,r.right+p);
+  spot.hidden=false;Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+  if(innerWidth<=860){card.classList.add('dock');return;}
+  card.classList.remove('dock');const cw=card.offsetWidth,ch=card.offsetHeight;let y=bottom+12,inside=false;if(y+ch>innerHeight-12)y=top-ch-12;if(y<12){y=Math.max(12,innerHeight-ch-16);inside=true;}
+  const x=inside?innerWidth-cw-24:Math.max(12,Math.min(left,innerWidth-cw-12));card.style.left=x+'px';card.style.top=y+'px';}
+function tourAction(a){if(a==='start')startTour(tourOn?tourIdx:0);else if(a==='end')endTour();else if(a==='next')showStep(Math.min(TOUR.length-1,tourIdx+1));else if(a==='back')showStep(Math.max(1,tourIdx-1));}
+
+/* ---------- events ---------- */
+function setStatus(key,st){const [ci,ji]=key.split('-').map(Number);const c=cand(ci),j=job(ji);if(st==='new')delete state.status[key];else state.status[key]=st;
+  if(st==='shortlisted')logAudit('Candidate shortlisted',`${name(c)} for ${j.title}, ${j.co}`);if(st==='dismissed')logAudit('Match dismissed',`${name(c)} for ${j.title}`);
+  toast(st==='shortlisted'?`${esc(name(c))} shortlisted for ${esc(j.title)}.`:st==='dismissed'?'Match dismissed. It won\'t be suggested again.':'Match restored.');}
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('button,a,[data-cand],[data-job]');if(!t)return;const d=t.dataset;
+  if(d.nav){if(!$('#modal-overlay').hidden)closeModal();nav(d.nav);return;}
+  if('menu' in d){$('#app').classList.toggle('drawer-open');return;}
+  if(d.tour){tourAction(d.tour);return;}
+  if('themeToggle' in d){document.documentElement.dataset.theme=themeNow()==='dark'?'light':'dark';syncThemeIcon();return;}
+  if('reset' in d){state=buildState();lastUpload=null;closeModal();render();toast('Demo reset to the starting data.');return;}
+  if('close' in d){closeModal();return;}
+  if(d.sectorGo){state.q=Object.assign(state.q,{sector:d.sectorGo,text:''});nav('search');return;}
+  if(d.coSearch){state.q=Object.assign(state.q,{text:d.coSearch,sector:'all',area:'any',min:0,recruiters:false});nav('search');return;}
+  if('rolesRefresh' in d){t.disabled=true;t.innerHTML=ic('refresh','animation:spin .8s linear infinite')+'Analysing…';setTimeout(()=>{state.rolesAt='just now';if(cur==='roles')renderRoles();toast('Top roles refreshed from live postings.');},1500);return;}
+  if(d.openMatch){const [c]=d.openMatch.split('-');state.matchCand=c;state.matchTab='new';state.openWhy={};state.openWhy[d.openMatch]=true;nav('matches');const el=document.querySelector(`[data-mkey="${d.openMatch}"]`);if(el)el.scrollIntoView({block:'center'});return;}
+  if(d.sample){const s=SAMPLE_CVS[+d.sample];runUpload(Object.assign({},s.c,{skills:s.c.skills.slice(),sectors:s.c.sectors.slice()}),s.file,true);return;}
+  if(d.seeMatches){closeModal();state.matchCand=d.seeMatches;state.matchTab='new';state.openWhy={};nav('matches');return;}
+  if(d.cand&&!t.matches('tr')){closeModal();openCand(+d.cand);return;}
+  if(d.cand){openCand(+d.cand);return;}
+  if(d.job){closeModal();openJob(+d.job);return;}
+  if('rematch' in d){t.disabled=true;t.innerHTML=ic('refresh','animation:spin .8s linear infinite')+'Re-matching…';setTimeout(()=>{if(cur==='candidates')renderCandidates();toast(`${state.cands.length} candidates re-matched against ${marketTotal().toLocaleString('en-GB')} live jobs.`);},1300);return;}
+  if(d.mcand){state.matchCand=d.mcand;state.openWhy={};renderMatches();return;}
+  if(d.mtab){state.matchTab=d.mtab;state.openWhy={};renderMatches();return;}
+  if(d.why){const k=d.why;const el=document.querySelector(`[data-mkey="${k}"]`);const open=!!(el&&el.querySelector('.why'));state.openWhy[k]=!open;renderMatches();return;}
+  if(d.mstat){const [k,st]=d.mstat.split('|');setStatus(k,st);if(!$('#modal-overlay').hidden&&st==='shortlisted'){t.outerHTML=`<span class="pill p-ok">${ic('star')}Shortlisted</span>`;}render();return;}
+  if(d.push){openPush(d.push);return;}
+  if(d.pushGo){const k=d.pushGo;const [ci,ji]=k.split('-').map(Number);state.status[k]='pushed';const c=cand(ci),j=job(ji);state.crm.unshift({t:'Today, '+now(),d:`${name(c)} → ${j.title}`});logAudit('Pushed to CRM',`${name(c)} for ${j.title}, ${j.co} (${$('#crm-stage').value})`);closeModal();render();toast(`${esc(name(c))} pushed to your CRM with the match reasons. In this demo nothing is actually sent.`);return;}
+  if(d.tospec){closeModal();openToSpec(+d.tospec);return;}
+  if(d.tospecGo){const jid=+d.tospecGo;let fid=$('#ts-folder').value;if(fid==='new'){const n=$('#ts-new').value.trim()||'New list';fid=state.nextFolder++;state.folders.push({id:fid,name:n,vis:'team'});}fid=+fid;
+    const id=state.nextSpec++;state.specItems.unshift({id,f:fid,j:jid,note:$('#ts-note').value.trim()});state.contacts[id]=null;closeModal();
+    const f=state.folders.find(x=>x.id===fid);toast(`Added to ${esc(f.name)}. Finding contacts…`);logAudit('Added to spec list',`${job(jid).title}, ${job(jid).co} → ${f.name}`);
+    setTimeout(()=>{if(state.contacts[id]===null){state.contacts[id]=genContacts(job(jid),id);if(cur==='spec')renderSpec();}},1500);if(cur==='spec')renderSpec();return;}
+  if(d.jobMatch){openJobMatch(+d.jobMatch);return;}
+  if(d.sec){state.q.sector=d.sec;renderSearch();return;}
+  if('recruiters' in d){state.q.recruiters=!state.q.recruiters;renderSearch();toast(state.q.recruiters?'Recruitment agency postings included.':'Recruitment agency postings hidden.');return;}
+  if('saveSearch' in d){openSaveSearch();return;}
+  if('saveGo' in d){const q=state.q;const n=$('#ss-name').value.trim()||'My search';const fr=$('#ss-freq').value;state.saved.unshift({id:Date.now(),name:n,q:q.text,sector:q.sector,area:q.area,min:q.min,freq:fr==='No alerts, just save'?'No alerts':fr,on:fr!=='No alerts, just save'});logAudit('Saved search created',n);closeModal();toast(`"${esc(n)}" saved. ${fr==='No alerts, just save'?'':'You\'ll be alerted to new jobs.'}`);return;}
+  if(d.spectab){state.specTab=d.spectab;state.folderSel=null;renderSpec();return;}
+  if(d.folder){state.folderSel=+d.folder;renderSpec();return;}
+  if('newFolder' in d){openModal('New folder',`<div class="fg"><label class="fl" for="nf-n">Name</label><input class="inp" id="nf-n" placeholder="e.g. Q1 pensions prospects"></div><div class="fg" style="margin-top:10px"><label class="fl" for="nf-v">Who can see it</label><select class="inp" id="nf-v"><option value="team">Team, visible to everyone</option><option value="personal">Personal, just me</option></select></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-nf-go>Create folder</button>`);return;}
+  if('nfGo' in d){const n=$('#nf-n').value.trim();if(!n){$('#nf-n').focus();return;}const v=$('#nf-v').value;const id=state.nextFolder++;state.folders.push({id,name:n,vis:v});state.specTab=v;state.folderSel=id;closeModal();renderSpec();toast(`Folder "${esc(n)}" created.`);return;}
+  if(d.enrich){enrich(+d.enrich);return;}
+  if(d.rmSpec){state.specItems=state.specItems.filter(x=>x.id!==+d.rmSpec);renderSpec();toast('Removed from the folder.');return;}
+  if(d.delContact){const [i,c]=d.delContact.split('|').map(Number);state.contacts[i]=(state.contacts[i]||[]).filter(x=>x.id!==c);renderSpec();return;}
+  if(d.addContact){openModal('Add a contact',`<div class="form-grid"><div class="fg full"><label class="fl" for="ac-n">Full name</label><input class="inp" id="ac-n" placeholder="Jane Smith"></div><div class="fg"><label class="fl" for="ac-t">Job title</label><input class="inp" id="ac-t" placeholder="Head of Talent"></div><div class="fg"><label class="fl" for="ac-y">Contact type</label><select class="inp" id="ac-y"><option value="ta">Talent acquisition</option><option value="hm">Hiring manager</option></select></div><div class="fg"><label class="fl" for="ac-e">Email</label><input class="inp" id="ac-e" placeholder="jane@company.com"></div><div class="fg"><label class="fl" for="ac-p">Phone</label><input class="inp" id="ac-p" placeholder="07700 900000"></div></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-ac-go="${d.addContact}">Add contact</button>`);return;}
+  if(d.acGo){const n=$('#ac-n').value.trim();if(!n){$('#ac-n').focus();return;}const i=+d.acGo;(state.contacts[i]=state.contacts[i]||[]).push({id:Date.now(),name:n,title:$('#ac-t').value.trim()||'Contact',email:$('#ac-e').value.trim(),phone:$('#ac-p').value.trim(),type:$('#ac-y').value,conf:'high',manual:true});closeModal();renderSpec();toast(`${esc(n)} added.`);return;}
+  if(d.srcRun){runSource(+d.srcRun);return;}
+  if(d.srcToggle){const s=state.sources.find(x=>x.id===+d.srcToggle);s.on=!s.on;logAudit(s.on?'Source resumed':'Source paused',s.name);renderSources();toast(s.on?`${esc(s.name)} resumed.`:`${esc(s.name)} paused. Its jobs are no longer matched.`);return;}
+  if(d.srcFix){const s=state.sources.find(x=>x.id===+d.srcFix);openModal('Fix the careers page address',`<p class="small muted" style="margin-bottom:12px">${esc(s.msg)} Paste the new careers page address and the source is checked straight away.</p><div class="fg"><label class="fl" for="fx-u">Careers page address</label><input class="inp" id="fx-u" value="https://meridianspecialty.example/join-us"></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-fix-go="${s.id}">Save and check</button>`);return;}
+  if(d.fixGo){const s=state.sources.find(x=>x.id===+d.fixGo);s.detail=$('#fx-u').value.replace(/^https?:\/\//,'')||s.detail;closeModal();s.status='run';delete s.msg;renderSources();setTimeout(()=>{s.status='ok';s.last='Just now';s.fetched=14;s.newc=0;s.live=14;state.alerts=state.alerts.filter(a=>a.kind!=='source');logAudit('Source fixed',s.name);if(cur==='sources')renderSources();updateBadges();toast('Healthy again. 14 jobs fetched, all already known through Workday, so no duplicates were added.');},1500);return;}
+  if('addSource' in d){openModal('Add a source',`<div class="fg"><label class="fl" for="as-n">Name</label><input class="inp" id="as-n" placeholder="e.g. Kinsale Marine careers"></div><div class="fg" style="margin-top:10px"><label class="fl" for="as-t">Type</label><select class="inp" id="as-t"><option>Employer site</option><option>ATS</option><option>Job board</option></select></div><div class="fg" style="margin-top:10px"><label class="fl" for="as-u">Careers page or board address</label><input class="inp" id="as-u" placeholder="https://"></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-pri" data-as-go>Add and run</button>`);return;}
+  if('asGo' in d){const n=$('#as-n').value.trim();if(!n){$('#as-n').focus();return;}const s={id:100+state.sources.length,name:n,type:$('#as-t').value,detail:($('#as-u').value||'').replace(/^https?:\/\//,'')||'New source',status:'run',last:'Running',fetched:0,newc:0,live:0,on:true};state.sources.push(s);closeModal();renderSources();logAudit('Source added',n);
+    setTimeout(()=>{s.status='ok';s.last='Just now';s.fetched=9;s.live=9;if(cur==='sources')renderSources();toast(`${esc(n)}: 9 jobs fetched. All 9 were already found on other sources, so they were merged.`);},1600);return;}
+  if(d.alertSeen){const a=state.alerts.find(x=>String(x.id)===d.alertSeen);if(a)a.unread=false;renderAlerts();updateBadges();return;}
+  if('readAll' in d){state.alerts.forEach(a=>{a.unread=false;});renderAlerts();updateBadges();return;}
+  if(d.alertGo){const a=state.alerts.find(x=>String(x.id)===d.alertGo);if(!a)return;a.unread=false;if(a.mc){state.matchCand=String(a.mc);state.matchTab='new';state.openWhy={};}nav(a.go);return;}
+  if('digestToggle' in d){state.digest.on=!state.digest.on;renderAlerts();toast(state.digest.on?`Digest on. It arrives at ${state.digest.time} each weekday.`:'Morning digest turned off.');return;}
+  if('digestPreview' in d){openModal("Tomorrow's digest",digestHtml(),`<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-pri" data-close data-test-send>${ic('send')}Send me a test</button>`,true);return;}
+  if('testSend' in d){toast('Test digest sent to sophie.lane@fenwickhale.example. In this demo nothing is actually sent.');return;}
+  if(d.runSaved){const s=state.saved.find(x=>String(x.id)===d.runSaved);state.q=Object.assign(state.q,{text:s.q,sector:s.sector,area:s.area,min:s.min});nav('search');return;}
+  if(d.savedToggle){const s=state.saved.find(x=>String(x.id)===d.savedToggle);s.on=!s.on;renderAlerts();toast(s.on?`Alerts on for "${esc(s.name)}".`:`Alerts paused for "${esc(s.name)}".`);return;}
+  if('export' in d){toast('In the live product this downloads the audit log as a CSV file.');return;}
+  if('retAuto' in d){state.retention.auto=!state.retention.auto;logAudit('Retention setting changed',`Automatic deletion ${state.retention.auto?'on':'off'}`);renderCompliance();return;}
+  if('review' in d){openModal('Candidates due for review',`<p class="small muted" style="margin-bottom:10px">No contact for ${state.retention.months} months. Refresh consent or delete their data.</p>${[['Nina Cartwright','Last contact 25 months ago'],['Gareth Price','Last contact 24 months ago']].map(([n,s])=>`<div class="list-row"><span class="avatar">${initials(n)}</span><div class="grow"><div class="small strong">${n}</div><div class="xs muted">${s}</div></div><button class="btn btn-sm btn-out" data-close data-ret-act="Consent request sent to ${n}">Ask for consent</button><button class="btn btn-sm btn-bad" data-close data-ret-act="${n}'s data deleted">Delete</button></div>`).join('')}`,`<button class="btn btn-ghost" data-close>Close</button>`);return;}
+});
+document.addEventListener('click',ev=>{const t=ev.target.closest('[data-ret-act]');if(t){logAudit('Retention review',t.dataset.retAct);if(cur==='compliance')renderCompliance();toast(t.dataset.retAct+'. In this demo nothing is actually sent or deleted.');}});
+document.addEventListener('change',ev=>{const t=ev.target;
+  if(t.id==='sarea'){state.q.area=t.value;renderSearch();}
+  else if(t.id==='smin'){state.q.min=+t.value;renderSearch();}
+  else if(t.id==='ssort'){state.q.sort=t.value;renderSearch();}
+  else if(t.id==='dg-time'){state.digest.time=t.value;toast(`Digest will arrive at ${t.value}.`);}
+  else if(t.id==='ret-m'){state.retention.months=+t.value;logAudit('Retention setting changed',`Review after ${t.value} months`);renderCompliance();}
+});
+document.addEventListener('input',ev=>{if(ev.target.id==='sq'){state.q.text=ev.target.value;renderSearch();}});
+$('#qs-form').addEventListener('submit',e=>{e.preventDefault();const v=$('#qs-in').value.trim();if(!v)return;state.q=Object.assign(state.q,{text:v,sector:'all',area:'any',min:0});$('#qs-in').value='';nav('search');});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){if(!$('#modal-overlay').hidden)closeModal();else if(tourOn)endTour();else $('#app').classList.remove('drawer-open');}});
+$('#modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')closeModal();});
+addEventListener('resize',()=>{if(tourOn)placeTour();});
+$('#content').addEventListener('scroll',()=>{if(tourOn)placeTour();},{passive:true});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',syncThemeIcon);}catch(e){}
+
+syncThemeIcon();nav('dashboard');
+let seen=false;try{seen=sessionStorage.getItem('vm-tour')==='1';sessionStorage.setItem('vm-tour','1');}catch(e){}
+if(!seen&&!/[?&]notour/.test(location.search))setTimeout(()=>startTour(0),500);
+})();
+</script>
+
+</body>
+</html>
