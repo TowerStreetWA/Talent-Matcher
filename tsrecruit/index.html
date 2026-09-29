@@ -1,0 +1,1287 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Try TS Recruit, the recruitment CRM with AI matching, retained search, email intake and outreach cadences. Live demo, no login needed.">
+<meta property="og:title" content="TS Recruit live demo">
+<meta property="og:description" content="Candidates, jobs, retained search, AI matching and outreach for recruitment agencies. Try it now, no login needed.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#080f1f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f7c825'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='700' text-anchor='middle' fill='%23080f1f'%3ETS%3C/text%3E%3C/svg%3E">
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>TS Recruit Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+/* Layout: TS Recruit's own app shell (navy sidebar, sticky topbar, multicolour accent rule) with a demo bar and guided tour layered on top. Single dark look, matching the product. */
+:root{
+  color-scheme:dark;
+  --dark:#080f1f;--navy:#0c1829;--card:#0f1e35;--card2:#111f38;
+  --gold:#f7c825;--gold2:#e8b800;--border:#1e2e4a;
+  --text:#e6edf8;--text2:#8899b8;--text3:#5a6a88;
+  --green:#34d399;--red:#f87171;--electric:#38bdf8;--cyan:#22d3ee;--pink:#f472b6;--purple:#a78bfa;--orange:#fb923c;
+  --sans:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'DM Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--dark);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-text-size-adjust:100%}
+h1,h2,h3,p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ic{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.grow{flex:1;min-width:0}.muted{color:var(--text2)}.dim{color:var(--text3)}.small{font-size:12px}.xs{font-size:11px}.strong{font-weight:600}
+.tnum{font-variant-numeric:tabular-nums}.gold{color:var(--gold)}.okc{color:var(--green)}.badc{color:var(--red)}
+.mono{font-family:var(--mono)}
+.row{display:flex;align-items:center;gap:10px}.wrap{flex-wrap:wrap}
+.label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text3)}
+
+/* shell */
+.app{display:flex;height:100%;overflow:hidden;position:relative}
+.sidebar{width:228px;background:var(--navy);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:90}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80}
+.logo-area{padding:16px 16px 14px;border-bottom:1px solid var(--border)}
+.wordmark{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;letter-spacing:-.2px}
+.mark{width:30px;height:30px;border-radius:8px;background:var(--gold);color:var(--dark);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.5px}
+.wordmark small{display:block;font-size:10px;font-weight:400;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--mono)}
+.agency-chip{margin-top:12px;background:rgba(247,200,37,.07);border:1px solid rgba(247,200,37,.2);border-radius:8px;padding:7px 10px}
+.agency-chip span{display:block;font-family:var(--mono);font-size:9.5px;color:var(--gold);text-transform:uppercase;letter-spacing:1px}
+.agency-chip b{font-size:12.5px;font-weight:600}
+.nav{padding:6px 0 10px;flex:1;overflow-y:auto}
+.nav-section{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 5px}
+.ns-main{color:rgba(247,200,37,.75)}.ns-ai{color:rgba(56,189,248,.85)}.ns-out{color:rgba(167,139,250,.9)}
+.nav-item{display:flex;width:100%;align-items:center;gap:11px;padding:8px 16px;font-size:13px;color:var(--text2);border:0;border-left:2px solid transparent;background:none;text-align:left;transition:background .15s,color .15s}
+.nav-item .ic{width:16px;height:16px}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(247,200,37,.05)}
+.nav-badge{margin-left:auto;font-family:var(--mono);font-size:10px;background:var(--gold);color:var(--dark);padding:0 7px;border-radius:9px;font-weight:500;line-height:17px}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border)}
+.plan-box{background:rgba(247,200,37,.05);border:1px solid rgba(247,200,37,.2);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.plan-box .t{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase}
+.licence{margin-top:10px;font-size:10px;color:var(--text3);line-height:1.4}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.accent-bar{height:2px;flex-shrink:0;background:linear-gradient(90deg,var(--electric) 0%,var(--cyan) 25%,var(--green) 50%,var(--gold) 70%,var(--pink) 90%,var(--purple) 100%);opacity:.85}
+.demo-bar{display:flex;align-items:center;gap:12px;padding:7px 24px;background:rgba(247,200,37,.09);border-bottom:1px solid rgba(247,200,37,.25);color:#fde68a;font-size:12px}
+.demo-bar b{font-family:var(--mono);font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:1.2px;font-size:10.5px;white-space:nowrap}
+.demo-bar .grow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linkbtn{background:none;border:0;color:var(--gold);text-decoration:underline;font-size:12px;padding:0;white-space:nowrap}
+.topbar{background:var(--navy);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.topbar-title{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.menu-btn{display:none;background:transparent;border:1px solid var(--border);width:36px;height:36px;border-radius:8px;align-items:center;justify-content:center}
+.content{flex:1;overflow-y:auto;padding:24px;-webkit-overflow-scrolling:touch}
+.page{display:none;max-width:1180px;margin:0 auto}.page.active{display:block}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.page-head h1{font-size:22px;font-weight:600;letter-spacing:-.3px;text-wrap:balance}
+.page-head p{color:var(--text2);font-size:13px;margin-top:3px;max-width:62ch}
+
+/* components */
+.btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;border:1px solid transparent;display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s,color .15s;text-decoration:none;white-space:nowrap;line-height:1.25;background:none}
+.btn .ic{width:15px;height:15px}
+.btn-gold{background:var(--gold);color:var(--dark)}.btn-gold:hover{background:var(--gold2)}
+.btn-ghost{color:var(--text2);border-color:var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--text3);background:rgba(255,255,255,.04)}
+.btn-ai{color:var(--electric);border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.07)}.btn-ai:hover{background:rgba(56,189,248,.14)}
+.btn-ok{color:var(--green);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.08)}.btn-ok:hover{background:rgba(52,211,153,.15)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.card-title{font-size:14px;font-weight:600}
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.stat-ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-label{font-family:var(--mono);font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.stat-value{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.1}
+.stat-sub{font-size:11.5px;color:var(--text2);margin-top:3px}
+.a-gold{background:rgba(247,200,37,.13);color:var(--gold)}.a-el{background:rgba(56,189,248,.13);color:var(--electric)}
+.a-green{background:rgba(52,211,153,.13);color:var(--green)}.a-pink{background:rgba(244,114,182,.13);color:var(--pink)}
+.a-purple{background:rgba(167,139,250,.13);color:var(--purple)}.a-cyan{background:rgba(34,211,238,.13);color:var(--cyan)}
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.grid-2>.card,.grid-32>.card{margin-bottom:0}
+.grid-32{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;font-family:var(--mono);white-space:nowrap;background:rgba(255,255,255,.05);color:var(--text2)}
+.p-gold{background:rgba(247,200,37,.12);color:var(--gold)}.p-green{background:rgba(52,211,153,.12);color:var(--green)}
+.p-red{background:rgba(248,113,113,.12);color:var(--red)}.p-blue{background:rgba(96,165,250,.13);color:#60a5fa}
+.p-purple{background:rgba(167,139,250,.13);color:var(--purple)}.p-pink{background:rgba(244,114,182,.13);color:var(--pink)}
+.p-el{background:rgba(56,189,248,.12);color:var(--electric)}.p-cyan{background:rgba(34,211,238,.12);color:var(--cyan)}.p-orange{background:rgba(251,146,60,.13);color:var(--orange)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:2px 8px;color:var(--text2)}
+.chip.hit{border-color:rgba(52,211,153,.4);color:var(--green)}.chip.miss{border-color:rgba(248,113,113,.35);color:#fca5a5}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.avatar{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;color:var(--dark);font-size:11px;width:30px;height:30px}
+.av-sm{width:24px;height:24px;font-size:9.5px}
+.av-lg{width:48px;height:48px;font-size:16px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.kv:last-child{border-bottom:0}.kv .k{color:var(--text2)}.kv .v{text-align:right;font-weight:500;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
+.list-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.list-row:last-child{border-bottom:0}
+.empty{padding:22px;text-align:center;color:var(--text2);font-size:13px}
+.score{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:24px;padding:0 7px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:500}
+.s-hi{background:rgba(52,211,153,.15);color:var(--green)}.s-mid{background:rgba(247,200,37,.14);color:var(--gold)}.s-lo{background:rgba(248,113,113,.13);color:var(--red)}.s-none{background:rgba(255,255,255,.05);color:var(--text3)}
+.ai-box{background:linear-gradient(180deg,rgba(56,189,248,.07),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.25);border-radius:10px;padding:14px}
+.ai-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--electric)}
+.ai-tag .ic{width:13px;height:13px}
+.caret::after{content:'';display:inline-block;width:7px;height:14px;background:var(--electric);margin-left:2px;vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px;min-width:0}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:12px;color:var(--text2);font-weight:500}
+.form-input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;width:100%;min-width:0}
+.form-input:focus{outline:none;border-color:rgba(247,200,37,.55)}
+textarea.form-input{resize:vertical;line-height:1.5}
+select.form-input{appearance:auto}
+.form-err{color:#fca5a5;font-size:12px;margin-top:8px}
+.search-in{position:relative;flex:1 1 240px;max-width:340px}
+.search-in .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text3)}
+.search-in input{padding-left:32px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:12px;color:var(--text2)}
+.fbtn.on{border-color:rgba(247,200,37,.5);color:var(--gold);background:rgba(247,200,37,.07)}
+.toggle{position:relative;width:34px;height:19px;border-radius:10px;background:rgba(255,255,255,.1);border:0;padding:0;flex-shrink:0;transition:background .15s}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--text2);transition:transform .15s,background .15s}
+.toggle.on{background:rgba(52,211,153,.35)}.toggle.on::after{transform:translateX(15px);background:var(--green)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+.tbl th{text-align:left;font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--text3);padding:9px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.045);vertical-align:middle}
+.tbl tbody tr{cursor:pointer;transition:background .12s}
+.tbl tbody tr:hover{background:rgba(255,255,255,.03)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who b{display:block;font-weight:500;font-size:13px}
+.who span{display:block;font-size:12px;color:var(--text2)}
+
+/* jobs */
+.job-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.job-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:border-color .15s;text-align:left}
+.job-card:hover{border-color:rgba(247,200,37,.4)}
+.job-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.job-title{font-size:15px;font-weight:600}
+.pipe-mini{display:flex;height:6px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.05);gap:2px}
+.pipe-mini span{display:block;height:100%}
+.pipe-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text2)}
+.pipe-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:0}
+.job-meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text2)}
+.job-meta b{color:var(--text);font-weight:500}
+
+/* board */
+.board-wrap{overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.board{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:12px;min-width:1180px}
+.col{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;min-height:360px;transition:border-color .15s,background .15s}
+.col.over{border-color:var(--gold);background:rgba(247,200,37,.05)}
+.col-h{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.col-h b{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.col-h b i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.col-body{padding:8px;display:flex;flex-direction:column;gap:8px;flex:1}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:grab;display:flex;flex-direction:column;gap:7px}
+.acard:hover{border-color:var(--text3)}
+.acard.dragging{opacity:.4}
+.acard .n{font-weight:600;font-size:13px}
+.acard .j{font-size:11.5px;color:var(--text2);line-height:1.35}
+.acard select{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;font-size:11.5px;padding:3px 6px;color:var(--text2);width:100%}
+.col-foot{padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text2);font-family:var(--mono)}
+
+/* search */
+.criteria{display:flex;flex-direction:column;gap:8px}
+.crit{display:grid;grid-template-columns:minmax(0,1fr) 110px 44px;gap:10px;align-items:center;font-size:13px}
+.bar-track{height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar-track span{display:block;height:100%;border-radius:4px;background:var(--gold)}
+.fee-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fee-step{border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.fee-step.done{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.05)}
+.fee-step.due{border-color:rgba(247,200,37,.45);background:rgba(247,200,37,.05)}
+.fee-step .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.sboard{display:grid;grid-template-columns:repeat(6,minmax(170px,1fr));gap:10px;min-width:1060px}
+.scol{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;min-height:220px}
+.scol .col-h{padding:9px 11px}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:6px}
+.pcard .n{font-weight:600;font-size:12.5px}
+.pcard .j{font-size:11px;color:var(--text2);line-height:1.35}
+
+/* doc preview */
+.paper{background:#fbfaf6;color:#1b2333;border-radius:6px;padding:28px 30px;font-size:13px;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.paper h2{font-size:19px;font-weight:700;margin-bottom:2px;color:#0c1829}
+.paper h3{font-size:12px;font-family:var(--mono);font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:#8a6d00;margin:18px 0 6px}
+.paper .sub{color:#56627a;font-size:12.5px}
+.paper .hr{height:3px;width:48px;background:#f7c825;margin:12px 0 4px;border-radius:2px}
+.paper table{width:100%;border-collapse:collapse;font-size:12.5px}
+.paper td,.paper th{text-align:left;padding:6px 8px;border-bottom:1px solid #e3e0d6;vertical-align:top}
+.paper th{font-weight:600;color:#56627a;font-size:11.5px}
+.paper ul{margin:4px 0;padding-left:18px}
+.paper .foot{margin-top:20px;font-size:11px;color:#8590a6;border-top:1px solid #e3e0d6;padding-top:10px}
+
+/* copilot */
+.chat{display:flex;flex-direction:column;height:calc(100vh - 260px);min-height:420px}
+.chat-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px 14px}
+.msg{max-width:78%;padding:11px 14px;border-radius:12px;font-size:13.5px;line-height:1.55}
+.msg.me{align-self:flex-end;background:rgba(247,200,37,.12);border:1px solid rgba(247,200,37,.25)}
+.msg.bot{align-self:flex-start;background:var(--card);border:1px solid var(--border)}
+.msg.bot ul,.msg.bot ol{margin:6px 0;padding-left:18px}
+.msg.bot li{margin:3px 0}
+.msg pre{white-space:pre-wrap;font-family:var(--sans);margin:8px 0 0;background:rgba(0,0,0,.25);padding:10px 12px;border-radius:8px;font-size:13px}
+.suggest{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sug{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.3);color:var(--electric);border-radius:20px;padding:5px 12px;font-size:12.5px}
+.sug:hover{background:rgba(56,189,248,.14)}
+.chat-in{display:flex;gap:8px}
+.typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--electric);margin-right:4px;animation:bob 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+/* cadences */
+.cad{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.steps{display:flex;gap:0;margin:14px 0 12px;overflow-x:auto;padding-bottom:4px}
+.step{flex:1 0 150px;position:relative;padding-right:14px}
+.step::before{content:'';position:absolute;top:15px;left:32px;right:0;height:1px;background:var(--border)}
+.step:last-child::before{display:none}
+.step .dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.step .dot .ic{width:15px;height:15px}
+.step .d{font-family:var(--mono);font-size:10.5px;color:var(--text3);margin-top:7px;letter-spacing:.5px}
+.step .t{font-size:12.5px;margin-top:2px;padding-right:6px}
+.cad-stats{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--text2)}
+.cad-stats b{display:block;font-size:17px;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* reports */
+.chart svg{display:block;width:100%;height:auto}
+.hbar{display:grid;grid-template-columns:130px minmax(0,1fr) 56px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0}
+.hbar .bar-track{height:9px}
+
+/* drop zone */
+.drop{border:1.5px dashed rgba(247,200,37,.4);border-radius:10px;padding:24px 16px;text-align:center;background:rgba(247,200,37,.03);transition:background .15s,border-color .15s}
+.drop.over{background:rgba(247,200,37,.1);border-color:var(--gold)}
+.drop .ic{width:28px;height:28px;color:var(--gold)}
+.drop p{margin-top:6px}
+.up-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.up-row:last-child{border-bottom:0}
+.prog{height:4px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:5px}
+.prog span{display:block;height:100%;background:var(--gold);transition:width .35s}
+.field-found{background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.35)}
+
+/* global drop overlay */
+#drop-overlay{position:fixed;inset:0;z-index:2500;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(247,200,37,.05);border:4px dashed rgba(247,200,37,.45)}
+#drop-overlay div{background:var(--navy);border:1px solid rgba(247,200,37,.4);border-radius:14px;padding:22px 30px;text-align:center}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal{background:var(--navy);border:1px solid var(--border);border-radius:12px;width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column}
+.modal.wide{max-width:820px}
+.modal-header{padding:16px 20px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.modal-title{font-size:15px;font-weight:600;min-width:0}
+.modal-close{background:none;border:0;color:var(--text2);font-size:24px;line-height:1;padding:2px 6px}
+.modal-body{padding:18px 20px;overflow-y:auto}
+.modal-footer{padding:12px 20px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.modal-footer:empty{display:none}
+.sec{margin-bottom:18px}.sec:last-child{margin-bottom:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cand-head{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}
+.contact-line{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--text2);margin-top:6px}
+.contact-line span{display:inline-flex;align-items:center;gap:5px;user-select:all}
+.contact-line .ic{width:14px;height:14px}
+.note{border-left:2px solid var(--border);padding:4px 0 4px 10px;font-size:13px;margin-bottom:8px}
+.note .m{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* tour */
+#tour-backdrop{position:fixed;inset:0;background:rgba(3,7,18,.66);z-index:3000}
+#tour-spot{position:fixed;z-index:3001;border:2px solid var(--gold);border-radius:12px;box-shadow:0 0 0 9999px rgba(3,7,18,.55);pointer-events:none;transition:left .25s,top .25s,width .25s,height .25s}
+#tour-card{position:fixed;z-index:3002;width:350px;max-width:calc(100vw - 24px);background:var(--navy);border:1px solid rgba(247,200,37,.45);border-radius:14px;padding:18px 18px 16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+#tour-card.center{left:50%;top:50%;transform:translate(-50%,-50%);width:450px}
+#tour-card.dock{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;max-width:none}
+.tour-x{position:absolute;top:10px;right:10px;background:none;border:0;color:var(--text2);padding:4px;display:flex}
+.tour-step{font-family:var(--mono);font-size:10.5px;color:var(--gold);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px}
+.tour-title{font-size:17px;font-weight:600;margin:0 24px 6px 0;text-wrap:balance}
+.tour-body{font-size:13px;color:#c9d4ea;line-height:1.55}
+.tour-prog{height:3px;background:rgba(255,255,255,.08);border-radius:3px;margin:14px 0 12px;overflow:hidden}
+.tour-prog span{display:block;height:100%;background:var(--gold);border-radius:3px}
+.tour-actions{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.tour-final{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tour-mark{width:44px;height:44px;border-radius:12px;background:rgba(247,200,37,.12);color:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.tour-mark .ic{width:24px;height:24px}
+body.modal-open #tour-spot,body.modal-open #tour-card,body.modal-open #tour-backdrop{display:none}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;z-index:4000;display:flex;align-items:center;gap:10px;transform:translateY(90px);opacity:0;transition:transform .3s,opacity .3s;max-width:400px;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ts{border-color:rgba(52,211,153,.45)}.toast.ts .ic{color:var(--green)}
+.toast.te{border-color:rgba(248,113,113,.45)}.toast.te .ic{color:var(--red)}
+
+@media (max-width:1100px){
+  .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-32{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:860px){
+  .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);transition:transform .22s ease;box-shadow:6px 0 24px rgba(0,0,0,.4);width:260px}
+  .app.drawer-open .sidebar{transform:translateX(0)}
+  .app.drawer-open .sidebar-backdrop{display:block}
+  .menu-btn{display:inline-flex}
+  .topbar{padding:0 14px}
+  .demo-bar{padding:7px 14px}
+  .demo-bar .long{display:none}
+  .content{padding:16px}
+  .card{padding:15px}
+  .topbar-actions .lbl{display:none}
+  .topbar-actions .btn{padding:8px 10px}
+  .grid-2,.form-grid,.job-grid{grid-template-columns:minmax(0,1fr)}
+  .fee-steps{grid-template-columns:minmax(0,1fr)}
+  .form-input{font-size:16px}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal,.modal.wide{max-width:100%;max-height:92%;border-radius:14px 14px 0 0}
+  .msg{max-width:92%}
+  .chat{height:calc(100vh - 230px)}
+  .toast{left:16px;right:16px;bottom:16px;max-width:none}
+  .hbar{grid-template-columns:96px minmax(0,1fr) 48px}
+  .crit{grid-template-columns:minmax(0,1fr) 70px 40px}
+  .paper{padding:20px 18px}
+}
+@media (max-width:560px){#next-actions .list-row{flex-wrap:wrap}#next-actions .list-row .btn{margin-left:44px}.demo-bar .grow{white-space:normal}}
+@media (max-width:480px){.stats-row{gap:10px}.stat{padding:12px;flex-direction:column;gap:8px}.stat-value{font-size:20px}.page-head h1{font-size:19px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></symbol>
+<symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16M16 9h3a2 2 0 0 1 2 2v10M9 7h3M9 11h3M9 15h3"/></symbol>
+<symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2zM9 13h6M9 17h6"/></symbol>
+<symbol id="i-mailfwd" viewBox="0 0 24 24"><path d="M12 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"/><path d="M3 6l9 6 9-6M15 18h6M18 15l3 3-3 3"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="i-mailopen" viewBox="0 0 24 24"><path d="M3 9l9 6 9-6-9-6-9 6v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"/><path d="M3 19l6-6M15 13l6 6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5 5 5M12 4v12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 7 7 6 6 0 0 0 3-5 9 9 0 0 0 6-8 3 3 0 0 0-3-3 9 9 0 0 0-8 6 6 6 0 0 0-5 3"/><path d="M7 14a6 6 0 0 0-3 6 6 6 0 0 0 6-3"/><circle cx="15" cy="9" r="1"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M10 14L21 3M21 3l-6.5 18a.55.55 0 0 1-1 0L10 14l-7-3.5a.55.55 0 0 1 0-1z"/></symbol>
+<symbol id="i-linked" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 11v5M8 8v.01M12 16v-5M16 16v-3a2 2 0 0 0-4 0"/></symbol>
+<symbol id="i-task" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
+<symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3"/></symbol>
+<symbol id="i-note" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.8 2.8 0 0 0-4-4L4 16v4M13.5 6.5l4 4"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-4.5-4-6.5-4-10.5-3 1.5-5 4.5-5 7-1-1-1.5-2-1.5-3.5C6 9 5 11.5 5 14.5 5 18.3 8 21 12 21z"/></symbol>
+</defs>
+</svg>
+
+<div class="app" id="app">
+  <div class="sidebar-backdrop" id="sb-backdrop" data-menu></div>
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="logo-area">
+      <div class="wordmark"><span class="mark">TS</span><div>TS Recruit<small>Recruitment CRM</small></div></div>
+      <div class="agency-chip"><span>Sample agency</span><b>Harbour Lane Recruitment</b></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-section ns-main">Main</div>
+      <button class="nav-item" data-nav="dashboard"><svg class="ic"><use href="#i-dash"/></svg>Dashboard</button>
+      <button class="nav-item" data-nav="candidates"><svg class="ic"><use href="#i-users"/></svg>Candidates</button>
+      <button class="nav-item" data-nav="jobs"><svg class="ic"><use href="#i-brief"/></svg>Jobs</button>
+      <button class="nav-item" data-nav="board"><svg class="ic"><use href="#i-board"/></svg>Applications Board</button>
+      <button class="nav-item" data-nav="searches"><svg class="ic"><use href="#i-target"/></svg>Retained Searches</button>
+      <button class="nav-item" data-nav="companies"><svg class="ic"><use href="#i-building"/></svg>Companies</button>
+      <button class="nav-item" data-nav="bookings"><svg class="ic"><use href="#i-cal"/></svg>Interviews<span class="nav-badge" id="badge-bk" hidden></span></button>
+      <div class="nav-section ns-ai">AI tools</div>
+      <button class="nav-item" data-nav="copilot"><svg class="ic"><use href="#i-spark"/></svg>Copilot</button>
+      <button class="nav-item" data-nav="pack"><svg class="ic"><use href="#i-file"/></svg>Submission Pack</button>
+      <div class="nav-section ns-out">Outreach &amp; reports</div>
+      <button class="nav-item" data-nav="cadences"><svg class="ic"><use href="#i-mailfwd"/></svg>Cadences</button>
+      <button class="nav-item" data-nav="reports"><svg class="ic"><use href="#i-chart"/></svg>Reports</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="plan-box"><div class="t">Pro plan · Demo</div><div class="xs muted">Unlimited candidates, AI matching and cadences</div></div>
+      <div class="row"><span class="avatar" style="background:var(--gold)">OH</span><div><div class="small strong">Olivia Hart</div><div class="xs muted">Director</div></div></div>
+      <div class="licence">TS Recruit is a product of Tower Street Web and Apps.</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="accent-bar"></div>
+    <div class="demo-bar"><b>Live demo</b><span class="grow"><span class="long">Harbour Lane Recruitment is a sample agency. </span>Everything works. Nothing is saved or sent.</span><button class="linkbtn" data-reset>Reset demo</button></div>
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" data-menu aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="drop-email-btn" data-intake><svg class="ic"><use href="#i-mailopen"/></svg><span class="lbl">Drop Email</span></button>
+        <button class="btn btn-ghost" data-tour="start"><svg class="ic"><use href="#i-play"/></svg><span class="lbl">Take the tour</span></button>
+        <a class="btn btn-gold" href="https://tsrecruit.app" target="_blank" rel="noopener"><svg class="ic"><use href="#i-rocket"/></svg><span class="lbl">Start free trial</span></a>
+      </div>
+    </header>
+    <main class="content" id="content">
+      <section class="page" id="page-dashboard"></section>
+      <section class="page" id="page-candidates"></section>
+      <section class="page" id="page-jobs"></section>
+      <section class="page" id="page-board"></section>
+      <section class="page" id="page-searches"></section>
+      <section class="page" id="page-companies"></section>
+      <section class="page" id="page-bookings"></section>
+      <section class="page" id="page-copilot"></section>
+      <section class="page" id="page-pack"></section>
+      <section class="page" id="page-cadences"></section>
+      <section class="page" id="page-reports"></section>
+    </main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" data-close aria-label="Close">&times;</button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-foot"></div>
+  </div>
+</div>
+<div id="drop-overlay" hidden><div><svg class="ic" style="width:30px;height:30px;color:var(--gold)"><use href="#i-mailopen"/></svg><p style="margin-top:6px">Drop a client email to import</p><p class="xs muted">.eml, .msg or .txt. The role, contact and company are pulled out for you.</p></div></div>
+<div id="tour-backdrop" hidden></div>
+<div id="tour-spot" hidden></div>
+<div id="tour-card" role="dialog" aria-label="Guided tour" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const TRIAL='https://tsrecruit.app';
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,style)=>`<svg class="ic" aria-hidden="true"${style?` style="${style}"`:''}><use href="#i-${n}"/></svg>`;
+const money=n=>(n<0?'-£':'£')+Math.abs(Math.round(n)).toLocaleString('en-GB');
+const kf=n=>'£'+Math.round(n/1000)+'k';
+const DAY=86400000;
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function fmtD(d,opt){return d.toLocaleDateString('en-GB',opt||{day:'numeric',month:'short'});}
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const TODAY_ISO=iso(TODAY);
+function workday(n){let d=new Date(TODAY),c=0;while(c<n){d=addDays(d,1);const w=d.getDay();if(w!==0&&w!==6)c++;}return iso(d);}
+function ago(n){return n===0?'Today':n===1?'Yesterday':n+' days ago';}
+function dayLabel(s){const diff=Math.round((parse(s)-TODAY)/DAY);if(diff===0)return 'Today';if(diff===1)return 'Tomorrow';return fmtD(parse(s),{weekday:'long',day:'numeric',month:'short'});}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+const TEAM={OH:{name:'Olivia Hart',role:'Director',col:'#f7c825'},MB:{name:'Marcus Bell',role:'Senior Consultant',col:'#38bdf8'},AR:{name:'Aisha Rahman',role:'Consultant',col:'#a78bfa'}};
+const PAL=['#f7c825','#38bdf8','#34d399','#a78bfa','#f472b6','#22d3ee','#fb923c','#fca5a5','#93c5fd','#86efac'];
+const STAGES=['Applied','Screening','Submitted','Interview','Offer','Placed'];
+const STAGE_COL={Applied:'#8899b8',Screening:'#38bdf8',Submitted:'#a78bfa',Interview:'#f7c825',Offer:'#fb923c',Placed:'#34d399'};
+const STAGE_PILL={Applied:'',Screening:'p-el',Submitted:'p-purple',Interview:'p-gold',Offer:'p-orange',Placed:'p-green'};
+const S_STAGES=['Target','Contacted','Interested','Longlist','Shortlist','Presented'];
+const S_COL={Target:'#5a6a88',Contacted:'#8899b8',Interested:'#38bdf8',Longlist:'#a78bfa',Shortlist:'#f7c825',Presented:'#34d399'};
+
+function buildState(){
+  return {
+    companies:[
+      {id:1,name:'Calloway Underwriting',sector:"Lloyd's MGA",loc:'London EC3',contact:'Helen Marsh',ctitle:'Head of People',email:'helen.marsh@calloway.example',phone:'020 7946 0112',terms:'20% perm · 30% retained',billed:48600,since:2023},
+      {id:2,name:'Northmere Insurance Brokers',sector:'Insurance broker',loc:'Chelmsford',contact:'David Okafor',ctitle:'Chief Operating Officer',email:'d.okafor@northmere.example',phone:'01245 960 331',terms:'18% perm',billed:21400,since:2024},
+      {id:3,name:'Brightwater Analytics',sector:'Data and software',loc:'Cambridge',contact:'Rachel Lin',ctitle:'CTO',email:'rachel@brightwater.example',phone:'01223 960 447',terms:'20% perm',billed:13600,since:2025},
+      {id:4,name:'Ashdown Wealth',sector:'Wealth management',loc:'Guildford',contact:'James Porter',ctitle:'Managing Director',email:'jporter@ashdownwealth.example',phone:'01483 960 205',terms:'18% perm',billed:7920,since:2025},
+      {id:5,name:'Kinsale Marine',sector:'Marine insurer',loc:'London EC3',contact:'Sofia Marques',ctitle:'HR Director',email:'sofia.marques@kinsale.example',phone:'020 7946 0388',terms:'20% perm',billed:0,since:2026},
+    ],
+    jobs:[
+      {id:1,title:'Senior Property Underwriter',co:1,area:'London',loc:'London EC3 · hybrid',min:85000,max:100000,fee:20,owner:'OH',opened:12,skills:['Property',"Lloyd's",'Delegated authority','Binders','Pricing'],hot:true,published:true},
+      {id:2,title:'Claims Handler, Casualty',co:2,area:'Chelmsford',loc:'Chelmsford · 3 days office',min:38000,max:45000,fee:18,owner:'MB',opened:21,skills:['Casualty claims','Liability','CII Certificate','Negotiation'],hot:false,published:true},
+      {id:3,title:'Data Engineer',co:3,area:'Cambridge',loc:'Cambridge · hybrid',min:65000,max:80000,fee:20,owner:'AR',opened:9,skills:['Python','SQL','dbt','Airflow','AWS'],hot:true,published:true},
+      {id:4,title:'Paraplanner',co:4,area:'Guildford',loc:'Guildford · office based',min:40000,max:48000,fee:18,owner:'MB',opened:26,skills:['Paraplanning','Cashflow modelling','Pensions','Level 4 Diploma'],hot:false,published:false},
+      {id:5,title:'Marine Hull Underwriter',co:5,area:'London',loc:'London EC3 · hybrid',min:70000,max:85000,fee:20,owner:'OH',opened:5,skills:['Marine hull',"Lloyd's",'Cargo','Broker relationships'],hot:false,published:true},
+    ],
+    cands:[
+      {id:1,first:'Hannah',last:'Clarke',title:'Property Underwriter',emp:'Meridian Specialty',loc:'London',cur:79000,exp:92000,notice:'3 months',skills:['Property',"Lloyd's",'Delegated authority','Binders','Excel'],source:'LinkedIn',owner:'OH',seen:2,consent:true,
+        cv:"Eight years in property underwriting, the last five at Meridian Specialty writing a £38m open-market and binder book. Leads a team of three, holds delegated authority audit experience across 12 coverholders and is ACII qualified. Looking for a senior role with more pricing input."},
+      {id:2,first:'Daniel',last:'Osei',title:'Senior Underwriter, Property & Casualty',emp:'Farrow Re',loc:'London',cur:94000,exp:105000,notice:'6 months',skills:['Property','Casualty',"Lloyd's",'Treaty','Pricing'],source:'Referral',owner:'OH',seen:6,consent:true,
+        cv:"Twelve years across treaty and facultative property and casualty. Built Farrow Re's pricing model for US casualty. Strong technical underwriter; has not managed delegated authority business directly."},
+      {id:3,first:'Emily',last:'Watts',title:'Claims Handler',emp:'Rowan Insurance',loc:'Chelmsford',cur:36000,exp:43000,notice:'1 month',skills:['Casualty claims','Liability','CII Certificate','Negotiation'],source:'Careers page',owner:'MB',seen:3,consent:true,
+        cv:"Four years handling employers' and public liability claims up to £250k reserve. Consistently in the top quartile for closure times. CII Certificate complete, Diploma in progress."},
+      {id:4,first:'Liam',last:'Brennan',title:'Claims Technician',emp:'Harlow Mutual',loc:'Basildon',cur:40000,exp:44000,notice:'1 month',skills:['Motor claims','Liability','Litigation','CII Certificate'],source:'Job board',owner:'MB',seen:1,consent:true,
+        cv:"Six years in motor and liability claims including litigated files. Moving from motor towards casualty. Lives 25 minutes from Chelmsford."},
+      {id:5,first:'Sana',last:'Qureshi',title:'Data Engineer',emp:'Lumen Retail',loc:'Cambridge',cur:68000,exp:76000,notice:'1 month',skills:['Python','SQL','dbt','Airflow','AWS','Snowflake'],source:'LinkedIn',owner:'AR',seen:6,consent:true,
+        cv:"Builds and runs Lumen's AWS data platform: 140 dbt models orchestrated in Airflow, feeding Snowflake. Led the migration from nightly batch to hourly loads. Wants a smaller, product-led team."},
+      {id:6,first:'Oliver',last:'Grant',title:'Analytics Engineer',emp:'Paxton Travel',loc:'London',cur:60000,exp:68000,notice:'2 months',skills:['SQL','dbt','Looker','Python'],source:'Job board',owner:'AR',seen:4,consent:true,
+        cv:"Analytics engineer focused on dbt and Looker. Comfortable with Python but little pipeline orchestration experience. Open to hybrid in Cambridge two days a week."},
+      {id:7,first:'Chloe',last:'Bennett',title:'Paraplanner',emp:'Westbury Financial',loc:'Guildford',cur:42000,exp:46000,notice:'1 month',skills:['Paraplanning','Cashflow modelling','Pensions','Level 4 Diploma','Intelliflo'],source:'Referral',owner:'MB',seen:5,consent:true,
+        cv:"Level 4 Diploma qualified paraplanner supporting three advisers and 210 client households. Builds cashflow models in Voyant and writes suitability reports for pension transfers."},
+      {id:8,first:'Ravi',last:'Mehta',title:'Marine Hull Underwriter',emp:'Tidewater Marine',loc:'London',cur:74000,exp:82000,notice:'3 months',skills:['Marine hull',"Lloyd's",'Cargo','Broker relationships'],source:'LinkedIn',owner:'OH',seen:14,consent:true,
+        cv:"Writes blue-water hull and machinery for a Lloyd's syndicate, with a growing cargo account. Well connected with the major marine broking houses."},
+      {id:9,first:'Isabel',last:'Moreno',title:'Head of Claims Operations',emp:'Sterling Point Insurance',loc:'London',cur:128000,exp:140000,notice:'6 months',skills:['Claims leadership','TPA oversight',"Lloyd's",'Delegated authority','Consumer Duty'],source:'Headhunted',owner:'OH',seen:8,consent:true,
+        cv:"Runs a 34-strong claims operation with 11 TPAs. Led Sterling Point's Consumer Duty implementation for claims. Previously claims manager at two Lloyd's syndicates."},
+      {id:10,first:'Jack',last:'Holloway',title:'Casualty Claims Manager',emp:'Farrow Re',loc:'London',cur:112000,exp:125000,notice:'3 months',skills:['Claims leadership','Casualty',"Lloyd's",'Reserving'],source:'Headhunted',owner:'OH',seen:19,consent:false,
+        cv:"Manages a casualty claims team of 14. Strong technical claims and reserving background; less exposure to delegated authority."},
+      {id:11,first:'Megan',last:'Price',title:'Assistant Underwriter',emp:'Harlow & Finch',loc:'London',cur:52000,exp:62000,notice:'1 month',skills:['Property','Binders',"Lloyd's",'Excel'],source:'Careers page',owner:'OH',seen:9,consent:true,
+        cv:"Three years as assistant underwriter on a property binder account. Handles bordereaux, renewals and coverholder queries. Ambitious and ready for a first line-underwriting role."},
+      {id:12,first:'Ben',last:'Ashworth',title:'Data Engineer',emp:'Contract',loc:'Peterborough',cur:70000,exp:72000,notice:'Immediate',skills:['Python','Spark','Azure','SQL'],source:'CV import',owner:'AR',seen:2,consent:true,
+        cv:"Contract data engineer on Azure and Spark for the last three years. Looking to return to permanent work. No dbt or AWS experience yet."},
+      {id:13,first:'Zara',last:'Ahmed',title:'Adviser Assistant',emp:'Lindhurst Wealth',loc:'Woking',cur:36000,exp:40000,notice:'1 month',skills:['Paraplanning','Pensions','Intelliflo'],source:'Job board',owner:'MB',seen:11,consent:true,
+        cv:"Two years supporting advisers with fact-finds, pension research and Intelliflo admin. Level 4 Diploma in progress, three units complete."},
+      {id:14,first:'Nathan',last:'Cole',title:'Head of Claims',emp:'Greyfriars MGA',loc:'London',cur:136000,exp:145000,notice:'6 months',skills:['Claims leadership',"Lloyd's",'Delegated authority','Property','Casualty'],source:'Headhunted',owner:'OH',seen:3,consent:true,
+        cv:"Head of claims at a fast-growing MGA writing £220m GWP through Lloyd's capacity. Built the claims function from 6 to 22 people and sits on the capacity providers' claims committee."},
+    ],
+    apps:[
+      {id:1,c:1,j:1,stage:'Interview',days:3},{id:2,c:2,j:1,stage:'Submitted',days:6},{id:3,c:11,j:1,stage:'Screening',days:2},
+      {id:4,c:3,j:2,stage:'Offer',days:3,offer:{salary:43000,start:iso(addDays(TODAY,24))}},{id:5,c:4,j:2,stage:'Interview',days:1},
+      {id:6,c:5,j:3,stage:'Submitted',days:6},{id:7,c:6,j:3,stage:'Screening',days:4},{id:8,c:12,j:3,stage:'Applied',days:1},
+      {id:9,c:7,j:4,stage:'Interview',days:5},{id:10,c:13,j:4,stage:'Applied',days:3},
+      {id:11,c:8,j:5,stage:'Screening',days:2},
+    ],
+    bookings:[
+      {id:1,c:4,j:2,date:workday(1),time:'14:30',fmt:'Video',who:'David Okafor',round:'First interview'},
+      {id:2,c:1,j:1,date:workday(2),time:'10:00',fmt:'In person',who:'Helen Marsh',round:'Second interview'},
+      {id:3,c:7,j:4,date:workday(3),time:'11:15',fmt:'In person',who:'James Porter',round:'First interview'},
+    ],
+    notes:{1:[{t:'Keen on Calloway. Wants to see the pricing tools before second stage.',by:'OH',d:3}],9:[{t:'Open to a move for the right leadership role. Six months notice, may negotiate to four.',by:'OH',d:8}]},
+    tasks:[
+      {id:1,t:'Send interview prep notes to Hannah Clarke',done:false},
+      {id:2,t:'Chase Northmere for Emily Watts offer letter',done:false},
+      {id:3,t:'Log retained search call with Helen Marsh',done:true},
+      {id:4,t:'Update Kinsale Marine job advert',done:false},
+    ],
+    search:{
+      title:'Head of Claims',co:1,salary:140000,feePct:30,brief:"Lead Calloway's claims function through its next growth phase: 20+ staff, TPA and delegated claims oversight, and Consumer Duty outcomes.",
+      paid:[true,false,false],
+      criteria:[{n:"Claims leadership in the Lloyd's market",w:30},{n:'Delegated authority and TPA oversight',w:25},{n:'Regulatory and Consumer Duty',w:20},{n:'Has led a team of 20 or more',w:15},{n:'Motivation to move',w:10}],
+      people:[
+        {id:1,name:'Nathan Cole',title:'Head of Claims',firm:'Greyfriars MGA',stage:'Shortlist',consent:true,sc:[5,5,4,5,4],score:null,cand:14},
+        {id:2,name:'Isabel Moreno',title:'Head of Claims Operations',firm:'Sterling Point Insurance',stage:'Shortlist',consent:true,sc:[4,5,5,5,4],score:null,cand:9},
+        {id:3,name:'Jack Holloway',title:'Casualty Claims Manager',firm:'Farrow Re',stage:'Longlist',consent:false,sc:[4,2,3,3,3],score:null,cand:10},
+        {id:4,name:'Rebecca Lowe',title:'Claims Director',firm:'Ashgrove Specialty',stage:'Interested',consent:true,sc:[5,4,4,4,2],score:null},
+        {id:5,name:'Simon Hartley',title:'Head of Casualty Claims',firm:'Pembroke Re',stage:'Contacted',consent:true,sc:[4,3,3,4,3],score:null},
+        {id:6,name:'Priya Shah',title:'Claims Transformation Lead',firm:'Oakfield Syndicates',stage:'Target',consent:false,sc:[3,4,5,2,4],score:null},
+        {id:7,name:'Tom Reeves',title:'Deputy Head of Claims',firm:'Merrow Insurance',stage:'Target',consent:false,sc:[3,3,3,3,5],score:null},
+      ],
+    },
+    cadences:[
+      {id:1,name:'Passive underwriter approach',aud:'Candidates · property and marine underwriters',on:true,enrolled:38,sent:94,replied:17,
+        steps:[['mail','Day 0','Personal intro email'],['linked','Day 2','LinkedIn connection note'],['phone','Day 5','Call task for owner'],['mail','Day 9','Follow-up with role details']]},
+      {id:2,name:'Candidate re-engagement, 90 days',aud:'Candidates · no contact for 90 days',on:true,enrolled:64,sent:121,replied:22,
+        steps:[['mail','Day 0','What are you looking for now?'],['mail','Day 7','Three live roles that fit'],['task','Day 12','Update candidate status']]},
+      {id:3,name:'New MGA launch business development',aud:'Contacts · founders and COOs',on:false,enrolled:12,sent:20,replied:3,
+        steps:[['mail','Day 0','Congratulations and market insight'],['linked','Day 3','LinkedIn follow'],['mail','Day 8','Salary benchmark offer'],['phone','Day 14','Call task for director']]},
+    ],
+    placed:[],
+    nextJob:6,nextCand:15,nextApp:12,nextBk:4,nextTask:5,
+    candFilter:'All',candQ:'',chat:[],packSel:{c:1,j:1,anon:true,salary:true},packOut:null,scoring:false,
+  };
+}
+let state=buildState();
+
+const cand=id=>state.cands.find(x=>x.id===id);
+const job=id=>state.jobs.find(x=>x.id===id);
+const co=id=>state.companies.find(x=>x.id===id);
+const name=c=>c.first+' '+c.last;
+const initials=s=>s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const av=(c,cls)=>`<span class="avatar ${cls||''}" style="background:${PAL[c.id%PAL.length]}">${esc(initials(name(c)))}</span>`;
+const ownerAv=o=>`<span class="avatar av-sm" style="background:${TEAM[o].col}" title="${esc(TEAM[o].name)}">${o}</span>`;
+const appsFor=c=>state.apps.filter(a=>a.c===c.id);
+const appsJob=j=>state.apps.filter(a=>a.j===j.id);
+function candStatus(c){const a=appsFor(c);if(!a.length)return c.id>=15&&c.fresh?'New':'Available';let best=-1;a.forEach(x=>{best=Math.max(best,STAGES.indexOf(x.stage));});return STAGES[best];}
+function statusPill(s){const cls=STAGE_PILL[s]!==undefined?STAGE_PILL[s]:(s==='New'?'p-cyan':'');return `<span class="pill ${cls}">${esc(s)}</span>`;}
+function scoreCls(s){return s==null?'s-none':s>=75?'s-hi':s>=55?'s-mid':'s-lo';}
+
+/* candidate to job match: skills, salary and location */
+function match(c,j){
+  const hits=j.skills.filter(s=>c.skills.includes(s)),miss=j.skills.filter(s=>!c.skills.includes(s));
+  let s=22+Math.round(hits.length/j.skills.length*58);const why=[];
+  if(c.exp<=j.max&&c.exp>=j.min*0.85){s+=10;why.push(`Expects ${kf(c.exp)}, inside the ${kf(j.min)} to ${kf(j.max)} band`);}
+  else if(c.exp>j.max){const over=Math.round((c.exp/j.max-1)*100);s-=over>8?12:4;why.push(`Expects ${kf(c.exp)}, ${over}% above the top of the band`);}
+  else{s+=4;why.push(`Expects ${kf(c.exp)}, below the band, so room to negotiate`);}
+  const near=c.loc===j.area||(j.area==='Chelmsford'&&c.loc==='Basildon')||(j.area==='Guildford'&&c.loc==='Woking');
+  if(near){s+=6;why.push(`Based in ${c.loc}, commutable to ${j.area}`);}else why.push(`Based in ${c.loc}, would need to travel to ${j.area}`);
+  if(/Immediate|1 month/.test(c.notice)){s+=2;}
+  why.push(`${c.notice} notice`);
+  s=Math.max(12,Math.min(97,s));
+  return {score:s,hits,miss,why};
+}
+function feeFor(j,salary){return Math.round((salary||(j.min+j.max)/2)*j.fee/100);}
+
+/* ---------- dashboard ---------- */
+function nextActions(){
+  const out=[];
+  const hb=state.bookings.filter(b=>b.date>=TODAY_ISO).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  hb.slice(0,1).forEach(b=>{const c=cand(b.c),j=job(b.j);out.push({ic:'cal',col:'a-gold',t:`${esc(name(c))} meets ${esc(co(j.co).name)} ${dayLabel(b.date).toLowerCase().startsWith('to')?dayLabel(b.date).toLowerCase():'on '+dayLabel(b.date)} at ${b.time}`,s:'Send interview prep notes so they arrive the day before.',btn:'Draft prep email',act:`data-prep="${b.id}"`});});
+  state.apps.filter(a=>a.stage==='Offer').forEach(a=>{const c=cand(a.c),j=job(a.j);out.push({ic:'alert',col:'a-pink',t:`${esc(name(c))}'s offer has been open ${a.days} days`,s:`Chase ${esc(co(j.co).contact)} at ${esc(co(j.co).name)} for the offer letter.`,btn:'Draft chaser',act:`data-chase="${a.id}"`});});
+  state.apps.filter(a=>a.stage==='Submitted'&&a.days>=5).forEach(a=>{const c=cand(a.c),j=job(a.j);out.push({ic:'clock',col:'a-el',t:`No feedback on ${esc(name(c))} for ${a.days} days`,s:`Submitted to ${esc(co(j.co).name)} for ${esc(j.title)}.`,btn:'Draft chaser',act:`data-chase="${a.id}"`});});
+  const uns=state.search.people.filter(p=>p.score==null&&['Longlist','Shortlist'].includes(p.stage)).length;
+  if(uns)out.push({ic:'target',col:'a-purple',t:`${uns} people on the Head of Claims search are not scored`,s:'Score them against the brief before the client update.',btn:'Open search',act:'data-nav="searches"'});
+  const cold=state.cands.filter(c=>c.seen>=14&&c.consent).sort((a,b)=>b.seen-a.seen)[0];
+  if(cold)out.push({ic:'phone',col:'a-green',t:`You have not spoken to ${esc(name(cold))} for ${cold.seen} days`,s:`Strong match for ${esc(bestJob(cold).j.title)}.`,btn:'Open profile',act:`data-cand="${cold.id}"`});
+  return out;
+}
+function greet(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
+function inSearch(c){return state.search.people.find(p=>p.cand===c.id);}
+function bestJob(c){return state.jobs.map(j=>({j,m:match(c,j)})).sort((a,b)=>b.m.score-a.m.score)[0];}
+function renderDashboard(){
+  const open=state.jobs.length,inProc=state.apps.filter(a=>a.stage!=='Placed').length;
+  const wkEnd=iso(addDays(TODAY,7));const ivs=state.bookings.filter(b=>b.date>=TODAY_ISO&&b.date<=wkEnd).length;
+  const pipeVal=state.apps.filter(a=>['Interview','Offer'].includes(a.stage)).reduce((s,a)=>{const j=job(a.j);return s+feeFor(j,a.offer?a.offer.salary:cand(a.c).exp);},0);
+  const placedQ=state.placed.reduce((s,p)=>s+p.fee,0)+38400;
+  const counts=STAGES.map(s=>state.apps.filter(a=>a.stage===s).length);const maxC=Math.max(1,...counts);
+  const up=state.bookings.filter(b=>b.date>=TODAY_ISO).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4);
+  $('#page-dashboard').innerHTML=`
+  <div class="page-head"><div><h1>${greet()}, Olivia</h1><p>${fmtD(TODAY,{weekday:'long',day:'numeric',month:'long'})}. Here is what needs you today at Harbour Lane.</p></div>
+    <div class="row wrap"><button class="btn btn-ghost" data-nav="board">${ic('board')}Open board</button><button class="btn btn-gold" data-add-cand>${ic('plus')}Add candidate</button></div></div>
+  <div class="stats-row" id="stats">
+    <div class="stat"><div class="stat-ic a-gold">${ic('brief')}</div><div><div class="stat-label">Open jobs</div><div class="stat-value">${open}</div><div class="stat-sub">${state.jobs.filter(j=>j.hot).length} marked urgent</div></div></div>
+    <div class="stat"><div class="stat-ic a-el">${ic('users')}</div><div><div class="stat-label">In process</div><div class="stat-value">${inProc}</div><div class="stat-sub">candidates across all jobs</div></div></div>
+    <div class="stat"><div class="stat-ic a-purple">${ic('cal')}</div><div><div class="stat-label">Interviews</div><div class="stat-value">${ivs}</div><div class="stat-sub">in the next 7 days</div></div></div>
+    <div class="stat"><div class="stat-ic a-green">${ic('trophy')}</div><div><div class="stat-label">Fees this quarter</div><div class="stat-value">${kf(placedQ)}</div><div class="stat-sub">${kf(pipeVal)} more at interview or offer</div></div></div>
+  </div>
+  <div class="grid-32">
+    <div class="card" id="next-actions"><div class="card-header"><div><div class="ai-tag">${ic('spark')}AI next actions</div><div class="card-title" style="margin-top:4px">What to do next</div></div><span class="xs muted">Worked out from your pipeline, diary and contact history</span></div>
+      ${nextActions().map(a=>`<div class="list-row"><div class="stat-ic ${a.col}" style="width:32px;height:32px">${ic(a.ic,'width:16px;height:16px')}</div><div class="grow"><div class="strong" style="font-size:13px">${a.t}</div><div class="small muted">${a.s}</div></div><button class="btn btn-sm btn-ghost" ${a.act}>${a.btn}</button></div>`).join('')}
+    </div>
+    <div class="stack">
+      <div class="card" style="margin:0"><div class="card-header"><div class="card-title">Pipeline</div><button class="btn btn-sm btn-ghost" data-nav="board">Board ${ic('arrow')}</button></div>
+        ${STAGES.map((s,i)=>`<div class="hbar"><span>${s}</span><div class="bar-track"><span style="width:${counts[i]/maxC*100}%;background:${STAGE_COL[s]}"></span></div><span class="tnum" style="text-align:right">${counts[i]}</span></div>`).join('')}
+      </div>
+      <div class="card" style="margin:0"><div class="card-header"><div class="card-title">Coming up</div><button class="btn btn-sm btn-ghost" data-nav="bookings">All ${ic('arrow')}</button></div>
+        ${up.length?up.map(b=>{const c=cand(b.c),j=job(b.j);return `<div class="list-row"><div class="grow"><div class="strong" style="font-size:13px">${esc(name(c))}</div><div class="xs muted">${esc(j.title)} · ${esc(co(j.co).name)}</div></div><div style="text-align:right"><div class="small">${dayLabel(b.date)}</div><div class="xs muted mono">${b.time}</div></div></div>`;}).join(''):'<div class="empty">No interviews booked.</div>'}
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="card-header"><div class="card-title">Your tasks</div><button class="btn btn-sm btn-ghost" data-add-task>${ic('plus')}Add task</button></div>
+    ${state.tasks.map(t=>`<label class="list-row" style="cursor:pointer"><input type="checkbox" id="task-${t.id}" data-task="${t.id}" ${t.done?'checked':''} style="width:16px;height:16px;accent-color:var(--gold)"><span class="grow" style="${t.done?'text-decoration:line-through;color:var(--text3)':''}">${esc(t.t)}</span></label>`).join('')}
+  </div>`;
+}
+
+/* ---------- candidates ---------- */
+function renderCandidates(){
+  const f=state.candFilter,q=state.candQ.trim().toLowerCase();
+  const list=state.cands.filter(c=>{const st=candStatus(c);if(f!=='All'&&!(f==='In process'?!['Available','New','Placed'].includes(st):st===f))return false;if(!q)return true;return (name(c)+' '+c.title+' '+c.emp+' '+c.loc+' '+c.skills.join(' ')).toLowerCase().includes(q);}).sort((a,b)=>b.id-a.id);
+  const page=$('#page-candidates');
+  if(!page.dataset.built){
+    page.innerHTML=`<div class="page-head"><div><h1>Candidates</h1><p>Every candidate, their skills, pipeline and consent in one place. Open anyone to see an AI summary and their best job matches.</p></div>
+      <div class="row wrap"><button class="btn btn-ai" id="import-btn" data-import>${ic('upload')}Import CVs</button><button class="btn btn-gold" data-add-cand>${ic('plus')}Add candidate</button></div></div>
+      <div class="card" id="cand-card"><div class="row wrap" style="margin-bottom:12px;justify-content:space-between">
+        <div class="search-in"><svg class="ic"><use href="#i-search"/></svg><input class="form-input" id="cand-q" placeholder="Search name, skill, employer or location" autocomplete="off"></div>
+        <div class="filters" id="cand-filters"></div></div><div id="cand-table"></div></div>`;
+    page.dataset.built='1';
+  }
+  const fl=['All','In process','Available','Interview','Offer','Placed'];
+  $('#cand-filters').innerHTML=fl.map(x=>`<button class="fbtn ${x===f?'on':''}" data-cfilter="${x}">${x}</button>`).join('');
+  $('#cand-table').innerHTML=list.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Candidate</th><th>Current employer</th><th>Location</th><th>Expects</th><th>Notice</th><th>Status</th><th>Owner</th><th>Last contact</th></tr></thead><tbody>
+    ${list.map(c=>`<tr data-cand="${c.id}"><td><div class="who">${av(c)}<div style="min-width:0"><b>${esc(name(c))}</b><span>${esc(c.title)}</span></div></div></td><td>${esc(c.emp)}</td><td>${esc(c.loc)}</td><td class="tnum">${c.exp?kf(c.exp):'<span class="dim">Not set</span>'}</td><td>${esc(c.notice)}</td><td>${statusPill(candStatus(c))}</td><td>${ownerAv(c.owner)}</td><td class="small ${c.seen>=14?'badc':'muted'}">${ago(c.seen)}</td></tr>`).join('')}
+    </tbody></table></div><div class="xs muted" style="margin-top:10px">${list.length} of ${state.cands.length} candidates</div>`:`<div class="empty">No candidates match "${esc(state.candQ)}". Try a skill such as Lloyd's or Python.</div>`;
+}
+function openCand(id){
+  const c=cand(id),apps=appsFor(c);
+  const matches=state.jobs.filter(j=>!apps.some(a=>a.j===j.id)).map(j=>({j,m:match(c,j)})).sort((a,b)=>b.m.score-a.m.score).slice(0,3);
+  const notes=state.notes[id]||[];
+  openModal(`${esc(name(c))}`,`
+    <div class="cand-head">${av(c,'av-lg')}<div class="grow"><div style="font-size:17px;font-weight:600">${esc(name(c))}</div><div class="muted">${esc(c.title)} at ${esc(c.emp)}</div>
+      <div class="contact-line"><span>${ic('mail')}${esc(c.first.toLowerCase()+'.'+c.last.toLowerCase())}@mail.example</span><span>${ic('phone')}07700 900${String(100+c.id*37).slice(-3)}</span><span>${ic('pin')}${esc(c.loc)}</span></div></div>
+      <div class="chips">${statusPill(candStatus(c))}<span class="pill ${c.consent?'p-green':'p-red'}">${c.consent?'Consent given':'No consent'}</span></div></div>
+    <div class="sec"><div class="sec-h"><span class="ai-tag">${ic('spark')}AI CV summary</span><button class="btn btn-sm btn-ai" data-cv-sum="${c.id}">${ic('spark')}Summarise CV</button></div>
+      <div class="ai-box small" id="cv-sum" style="line-height:1.6;color:#c9d4ea">Summarise the CV to get a three-line overview you can paste into a client email.</div></div>
+    <div class="grid-2 sec"><div><div class="label" style="margin-bottom:7px">Skills</div><div class="chips">${c.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')||'<span class="small muted">None parsed yet</span>'}</div></div>
+      <div>${kv('Current salary',c.cur?money(c.cur):'Not set')}${kv('Expecting',c.exp?money(c.exp):'Not set')}${kv('Notice',esc(c.notice))}${kv('Source',esc(c.source))}${kv('Owner',TEAM[c.owner].name)}</div></div>
+    <div class="sec"><div class="label" style="margin-bottom:6px">Applications</div>
+      ${(()=>{const sp=inSearch(c);return sp?`<div class="list-row"><div class="grow"><div class="strong small">${esc(state.search.title)} · retained search</div><div class="xs muted">${esc(co(state.search.co).name)}${sp.score!=null?` · scored ${sp.score}%`:''}</div></div><span class="pill p-gold">${esc(sp.stage)}</span><button class="btn btn-sm btn-ghost" data-nav="searches">${ic('target')}Open</button></div>`:'';})()}
+      ${apps.length?apps.map(a=>{const j=job(a.j);return `<div class="list-row"><div class="grow"><div class="strong small">${esc(j.title)}</div><div class="xs muted">${esc(co(j.co).name)}</div></div>${statusPill(a.stage)}<button class="btn btn-sm btn-ghost" data-pack="${c.id}|${j.id}">${ic('file')}Pack</button></div>`;}).join(''):(inSearch(c)?'':'<div class="small muted">Not in any pipeline yet.</div>')}</div>
+    <div class="sec"><div class="sec-h"><span class="ai-tag">${ic('spark')}Best matches in your open jobs</span></div>
+      ${matches.length?matches.map(({j,m})=>`<div class="list-row"><span class="score ${scoreCls(m.score)}">${m.score}%</span><div class="grow"><div class="strong small">${esc(j.title)} · ${esc(co(j.co).name)}</div><div class="xs muted">${m.hits.length} of ${j.skills.length} key skills. ${esc(m.why[0])}.</div></div><button class="btn btn-sm btn-ghost" data-add-app="${c.id}|${j.id}">${ic('plus')}Add to job</button></div>`).join(''):'<div class="small muted">Already in every open job.</div>'}</div>
+    <div class="sec"><div class="label" style="margin-bottom:8px">Notes</div><div id="note-list">${notes.map(n=>`<div class="note">${esc(n.t)}<div class="m">${TEAM[n.by].name} · ${ago(n.d)}</div></div>`).join('')||'<div class="small muted" style="margin-bottom:8px">No notes yet.</div>'}</div>
+      <div class="row"><input class="form-input" id="note-in" placeholder="Add a call note"><button class="btn btn-ghost" data-add-note="${c.id}">Add</button></div></div>`,
+    `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-ai" data-outreach="${c.id}">${ic('spark')}Draft outreach</button>`,true);
+}
+function kv(k,v){return `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;}
+async function typeInto(el,text,speed){el.classList.add('caret');el.textContent='';const words=text.split(' ');for(let i=0;i<words.length;i++){if(!document.body.contains(el))return;el.textContent+=(i?' ':'')+words[i];await sleep(speed||22);}el.classList.remove('caret');}
+function cvSummary(c){return c.cv+(c.exp?` Expecting around ${kf(c.exp)} with ${c.notice.toLowerCase()} notice.`:'');}
+
+function openAddCand(){
+  openModal('Add a candidate',`<div class="form-grid">
+    <div class="form-group"><label class="form-label" for="nc-first">First name</label><input class="form-input" id="nc-first"></div>
+    <div class="form-group"><label class="form-label" for="nc-last">Last name</label><input class="form-input" id="nc-last"></div>
+    <div class="form-group"><label class="form-label" for="nc-title">Current job title</label><input class="form-input" id="nc-title" placeholder="e.g. Cargo Underwriter"></div>
+    <div class="form-group"><label class="form-label" for="nc-emp">Current employer</label><input class="form-input" id="nc-emp"></div>
+    <div class="form-group"><label class="form-label" for="nc-loc">Location</label><input class="form-input" id="nc-loc" value="London"></div>
+    <div class="form-group"><label class="form-label" for="nc-exp">Salary expectation (£)</label><input class="form-input" id="nc-exp" type="number" placeholder="e.g. 70000"></div>
+    <div class="form-group full"><label class="form-label" for="nc-skills">Skills, separated by commas</label><input class="form-input" id="nc-skills" placeholder="e.g. Marine hull, Lloyd's, Cargo"></div></div>
+    <div class="form-err" id="nc-err" hidden></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-cand>Save candidate</button>`);
+}
+function saveCand(){
+  const f=$('#nc-first').value.trim(),l=$('#nc-last').value.trim();
+  if(!f||!l){const e=$('#nc-err');e.textContent='Add a first and last name.';e.hidden=false;return;}
+  const c={id:state.nextCand++,first:f,last:l,title:$('#nc-title').value.trim()||'Not set',emp:$('#nc-emp').value.trim()||'Not set',loc:$('#nc-loc').value.trim()||'London',cur:0,exp:+$('#nc-exp').value||0,notice:'1 month',skills:$('#nc-skills').value.split(',').map(s=>s.trim()).filter(Boolean),source:'Added manually',owner:'OH',seen:0,consent:true,fresh:true,cv:`${f} ${l} was added by hand, so there is no CV on file yet. Drop a CV on their profile to fill in their experience.`};
+  state.cands.push(c);closeModal();state.candFilter='All';state.candQ='';const qi=$('#cand-q');if(qi)qi.value='';
+  if(cur!=='candidates')nav('candidates');else render();toast(`${esc(name(c))} added.`);
+}
+
+/* CV import */
+const SAMPLE_CVS=[
+  {file:'Freya_Lawson_CV.pdf',first:'Freya',last:'Lawson',title:'Cargo Underwriter',emp:'Blackwall Syndicate',loc:'London',cur:66000,exp:76000,notice:'3 months',skills:['Cargo','Marine hull',"Lloyd's",'Broker relationships']},
+  {file:'Kwame Asante - CV 2026.docx',first:'Kwame',last:'Asante',title:'Senior Data Engineer',emp:'Orbis Health',loc:'Cambridge',cur:78000,exp:82000,notice:'2 months',skills:['Python','SQL','Airflow','AWS','Terraform']},
+  {file:'CV_Lucy_Hammond.pdf',first:'Lucy',last:'Hammond',title:'Liability Claims Handler',emp:'Brookfield Mutual',loc:'Colchester',cur:37000,exp:41000,notice:'1 month',skills:['Casualty claims','Liability','Negotiation']},
+];
+let importRows=[];
+function openImport(){
+  importRows=[];
+  openModal('Import CVs',`<div class="drop" id="cv-drop"><svg class="ic"><use href="#i-upload"/></svg><p><b>Drop CVs here</b> or <label for="cv-file" class="gold" style="text-decoration:underline;cursor:pointer">choose files</label></p><p class="xs muted">PDF or Word, up to 50 at a time. Each CV is read, and the name, contact details, skills and salary are pulled out for you.</p>
+    <input type="file" id="cv-file" multiple hidden accept=".pdf,.doc,.docx,.txt"></div>
+    <div class="row" style="justify-content:center;margin:12px 0 4px"><button class="btn btn-sm btn-ai" data-sample-cvs>${ic('spark')}No CVs to hand? Try three sample CVs</button></div>
+    <div id="up-list" style="margin-top:8px"></div>`,`<button class="btn btn-ghost" data-close>Done</button>`);
+  const dz=$('#cv-drop');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');hideOverlay();handleCvFiles(Array.from(e.dataTransfer.files));});
+  $('#cv-file').addEventListener('change',e=>handleCvFiles(Array.from(e.target.files)));
+}
+function nameFromFile(fn){let b=fn.replace(/\.[a-z0-9]+$/i,'').replace(/[_\-.]+/g,' ').replace(/\b(cv|resume|curriculum vitae|final|updated|20\d\d|v\d+)\b/ig,' ').replace(/\s+/g,' ').trim();const w=b.split(' ').filter(x=>/^[A-Za-z']+$/.test(x));if(w.length<2)return null;const cap=s=>s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();return {first:cap(w[0]),last:cap(w[w.length-1])};}
+function handleCvFiles(files){
+  files.slice(0,50).forEach(f=>{const n=nameFromFile(f.name);importRows.push({file:f.name,data:n?{first:n.first,last:n.last,title:'To review',emp:'From CV',loc:'Not set',cur:0,exp:0,notice:'Not set',skills:[]}:null,p:0,st:'Uploading'});});
+  runImport();
+}
+function renderUp(){const el=$('#up-list');if(!el)return;el.innerHTML=importRows.map(r=>`<div class="up-row"><div style="min-width:0"><div class="small strong" style="overflow-wrap:anywhere">${esc(r.file)}</div><div class="prog"><span style="width:${r.p}%;${r.st==='Could not read'?'background:var(--red)':''}"></span></div></div><span class="pill ${r.st==='Added'?'p-green':r.st==='Could not read'?'p-red':'p-el'}">${r.st}</span></div>`).join('');}
+async function runImport(){
+  renderUp();
+  const todo=importRows.filter(r=>!r.started);todo.forEach(r=>{r.started=true;});
+  await Promise.all(todo.map(async(r,i)=>{await sleep(i*260);
+    for(const [p,st] of [[35,'Uploading'],[70,'Reading CV'],[92,'Matching skills']]){r.p=p;r.st=st;renderUp();await sleep(420);}
+    if(!r.data){r.p=100;r.st='Could not read';renderUp();return;}
+    const c=Object.assign({id:state.nextCand++,source:'CV import',owner:'AR',seen:0,consent:true,fresh:true},r.data);
+    c.cv=r.data.skills.length?`${c.first} is a ${c.title.toLowerCase()} at ${c.emp}, based in ${c.loc}. Key skills: ${c.skills.join(', ')}. Expecting around ${kf(c.exp)} with ${c.notice} notice.`:`${c.first}'s CV was imported from ${r.file}. In the live product, their experience, skills and salary are read from the file.`;
+    state.cands.push(c);r.p=100;r.st='Added';renderUp();}));
+  const n=importRows.filter(r=>r.st==='Added').length;
+  if(cur==='candidates'){state.candFilter='All';renderCandidates();}
+  if(todo.length)toast(`${n} candidate${n===1?'':'s'} imported. You'll find them at the top of Candidates.`);
+}
+
+/* ---------- jobs ---------- */
+function renderJobs(){
+  $('#page-jobs').innerHTML=`<div class="page-head"><div><h1>Jobs</h1><p>Open roles with fee potential and pipeline at a glance. Open a job to see AI matches from your database.</p></div>
+    <div class="row wrap"><button class="btn btn-gold" data-new-job>${ic('plus')}New job</button></div></div>
+    <div class="job-grid" id="job-list">${state.jobs.map(j=>{const a=appsJob(j),c=co(j.co);const tot=Math.max(1,a.length);
+      return `<div class="job-card" role="button" tabindex="0" data-job="${j.id}"><div class="job-top"><div style="min-width:0"><div class="job-title">${esc(j.title)}</div><div class="small muted">${esc(c.name)} · ${esc(j.loc)}</div></div>${j.hot?'<span class="pill p-pink">Urgent</span>':''}</div>
+        <div class="job-meta"><span>Salary <b>${kf(j.min)} to ${kf(j.max)}</b></span><span>Fee <b>${j.fee}% · ${kf(feeFor(j))}</b></span><span>Open <b>${j.opened} days</b></span></div>
+        <div><div class="pipe-mini">${STAGES.map(s=>{const n=a.filter(x=>x.stage===s).length;return n?`<span style="width:${n/tot*100}%;background:${STAGE_COL[s]}" title="${s}: ${n}"></span>`:'';}).join('')||''}</div>
+        <div class="pipe-legend" style="margin-top:7px">${STAGES.filter(s=>a.some(x=>x.stage===s)).map(s=>`<span><i style="background:${STAGE_COL[s]}"></i>${a.filter(x=>x.stage===s).length} ${s.toLowerCase()}</span>`).join('')||'<span>No candidates yet</span>'}</div></div>
+        <div class="row" style="justify-content:space-between"><span class="row small muted">${ownerAv(j.owner)}${esc(TEAM[j.owner].name)}</span><span class="xs ${j.published?'okc':'muted'}">${j.published?'On your careers page':'Not published'}</span></div></div>`;}).join('')}</div>`;
+}
+function openJob(id){
+  const j=job(id),c=co(j.co),a=appsJob(j);
+  const pool=state.cands.filter(x=>!a.some(y=>y.c===x.id)).map(x=>({c:x,m:match(x,j)})).sort((p,q)=>q.m.score-p.m.score).slice(0,5);
+  openModal(`${esc(j.title)} <span class="muted" style="font-weight:400">· ${esc(c.name)}</span>`,`
+    <div class="grid-2 sec"><div>${kv('Location',esc(j.loc))}${kv('Salary',`${money(j.min)} to ${money(j.max)}`)}${kv('Fee',`${j.fee}% · about ${money(feeFor(j))}`)}</div>
+      <div>${kv('Client contact',esc(c.contact))}${kv('Owner',TEAM[j.owner].name)}<div class="kv"><span class="k">Careers page</span><span class="v"><button class="toggle ${j.published?'on':''}" data-publish="${j.id}" aria-label="Show on careers page" aria-pressed="${j.published}"></button></span></div></div></div>
+    <div class="sec"><div class="label" style="margin-bottom:7px">Key skills</div><div class="chips">${j.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div></div>
+    <div class="sec"><div class="label" style="margin-bottom:4px">In the pipeline (${a.length})</div>
+      ${a.length?a.map(x=>{const k=cand(x.c),m=match(k,j);return `<div class="list-row"><span class="score ${scoreCls(m.score)}">${m.score}%</span><div class="grow"><button class="linkbtn" style="color:var(--text);text-decoration:none;font-size:13px;font-weight:600" data-cand="${k.id}">${esc(name(k))}</button><div class="xs muted">${esc(k.title)} · ${esc(k.emp)}</div></div>${statusPill(x.stage)}<button class="btn btn-sm btn-ghost" data-pack="${k.id}|${j.id}">${ic('file')}Pack</button></div>`;}).join(''):'<div class="small muted">Nobody yet. Add someone from the matches below.</div>'}</div>
+    <div class="sec" id="job-matches"><div class="sec-h"><span class="ai-tag">${ic('spark')}Top matches from your database</span><span class="xs muted">Scored on skills, salary, location and notice</span></div>
+      ${pool.map(({c:k,m})=>`<div class="list-row" style="align-items:flex-start"><span class="score ${scoreCls(m.score)}">${m.score}%</span><div class="grow"><div class="strong small">${esc(name(k))} <span class="muted" style="font-weight:400">· ${esc(k.title)}, ${esc(k.emp)}</span></div>
+        <div class="chips" style="margin:5px 0">${m.hits.map(s=>`<span class="chip hit">${ic('check','width:11px;height:11px')}${esc(s)}</span>`).join('')}${m.miss.map(s=>`<span class="chip miss">${esc(s)}</span>`).join('')}</div><div class="xs muted">${esc(m.why.join('. '))}.</div></div><button class="btn btn-sm btn-ghost" data-add-app="${k.id}|${j.id}">${ic('plus')}Add</button></div>`).join('')}</div>`,
+    `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-gold" data-go="board">${ic('board')}Open board</button>`,true);
+}
+const SAMPLE_JD=`Cargo Underwriter
+Kinsale Marine, London EC3 (hybrid, 3 days in the office)
+Salary: £60,000 - £72,000 plus bonus
+
+We are growing our cargo account and need an underwriter to write open-market and lineslip business. You will build broker relationships across the London market and work closely with our marine hull team.
+
+What you need: cargo underwriting experience in the Lloyd's or company market, strong broker relationships, and ideally some exposure to marine hull.`;
+function openNewJob(){
+  openModal('New job',`<div class="form-group" style="margin-bottom:12px"><label class="form-label" for="jd-text">Paste the job description and TS Recruit fills in the fields</label><textarea class="form-input" id="jd-text" rows="5" placeholder="Paste a job description or client email"></textarea>
+    <div class="row wrap" style="margin-top:8px"><button class="btn btn-sm btn-ai" data-parse-jd>${ic('spark')}Fill from description</button><button class="btn btn-sm btn-ghost" data-sample-jd>Use a sample description</button></div></div>
+    <div class="form-grid" id="jd-fields">
+      <div class="form-group"><label class="form-label" for="nj-title">Job title</label><input class="form-input" id="nj-title"></div>
+      <div class="form-group"><label class="form-label" for="nj-co">Company</label><select class="form-input" id="nj-co">${state.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label" for="nj-min">Salary from (£)</label><input class="form-input" id="nj-min" type="number"></div>
+      <div class="form-group"><label class="form-label" for="nj-max">Salary to (£)</label><input class="form-input" id="nj-max" type="number"></div>
+      <div class="form-group"><label class="form-label" for="nj-loc">Location</label><input class="form-input" id="nj-loc"></div>
+      <div class="form-group"><label class="form-label" for="nj-fee">Fee (%)</label><input class="form-input" id="nj-fee" type="number" value="20"></div>
+      <div class="form-group full"><label class="form-label" for="nj-skills">Key skills, separated by commas</label><input class="form-input" id="nj-skills"></div></div>
+    <div class="form-err" id="nj-err" hidden></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-job>Create job</button>`,true);
+}
+const SKILL_WORDS=["Lloyd's",'Property','Casualty','Marine hull','Cargo','Broker relationships','Delegated authority','Binders','Pricing','Python','SQL','dbt','Airflow','AWS','Liability','Paraplanning','Pensions','Negotiation','Claims leadership','Motor claims'];
+function parseJD(){
+  const t=$('#jd-text').value;if(!t.trim()){const e=$('#nj-err');e.textContent='Paste a job description first, or use the sample.';e.hidden=false;return;}
+  $('#nj-err').hidden=true;
+  const lines=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  const nums=(t.match(/£\s?\d{2,3}(?:[,.]\d{3}|k)/gi)||[]).map(s=>{const n=s.replace(/[£\s,]/g,'');return /k$/i.test(n)?parseFloat(n)*1000:parseInt(n.replace('.',''),10);});
+  const coM=state.companies.find(c=>t.toLowerCase().includes(c.name.toLowerCase().split(' ')[0]));
+  const locM=t.match(/\b(London(?: EC\d)?|Chelmsford|Cambridge|Guildford|Manchester|Birmingham|Leeds|Bristol|Remote)\b/);
+  const set=(id,v)=>{const el=$(id);if(v!=null&&v!==''){el.value=v;el.classList.add('field-found');}};
+  set('#nj-title',lines[0].replace(/^(job title|role|position)\s*[:-]\s*/i,'').slice(0,60));
+  if(nums[0])set('#nj-min',nums[0]);if(nums[1])set('#nj-max',nums[1]);
+  if(coM){$('#nj-co').value=coM.id;$('#nj-co').classList.add('field-found');}
+  if(locM)set('#nj-loc',locM[0]+(/hybrid/i.test(t)?' · hybrid':''));
+  const sk=SKILL_WORDS.filter(s=>t.toLowerCase().includes(s.toLowerCase()));if(sk.length)set('#nj-skills',sk.join(', '));
+  toast('Fields filled from the description. Check them, then create the job.');
+}
+function saveJob(){
+  const t=$('#nj-title').value.trim();if(!t){const e=$('#nj-err');e.textContent='Add a job title.';e.hidden=false;return;}
+  const min=+$('#nj-min').value||50000,max=+$('#nj-max').value||Math.round(min*1.15);const loc=$('#nj-loc').value.trim()||'London';
+  const j={id:state.nextJob++,title:t,co:+$('#nj-co').value,area:loc.split(/[ ·,]/)[0],loc,min,max,fee:+$('#nj-fee').value||20,owner:'OH',opened:0,skills:$('#nj-skills').value.split(',').map(s=>s.trim()).filter(Boolean),hot:false,published:false};
+  if(!j.skills.length)j.skills=['Broker relationships'];
+  state.jobs.unshift(j);closeModal();if(cur!=='jobs')nav('jobs');else render();toast(`${esc(t)} created. Open it to see matching candidates.`);
+}
+
+/* ---------- board ---------- */
+function renderBoard(){
+  const jf=state.boardJob||'all';
+  const apps=state.apps.filter(a=>jf==='all'||a.j===+jf);
+  $('#page-board').innerHTML=`<div class="page-head"><div><h1>Applications Board</h1><p>Drag a card to move it. Moving to Interview books the interview and drafts the confirmation. Moving to Offer records the salary and your fee.</p></div>
+    <div class="row wrap"><label class="small muted" for="board-job">Job</label><select class="form-input" id="board-job" style="width:auto;max-width:260px"><option value="all">All jobs</option>${state.jobs.map(j=>`<option value="${j.id}" ${String(j.id)===String(jf)?'selected':''}>${esc(j.title)}</option>`).join('')}</select></div></div>
+    <div class="board-wrap" id="board"><div class="board">${STAGES.map(s=>{const list=apps.filter(a=>a.stage===s);const val=list.reduce((t,a)=>{const j=job(a.j);return t+feeFor(j,a.offer?a.offer.salary:cand(a.c).exp);},0);
+      return `<div class="col" data-col="${s}"><div class="col-h"><b><i style="background:${STAGE_COL[s]}"></i>${s}</b><span class="pill">${list.length}</span></div><div class="col-body">
+      ${list.map(a=>{const c=cand(a.c),j=job(a.j);const m=match(c,j);return `<div class="acard" draggable="true" data-app="${a.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><div class="n">${esc(name(c))}</div><div class="j">${esc(j.title)}<br>${esc(co(j.co).name)}</div></div><span class="score ${scoreCls(m.score)}" style="min-width:36px;height:20px;font-size:11px">${m.score}</span></div>
+        ${a.offer?`<div class="xs" style="color:var(--orange)">Offer ${money(a.offer.salary)} · starts ${fmtD(parse(a.offer.start))}</div>`:''}
+        <div class="row xs muted" style="justify-content:space-between">${ownerAv(c.owner)}<span>${ago(a.days)}</span></div>
+        <select aria-label="Move ${esc(name(c))}" data-move="${a.id}">${STAGES.map(x=>`<option ${x===s?'selected':''}>${x===s?'Move to…':x}</option>`).join('')}</select></div>`;}).join('')||'<div class="xs dim" style="text-align:center;padding:14px 4px">Drop a card here</div>'}
+      </div><div class="col-foot">${s==='Placed'?'Fees':'Fee potential'} ${kf(val)}</div></div>`;}).join('')}</div></div>`;
+  bindBoard();
+}
+let dragId=null;
+function bindBoard(){
+  $$('#board .acard').forEach(el=>{
+    el.addEventListener('dragstart',e=>{dragId=+el.dataset.app;el.classList.add('dragging');try{e.dataTransfer.setData('text/plain',String(dragId));e.dataTransfer.effectAllowed='move';}catch(_){}});
+    el.addEventListener('dragend',()=>{el.classList.remove('dragging');$$('#board .col').forEach(c=>c.classList.remove('over'));});
+    el.addEventListener('click',e=>{if(e.target.closest('select'))return;const a=state.apps.find(x=>x.id===+el.dataset.app);openCand(a.c);});
+  });
+  $$('#board .col').forEach(col=>{
+    col.addEventListener('dragover',e=>{if(dragId==null)return;e.preventDefault();col.classList.add('over');});
+    col.addEventListener('dragleave',e=>{if(!col.contains(e.relatedTarget))col.classList.remove('over');});
+    col.addEventListener('drop',e=>{if(dragId==null)return;e.preventDefault();col.classList.remove('over');const id=dragId;dragId=null;moveApp(id,col.dataset.col);});
+  });
+}
+function moveApp(id,stage){
+  const a=state.apps.find(x=>x.id===id);if(!a||a.stage===stage){render();return;}
+  const c=cand(a.c),j=job(a.j);
+  if(stage==='Interview'){openInterview(a);render();return;}
+  if(stage==='Offer'){openOffer(a);render();return;}
+  if(stage==='Placed'){const sal=a.offer?a.offer.salary:c.exp||j.min;const fee=feeFor(j,sal);a.stage='Placed';a.days=0;state.placed.push({c:c.id,j:j.id,fee,by:c.owner});render();
+    toast(`${esc(name(c))} placed at ${esc(co(j.co).name)}. ${money(fee)} fee added to this quarter.`);return;}
+  a.stage=stage;a.days=0;render();toast(`${esc(name(c))} moved to ${stage}.`);
+}
+function openInterview(a){
+  const c=cand(a.c),j=job(a.j),k=co(j.co);
+  openModal(`Book an interview for ${esc(name(c))}`,`<div class="small muted" style="margin-bottom:12px">${esc(j.title)} at ${esc(k.name)}</div><div class="form-grid">
+    <div class="form-group"><label class="form-label" for="iv-date">Date</label><input class="form-input" id="iv-date" type="date" value="${workday(2)}"></div>
+    <div class="form-group"><label class="form-label" for="iv-time">Time</label><input class="form-input" id="iv-time" type="time" value="10:30"></div>
+    <div class="form-group"><label class="form-label" for="iv-fmt">Format</label><select class="form-input" id="iv-fmt"><option>Video</option><option>In person</option><option>Phone</option></select></div>
+    <div class="form-group"><label class="form-label" for="iv-who">Interviewer</label><input class="form-input" id="iv-who" value="${esc(k.contact)}"></div>
+    <div class="form-group full"><label class="form-label" for="iv-round">Round</label><select class="form-input" id="iv-round"><option>First interview</option><option>Second interview</option><option>Final interview</option></select></div></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-iv="${a.id}">Book and draft confirmation</button>`);
+}
+function saveInterview(id){
+  const a=state.apps.find(x=>x.id===id),c=cand(a.c),j=job(a.j),k=co(j.co);
+  const b={id:state.nextBk++,c:c.id,j:j.id,date:$('#iv-date').value||workday(2),time:$('#iv-time').value||'10:30',fmt:$('#iv-fmt').value,who:$('#iv-who').value.trim()||k.contact,round:$('#iv-round').value};
+  state.bookings.push(b);a.stage='Interview';a.days=0;render();
+  const when=`${fmtD(parse(b.date),{weekday:'long',day:'numeric',month:'long'})} at ${b.time}`;
+  const body=`Hi ${c.first},\n\nGreat news: ${k.name} would like to meet you for a ${b.round.toLowerCase()} for the ${j.title} role.\n\nWhen: ${when}\nFormat: ${b.fmt}${b.fmt==='In person'?`, at their ${k.loc} office`:b.fmt==='Video'?', link to follow from '+k.name:''}\nYou will meet: ${b.who}, ${k.ctitle}\n\nI'll call you the day before to run through what they are looking for. Any questions in the meantime, just shout.\n\nBest wishes,\nOlivia`;
+  openModal('Confirmation email',`<div class="small muted" style="margin-bottom:8px">Interview booked and added to your diary. Check the email and send it.</div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label" for="em-to">To</label><input class="form-input" id="em-to" value="${esc(c.first.toLowerCase()+'.'+c.last.toLowerCase())}@mail.example"></div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label" for="em-sub">Subject</label><input class="form-input" id="em-sub" value="Interview confirmed: ${esc(j.title)}, ${esc(k.name)}"></div>
+    <div class="form-group"><label class="form-label" for="em-body">Message</label><textarea class="form-input" id="em-body" rows="12">${esc(body)}</textarea></div>`,
+    `<button class="btn btn-ghost" data-close>Send later</button><button class="btn btn-gold" data-send-mail="${esc(c.first)}">${ic('send')}Send email</button>`,true);
+}
+function openOffer(a){
+  const c=cand(a.c),j=job(a.j);const sal=Math.min(j.max,Math.max(j.min,c.exp||j.min));
+  openModal(`Record an offer for ${esc(name(c))}`,`<div class="small muted" style="margin-bottom:12px">${esc(j.title)} at ${esc(co(j.co).name)} · ${j.fee}% fee</div><div class="form-grid">
+    <div class="form-group"><label class="form-label" for="of-sal">Base salary (£)</label><input class="form-input" id="of-sal" type="number" value="${sal}" data-fee-pct="${j.fee}"></div>
+    <div class="form-group"><label class="form-label" for="of-start">Start date</label><input class="form-input" id="of-start" type="date" value="${iso(addDays(TODAY,35))}"></div></div>
+    <div class="ai-box row" style="margin-top:14px;justify-content:space-between"><span class="small">Your fee on placement</span><b class="tnum" id="of-fee" style="font-size:18px;color:var(--gold)">${money(feeFor(j,sal))}</b></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-offer="${a.id}">Save offer</button>`);
+}
+
+/* ---------- retained search ---------- */
+function pScore(p){const cr=state.search.criteria;const tw=cr.reduce((s,c)=>s+c.w,0)||1;return Math.round(cr.reduce((s,c,i)=>s+c.w*(p.sc[i]||0)/5,0)/tw*100);}
+function renderSearches(){
+  const S=state.search,k=co(S.co),fee=Math.round(S.salary*S.feePct/100),third=Math.round(fee/3);
+  const tw=S.criteria.reduce((s,c)=>s+c.w,0);
+  const labels=['Retainer, on instruction','Shortlist, on presentation','Completion, on hire'];
+  $('#page-searches').innerHTML=`<div class="page-head"><div><h1>${esc(S.title)} <span class="muted" style="font-weight:400">· ${esc(k.name)}</span></h1><p>${esc(S.brief)}</p></div>
+    <div class="row wrap"><button class="btn btn-ai" id="score-btn" data-score-all ${state.scoring?'disabled':''}>${ic('spark')}${state.scoring?'Scoring…':'Score everyone with AI'}</button><button class="btn btn-gold" data-report>${ic('file')}Shortlist report</button></div></div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" id="search-criteria"><div class="card-header"><div><div class="card-title">Scoring criteria</div><div class="xs muted">Weights total ${tw}. Everyone is scored 0 to 5 on each, from their profile and your call notes.</div></div></div>
+        <div class="criteria">${S.criteria.map((c,i)=>`<div class="crit"><span>${esc(c.n)}</span><div class="bar-track"><span style="width:${c.w/Math.max(1,tw)*100*2.5}%"></span></div><input class="form-input tnum" style="padding:3px 6px;text-align:center" type="number" min="0" max="50" value="${c.w}" id="cw-${i}" data-weight="${i}" aria-label="Weight for ${esc(c.n)}"></div>`).join('')}</div></div>
+      <div class="card"><div class="card-header"><div><div class="card-title">Retained fee</div><div class="xs muted">${S.feePct}% of ${money(S.salary)} base, invoiced in thirds</div></div><b class="tnum gold" style="font-size:18px">${money(fee)}</b></div>
+        <div class="fee-steps">${labels.map((l,i)=>{const st=S.paid[i]?'done':(i===1&&S.people.some(p=>p.stage==='Presented'))||(i===0)?'due':'';return `<div class="fee-step ${st}"><div class="xs muted">${l}</div><div class="v">${money(third)}</div><div class="xs ${S.paid[i]?'okc':st==='due'?'gold':'dim'}">${S.paid[i]?'Invoiced':st==='due'?'Ready to invoice':'Not due yet'}</div></div>`;}).join('')}</div>
+        ${S.paid[1]||!S.people.some(p=>p.stage==='Presented')?'':`<button class="btn btn-sm btn-ok" style="margin-top:12px" data-invoice="1">${ic('check')}Mark shortlist fee invoiced</button>`}</div>
+    </div>
+    <div class="card" id="search-board"><div class="card-header"><div><div class="card-title">Search pipeline</div><div class="xs muted">${S.people.length} people mapped. Move people between stages with the menu on each card.</div></div><button class="btn btn-sm btn-ghost" data-add-target>${ic('plus')}Add a target</button></div>
+      <div class="board-wrap"><div class="sboard">${S_STAGES.map(st=>{const list=S.people.filter(p=>p.stage===st).sort((a,b)=>(b.score||0)-(a.score||0));return `<div class="scol"><div class="col-h"><b><i style="background:${S_COL[st]}"></i>${st}</b><span class="pill">${list.length}</span></div><div class="col-body">
+        ${list.map(p=>`<div class="pcard"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><div class="n">${esc(p.name)}</div><div class="j">${esc(p.title)}<br>${esc(p.firm)}</div></div><span class="score ${scoreCls(p.score)}" style="min-width:36px;height:20px;font-size:11px">${p.score==null?'–':p.score}</span></div>
+          <button class="pill ${p.consent?'p-green':'p-red'}" style="border:0;align-self:flex-start;cursor:pointer" data-consent="${p.id}" title="Toggle GDPR consent">${p.consent?'Consent given':'No consent'}</button>
+          <select class="form-input" style="font-size:11.5px;padding:3px 6px" aria-label="Move ${esc(p.name)}" data-smove="${p.id}">${S_STAGES.map(x=>`<option ${x===st?'selected':''} value="${x}">${x===st?'Move to…':x}</option>`).join('')}</select></div>`).join('')||'<div class="xs dim" style="text-align:center;padding:12px 4px">Nobody here</div>'}</div></div>`;}).join('')}</div></div>
+      ${S.people.some(p=>p.stage==='Shortlist')?`<div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-sm btn-gold" data-present>${ic('send')}Present shortlist to ${esc(k.contact.split(' ')[0])}</button></div>`:''}
+    </div>`;
+}
+async function scoreAll(){
+  if(state.scoring)return;state.scoring=true;renderSearches();
+  const S=state.search;const order=S.people.slice().sort((a,b)=>S_STAGES.indexOf(b.stage)-S_STAGES.indexOf(a.stage));
+  for(const p of order){await sleep(280);p.score=pScore(p);if(cur==='searches')renderSearches();}
+  state.scoring=false;if(cur==='searches')renderSearches();
+  const top=order.slice().sort((a,b)=>b.score-a.score)[0];
+  toast(`${order.length} people scored. ${esc(top.name)} is the strongest fit at ${top.score}%.`);
+}
+function reasonsFor(p){const cr=state.search.criteria;const out=[];cr.forEach((c,i)=>{if(p.sc[i]>=5)out.push(`Strong on ${c.n.toLowerCase()}`);});cr.forEach((c,i)=>{if(p.sc[i]<=2)out.push(`Gap: ${c.n.toLowerCase()}`);});if(!out.length)out.push('Solid across all criteria');return out.slice(0,3);}
+function openReport(){
+  const S=state.search,k=co(S.co);const list=S.people.filter(p=>['Shortlist','Presented','Longlist'].includes(p.stage)).sort((a,b)=>(b.score==null?pScore(b):b.score)-(a.score==null?pScore(a):a.score));
+  openModal('Shortlist report',`<div class="paper"><div class="sub">Harbour Lane Recruitment · Retained search</div><h2>${esc(S.title)}, ${esc(k.name)}</h2><div class="sub">Prepared for ${esc(k.contact)}, ${esc(k.ctitle)} · ${fmtD(TODAY,{day:'numeric',month:'long',year:'numeric'})}</div><div class="hr"></div>
+    <h3>Search summary</h3><p>We mapped ${S.people.length} people across ${new Set(S.people.map(p=>p.firm)).size} firms and spoke with ${S.people.filter(p=>S_STAGES.indexOf(p.stage)>=1).length}. ${list.length} are recommended below, ranked against the five criteria agreed at briefing.</p>
+    <h3>Candidates</h3><table><thead><tr><th>Candidate</th><th>Fit</th><th>Why</th></tr></thead><tbody>
+    ${list.map(p=>`<tr><td><b>${esc(p.name)}</b><br><span class="sub">${esc(p.title)}, ${esc(p.firm)}</span></td><td><b>${p.score==null?pScore(p):p.score}%</b><br><span class="sub">${esc(p.stage)}</span></td><td><ul>${reasonsFor(p).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></td></tr>`).join('')}</tbody></table>
+    <h3>Criteria and weighting</h3><p>${S.criteria.map(c=>`${esc(c.n)} (${c.w})`).join(' · ')}</p>
+    <div class="foot">Confidential. Candidate details shared with consent under UK GDPR. Generated by TS Recruit.</div></div>`,
+    `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-gold" data-export-doc>${ic('file')}Export to Word</button>`,true);
+}
+
+/* ---------- companies ---------- */
+function renderCompanies(){
+  $('#page-companies').innerHTML=`<div class="page-head"><div><h1>Companies</h1><p>Clients, contacts, open jobs and fees billed. Research any company with AI before a pitch.</p></div><button class="btn btn-gold" data-add-co>${ic('plus')}Add company</button></div>
+  <div class="job-grid" id="co-list">${state.companies.map(c=>{const js=state.jobs.filter(j=>j.co===c.id);const billed=c.billed+state.placed.filter(p=>job(p.j).co===c.id).reduce((s,p)=>s+p.fee,0);
+    return `<div class="card" style="margin:0;display:flex;flex-direction:column;gap:12px"><div class="job-top"><div style="min-width:0"><div class="job-title">${esc(c.name)}</div><div class="small muted">${esc(c.sector)} · ${esc(c.loc)}</div></div><span class="pill ${js.length?'p-gold':''}">${js.length} open job${js.length===1?'':'s'}</span></div>
+      <div class="row"><span class="avatar av-sm" style="background:${PAL[(c.id+3)%PAL.length]}">${initials(c.contact)}</span><div class="grow"><div class="small strong">${esc(c.contact)}</div><div class="xs muted">${esc(c.ctitle)} · <span style="user-select:all">${esc(c.email)}</span></div></div></div>
+      <div class="job-meta"><span>Terms <b>${esc(c.terms)}</b></span><span>Billed <b>${money(billed)}</b></span><span>Client since <b>${c.since}</b></span></div>
+      <div class="row wrap">${js.map(j=>`<button class="chip" style="cursor:pointer" data-job="${j.id}">${esc(j.title)}</button>`).join('')}<button class="btn btn-sm btn-ai" style="margin-left:auto" data-research="${c.id}">${ic('spark')}Research with AI</button></div></div>`;}).join('')}</div>`;
+}
+async function openResearch(id){
+  const c=co(id);const js=state.jobs.filter(j=>j.co===id);
+  openModal(`Research: ${esc(c.name)}`,`<div class="ai-box"><div class="ai-tag" style="margin-bottom:8px">${ic('spark')}Company briefing</div><div id="res-out" class="small" style="line-height:1.65;color:#c9d4ea"><span class="typing"><span></span><span></span><span></span></span></div></div>
+    <p class="xs muted" style="margin-top:10px">In the live product this briefing is built from the company's website, public filings and your own notes. Here it uses the sample agency's records.</p>`,`<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-gold" data-close data-toast="Briefing saved to ${esc(c.name)}'s notes.">Save to notes</button>`);
+  await sleep(900);const el=$('#res-out');if(!el)return;
+  const txt=`${c.name} is a ${c.sector.toLowerCase()} based in ${c.loc} and a Harbour Lane client since ${c.since}. Your main contact is ${c.contact}, ${c.ctitle}. You currently have ${js.length} open role${js.length===1?'':'s'} with them${js.length?': '+js.map(j=>j.title).join(', '):''}. Terms on file are ${c.terms}. Hiring pattern: mostly mid to senior technical hires, filled in an average of 38 days. Talking points for your next call: salary movement for ${js[0]?js[0].title.toLowerCase()+'s':'their core roles'} in the last 12 months, counter-offer risk in the current market, and whether a retained model would suit their senior hires.`;
+  el.innerHTML='';await typeInto(el,txt,14);
+}
+
+/* ---------- interviews ---------- */
+function renderBookings(){
+  const list=state.bookings.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const up=list.filter(b=>b.date>=TODAY_ISO);const groups={};up.forEach(b=>{(groups[b.date]=groups[b.date]||[]).push(b);});
+  $('#page-bookings').innerHTML=`<div class="page-head"><div><h1>Interviews</h1><p>Every interview you have booked, with reminders for candidates and interviewers. Book new ones by dragging a card to Interview on the board.</p></div><button class="btn btn-ghost" data-nav="board">${ic('board')}Book from the board</button></div>
+    ${Object.keys(groups).length?Object.keys(groups).map(d=>`<div class="card"><div class="card-header"><div class="card-title">${dayLabel(d)}</div><span class="xs muted">${fmtD(parse(d),{day:'numeric',month:'long'})}</span></div>
+      ${groups[d].map(b=>{const c=cand(b.c),j=job(b.j),k=co(j.co);return `<div class="list-row"><div class="mono gold" style="width:52px">${b.time}</div>${av(c)}<div class="grow"><div class="strong small">${esc(name(c))} · ${esc(b.round)}</div><div class="xs muted">${esc(j.title)}, ${esc(k.name)} · with ${esc(b.who)}</div></div><span class="pill">${ic(b.fmt==='Video'?'video':b.fmt==='Phone'?'phone':'pin','width:12px;height:12px;vertical-align:-2px')} ${esc(b.fmt)}</span><button class="btn btn-sm btn-ghost" data-remind="${b.id}">Send reminder</button></div>`;}).join('')}</div>`).join(''):'<div class="card empty">No interviews booked. Drag a candidate to Interview on the board to book one.</div>'}`;
+}
+
+/* ---------- copilot ---------- */
+const SUGGEST=['Who should I call today?','Best candidates for the Data Engineer role','Draft an approach to Ravi Mehta for the Marine Hull role','Summarise my pipeline this week'];
+function renderCopilot(){
+  const page=$('#page-copilot');
+  if(!page.dataset.built){
+    page.innerHTML=`<div class="page-head"><div><h1>Copilot</h1><p>Ask about your candidates, jobs and pipeline in plain English. Copilot answers from your own data and drafts emails for you.</p></div></div>
+      <div class="card chat" id="copilot"><div class="chat-log" id="chat-log"></div><div class="suggest" id="chat-sug"></div>
+        <form class="chat-in" id="chat-form"><input class="form-input" id="chat-in" placeholder="Ask Copilot, e.g. who is free to start next month?" autocomplete="off"><button class="btn btn-gold" type="submit">${ic('send')}<span class="lbl">Ask</span></button></form></div>`;
+    page.dataset.built='1';
+    $('#chat-form').addEventListener('submit',e=>{e.preventDefault();const v=$('#chat-in').value.trim();if(v){$('#chat-in').value='';ask(v);}});
+  }
+  if(!state.chat.length)state.chat.push({me:false,h:`Morning Olivia. I can see ${state.apps.filter(a=>a.stage!=='Placed').length} candidates in process across ${state.jobs.length} jobs. Ask me anything, or pick a question below.`});
+  $('#chat-log').innerHTML=state.chat.map(m=>`<div class="msg ${m.me?'me':'bot'}">${m.me?esc(m.h):m.h}</div>`).join('');
+  $('#chat-sug').innerHTML=SUGGEST.map(s=>`<button class="sug" data-ask="${esc(s)}">${esc(s)}</button>`).join('');
+  const l=$('#chat-log');l.scrollTop=l.scrollHeight;
+}
+function findJob(q){q=q.toLowerCase();return state.jobs.find(j=>q.includes(j.title.toLowerCase()))||state.jobs.find(j=>j.title.toLowerCase().split(/[ ,]+/).filter(w=>w.length>3&&!['senior','handler'].includes(w)).some(w=>q.includes(w)));}
+function findCand(q){q=q.toLowerCase();return state.cands.find(c=>q.includes(name(c).toLowerCase()))||state.cands.find(c=>q.includes(c.last.toLowerCase())&&c.last.length>3);}
+function answer(q){
+  const t=q.toLowerCase();const c=findCand(q),j=findJob(q);
+  if(/draft|email|approach|write|outreach/.test(t)&&c){const jj=j||bestJob(c).j;return `Here is a first draft for ${esc(c.first)}. It uses what we know from the CV and the ${esc(jj.title)} brief:<pre>${esc(outreachText(c,jj))}</pre>`;}
+  if(/call|chase|follow|today|priority/.test(t)){const list=state.cands.filter(x=>x.consent).map(x=>{const a=appsFor(x);let why='',sc=0;const off=a.find(y=>y.stage==='Offer'),sub=a.find(y=>y.stage==='Submitted'&&y.days>=5),iv=a.find(y=>y.stage==='Interview');
+      if(off){why=`offer open ${off.days} days at ${co(job(off.j).co).name}, check they are still committed`;sc=100;}else if(iv){why=`interview with ${co(job(iv.j).co).name} coming up, run through prep`;sc=80;}else if(sub){why=`submitted ${sub.days} days ago, no client feedback yet`;sc=70;}else if(x.seen>=14){why=`not spoken for ${x.seen} days, ${bestJob(x).m.score}% match for ${bestJob(x).j.title}`;sc=50+x.seen;}
+      return {x,why,sc};}).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,5);
+    return `Five calls, in order of priority:<ol>${list.map(o=>`<li><b>${esc(name(o.x))}</b>: ${esc(o.why)}.</li>`).join('')}</ol>`;}
+  if(j&&/best|match|who|candidate|shortlist|fit/.test(t)){const top=state.cands.map(x=>({x,m:match(x,j)})).sort((a,b)=>b.m.score-a.m.score).slice(0,4);
+    return `Best fits for <b>${esc(j.title)}</b> at ${esc(co(j.co).name)}:<ol>${top.map(({x,m})=>`<li><b>${esc(name(x))}</b>, ${m.score}%. ${m.hits.length} of ${j.skills.length} key skills${m.miss.length?`, missing ${esc(m.miss.join(', '))}`:''}. ${esc(m.why[0])}.</li>`).join('')}</ol>`;}
+  if(c){const b=bestJob(c),sp=inSearch(c);return `<b>${esc(name(c))}</b>, ${esc(c.title)} at ${esc(c.emp)}. ${esc(cvSummary(c))} ${sp?`On the ${esc(state.search.title)} retained search at ${esc(sp.stage.toLowerCase())} stage${sp.score!=null?`, scored ${sp.score}%`:''}.`:b.m.score>=55?`Best open match: ${esc(b.j.title)} at ${b.m.score}%.`:'No strong match in your open jobs right now.'}`;}
+  if(/pipeline|summar|week|status|how are/.test(t)){const by=STAGES.map(s=>[s,state.apps.filter(a=>a.stage===s).length]).filter(x=>x[1]);const iv=state.bookings.filter(b=>b.date>=TODAY_ISO).length;const pv=state.apps.filter(a=>['Interview','Offer'].includes(a.stage)).reduce((s,a)=>s+feeFor(job(a.j),a.offer?a.offer.salary:cand(a.c).exp),0);
+    return `This week at a glance:<ul><li>${by.map(x=>`${x[1]} ${x[0].toLowerCase()}`).join(', ')}.</li><li>${iv} interviews booked.</li><li>${money(pv)} in fees at interview or offer stage.</li><li>The Head of Claims search has ${state.search.people.filter(p=>['Shortlist','Presented'].includes(p.stage)).length} people shortlisted or presented.</li></ul>The biggest risk is the Northmere offer: it has been open for ${(state.apps.find(a=>a.stage==='Offer')||{days:0}).days} days.`;}
+  if(j){const a=appsJob(j);return `<b>${esc(j.title)}</b> at ${esc(co(j.co).name)} has been open ${j.opened} days with ${a.length} candidates: ${a.map(x=>`${esc(cand(x.c).first)} (${x.stage.toLowerCase()})`).join(', ')||'none yet'}. Fee potential about ${money(feeFor(j))}.`;}
+  return `I can answer questions about your candidates, jobs and pipeline, and draft emails. Try asking about a named candidate such as <b>Hannah Clarke</b>, or a role such as <b>Paraplanner</b>.`;
+}
+async function ask(q){
+  state.chat.push({me:true,h:q});state.chat.push({me:false,h:'<span class="typing"><span></span><span></span><span></span></span>'});renderCopilot();
+  await sleep(800);state.chat.pop();state.chat.push({me:false,h:answer(q)});if(cur==='copilot')renderCopilot();
+}
+function outreachText(c,j){const k=co(j.co);const m=match(c,j);
+  return `Subject: ${j.title}, ${k.sector}, ${j.area}\n\nHi ${c.first},\n\nI hope things are going well at ${c.emp}. I'm working with ${k.name} on a ${j.title} role and your background stood out, particularly your ${m.hits.slice(0,2).join(' and ').toLowerCase()||'experience'}.\n\nThe role pays ${kf(j.min)} to ${kf(j.max)}, based ${j.loc.replace(' · ',', ')}. It's a step up in scope and they move quickly.\n\nWould you be open to a 15 minute call this week? Happy to work around you.\n\nBest wishes,\nOlivia Hart\nHarbour Lane Recruitment`;}
+function openOutreach(id,jid){const c=cand(id);const j=jid?job(jid):bestJob(c).j;const txt=outreachText(c,j);const [sub,...rest]=txt.split('\n\n');
+  openModal(`Outreach to ${esc(name(c))}`,`<div class="ai-tag" style="margin-bottom:10px">${ic('spark')}Drafted for ${esc(j.title)}, ${esc(co(j.co).name)}</div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label" for="em-sub">Subject</label><input class="form-input" id="em-sub" value="${esc(sub.replace('Subject: ',''))}"></div>
+    <div class="form-group"><label class="form-label" for="em-body">Message</label><textarea class="form-input" id="em-body" rows="12">${esc(rest.join('\n\n'))}</textarea></div>`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-send-mail="${esc(c.first)}">${ic('send')}Send email</button>`,true);}
+
+/* ---------- submission pack ---------- */
+function renderPack(){
+  const P=state.packSel;
+  $('#page-pack').innerHTML=`<div class="page-head"><div><h1>Submission Pack</h1><p>Pick a candidate and a job. TS Recruit writes a client-ready profile with the match evidence, ready to send.</p></div></div>
+    <div class="card" id="pack-form"><div class="form-grid">
+      <div class="form-group"><label class="form-label" for="pk-c">Candidate</label><select class="form-input" id="pk-c">${state.cands.map(c=>`<option value="${c.id}" ${c.id===P.c?'selected':''}>${esc(name(c))}, ${esc(c.title)}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label" for="pk-j">Job</label><select class="form-input" id="pk-j">${state.jobs.map(j=>`<option value="${j.id}" ${j.id===P.j?'selected':''}>${esc(j.title)}, ${esc(co(j.co).name)}</option>`).join('')}</select></div></div>
+      <div class="row wrap" style="margin-top:14px;justify-content:space-between"><div class="row wrap" style="gap:18px"><label class="row small"><button type="button" class="toggle ${P.anon?'on':''}" data-pk-opt="anon" aria-pressed="${P.anon}" aria-label="Hide name and contact details"></button>Hide name and contact details</label><label class="row small"><button type="button" class="toggle ${P.salary?'on':''}" data-pk-opt="salary" aria-pressed="${P.salary}" aria-label="Include salary expectation"></button>Include salary expectation</label></div>
+      <button class="btn btn-ai" data-gen-pack>${ic('spark')}Generate pack</button></div></div>
+    <div id="pack-out">${state.packOut||`<div class="card empty">Your pack will appear here.</div>`}</div>`;
+}
+function packHtml(c,j,o){const m=match(c,j),k=co(j.co);const nm=o.anon?`Candidate ${String(c.id).padStart(3,'0')}`:name(c);
+  return `<div class="paper"><div class="sub">Harbour Lane Recruitment · Candidate submission</div><h2>${esc(nm)}</h2><div class="sub">${esc(c.title)}${o.anon?'':' at '+esc(c.emp)} · for ${esc(j.title)}, ${esc(k.name)}</div><div class="hr"></div>
+    <h3>Summary</h3><p>${esc(o.anon?c.cv.replace(new RegExp(c.emp.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),'their current employer'):c.cv)}</p>
+    <h3>Fit against your brief · ${m.score}%</h3><table><tbody>${j.skills.map(s=>`<tr><td>${esc(s)}</td><td>${c.skills.includes(s)?'<b style="color:#0f7a4f">Evidenced</b>':'<span style="color:#b4462d">To explore at interview</span>'}</td></tr>`).join('')}</tbody></table>
+    <h3>Practical details</h3><table><tbody><tr><th>Location</th><td>${esc(c.loc)}</td></tr><tr><th>Notice</th><td>${esc(c.notice)}</td></tr>${o.salary&&c.exp?`<tr><th>Salary expectation</th><td>${money(c.exp)}</td></tr>`:''}<tr><th>Consent to submit</th><td>${c.consent?'Given':'Not yet recorded'}</td></tr></tbody></table>
+    <h3>Suggested interview questions</h3><ul>${(m.miss.length?m.miss:j.skills.slice(0,2)).slice(0,2).map(s=>`<li>Talk us through your hands-on experience with ${esc(s.toLowerCase())}.</li>`).join('')}<li>What would make you choose ${esc(k.name)} over staying at your current firm?</li></ul>
+    <div class="foot">Shared in confidence with ${esc(k.name)} under Harbour Lane's terms of business. Generated by TS Recruit.</div></div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn btn-ghost" data-export-doc>${ic('file')}Export to Word</button><button class="btn btn-gold" data-send-pack="${esc(k.contact)}">${ic('send')}Send to ${esc(k.contact.split(' ')[0])}</button></div>`;}
+async function genPack(){const P=state.packSel;P.c=+$('#pk-c').value;P.j=+$('#pk-j').value;const c=cand(P.c),j=job(P.j);
+  $('#pack-out').innerHTML=`<div class="card empty"><span class="typing"><span></span><span></span><span></span></span><div style="margin-top:8px">Writing ${esc(c.first)}'s pack…</div></div>`;await sleep(1000);
+  state.packOut=packHtml(c,j,P);if(cur==='pack'){$('#pack-out').innerHTML=state.packOut;if(tourOn)setTimeout(placeTour,30);}}
+
+/* ---------- cadences ---------- */
+const STEP_COL={mail:'a-el',linked:'a-purple',phone:'a-green',task:'a-gold'};
+function renderCadences(){
+  $('#page-cadences').innerHTML=`<div class="page-head"><div><h1>Cadences</h1><p>Multi-step outreach that runs itself. Replies are detected automatically and stop the sequence for that person.</p></div><button class="btn btn-gold" data-new-cad>${ic('plus')}New cadence</button></div>
+  <div id="cad-list">${state.cadences.map(c=>`<div class="cad"><div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:wrap"><div style="min-width:0"><div class="job-title">${esc(c.name)}</div><div class="small muted">${esc(c.aud)}</div></div>
+    <div class="row"><span class="pill ${c.on?'p-green':''}">${c.on?'Active':'Paused'}</span><button class="toggle ${c.on?'on':''}" data-cad-toggle="${c.id}" aria-pressed="${c.on}" aria-label="${c.on?'Pause':'Activate'} ${esc(c.name)}"></button></div></div>
+    <div class="steps">${c.steps.map(s=>`<div class="step"><div class="dot ${STEP_COL[s[0]]}">${ic(s[0])}</div><div class="d">${s[1].toUpperCase()}</div><div class="t">${esc(s[2])}</div></div>`).join('')}</div>
+    <div class="row wrap" style="justify-content:space-between"><div class="cad-stats"><span><b>${c.enrolled}</b>enrolled</span><span><b>${c.sent}</b>emails sent</span><span><b>${c.replied}</b>replies</span><span><b>${Math.round(c.replied/Math.max(1,c.enrolled)*100)}%</b>reply rate</span></div><button class="btn btn-sm btn-ghost" data-enrol="${c.id}">${ic('plus')}Enrol people</button></div></div>`).join('')}</div>`;
+}
+function openEnrol(id){const c=state.cadences.find(x=>x.id===id);
+  openModal(`Enrol in ${esc(c.name)}`,`<div class="small muted" style="margin-bottom:10px">Only people who have given consent can be enrolled.</div>${state.cands.map(x=>`<label class="list-row" style="cursor:pointer;${x.consent?'':'opacity:.5'}"><input type="checkbox" id="en-${x.id}" data-en="${x.id}" ${x.consent?'':'disabled'} style="width:16px;height:16px;accent-color:var(--gold)">${av(x,'av-sm')}<span class="grow small">${esc(name(x))} <span class="muted">· ${esc(x.title)}</span></span>${x.consent?'':'<span class="pill p-red">No consent</span>'}</label>`).join('')}`,
+    `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-enrol="${id}">Enrol selected</button>`);}
+
+/* ---------- reports ---------- */
+function renderReports(){
+  const live=state.placed.reduce((s,p)=>s+p.fee,0);
+  const months=[5,4,3,2,1,0].map(i=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-i,1);return d.toLocaleDateString('en-GB',{month:'short'});});
+  const fees=[14200,22800,18600,31400,26900,9800+live];const maxF=Math.ceil(Math.max(...fees)/10000)*10000;
+  const W=620,H=220,pl=44,pb=26,pt=12,bw=(W-pl-10)/6;const y=v=>pt+(H-pt-pb)*(1-v/maxF);
+  const ticks=[0,maxF/2,maxF];
+  const svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fees billed by month">${ticks.map(t=>`<line x1="${pl}" x2="${W-6}" y1="${y(t)}" y2="${y(t)}" stroke="#1e2e4a" stroke-width="1"/><text x="${pl-8}" y="${y(t)+4}" fill="#8899b8" font-size="11" text-anchor="end" font-family="DM Mono,monospace">${kf(t)}</text>`).join('')}
+    ${fees.map((f,i)=>{const x=pl+i*bw+bw*.2,w=bw*.6;return `<rect x="${x}" y="${y(f)}" width="${w}" height="${Math.max(0,y(0)-y(f))}" rx="4" fill="${i===5?'#f7c825':'rgba(247,200,37,.35)'}"/><text x="${x+w/2}" y="${y(f)-6}" fill="${i===5?'#f7c825':'#8899b8'}" font-size="11" text-anchor="middle" font-family="DM Mono,monospace">${kf(f)}</text><text x="${x+w/2}" y="${H-8}" fill="#8899b8" font-size="11" text-anchor="middle" font-family="DM Sans,sans-serif">${months[i]}</text>`;}).join('')}</svg>`;
+  const src=[['LinkedIn',38],['Referral',24],['Headhunted',17],['Careers page',12],['Job boards',9]];
+  const lb=[['OH',7,61200],['MB',5,38400],['AR',3,21900]].map(r=>{const extra=state.placed.filter(p=>p.by===r[0]);return [r[0],r[1]+extra.length,r[2]+extra.reduce((s,p)=>s+p.fee,0)];}).sort((a,b)=>b[2]-a[2]);
+  const subs=state.apps.filter(a=>STAGES.indexOf(a.stage)>=2).length,ivs=state.apps.filter(a=>STAGES.indexOf(a.stage)>=3).length;
+  $('#page-reports').innerHTML=`<div class="page-head"><div><h1>Reports</h1><p>Billings, conversion and who is performing, without a spreadsheet.</p></div></div>
+    <div class="stats-row" id="rep-summary">
+      <div class="stat"><div class="stat-ic a-gold">${ic('trophy')}</div><div><div class="stat-label">Billed, 6 months</div><div class="stat-value">${kf(fees.reduce((a,b)=>a+b,0))}</div><div class="stat-sub">${15+state.placed.length} placements</div></div></div>
+      <div class="stat"><div class="stat-ic a-el">${ic('clock')}</div><div><div class="stat-label">Time to fill</div><div class="stat-value">34 days</div><div class="stat-sub">from job opened to offer</div></div></div>
+      <div class="stat"><div class="stat-ic a-purple">${ic('users')}</div><div><div class="stat-label">Submit to interview</div><div class="stat-value">${Math.round(ivs/Math.max(1,subs)*100)}%</div><div class="stat-sub">${ivs} of ${subs} submissions</div></div></div>
+      <div class="stat"><div class="stat-ic a-green">${ic('brief')}</div><div><div class="stat-label">Average fee</div><div class="stat-value">${kf(121500/15)}</div><div class="stat-sub">per permanent placement</div></div></div></div>
+    <div class="grid-32"><div class="card chart"><div class="card-header"><div class="card-title">Fees billed by month</div><span class="xs muted">This month so far in gold</span></div>${svg}</div>
+      <div class="card"><div class="card-header"><div class="card-title">Where placements come from</div></div>${src.map(s=>`<div class="hbar"><span>${s[0]}</span><div class="bar-track"><span style="width:${s[1]/38*100}%;background:var(--electric)"></span></div><span class="tnum" style="text-align:right">${s[1]}%</span></div>`).join('')}</div></div>
+    <div class="card" style="margin-top:16px"><div class="card-header"><div class="card-title">Leaderboard, last 6 months</div></div>
+      ${lb.map((r,i)=>`<div class="list-row"><span class="mono ${i===0?'gold':'muted'}" style="width:18px">${i+1}</span><span class="avatar av-sm" style="background:${TEAM[r[0]].col}">${r[0]}</span><div class="grow"><div class="strong small">${TEAM[r[0]].name}</div><div class="xs muted">${TEAM[r[0]].role}</div></div><span class="small muted">${r[1]} placements</span><b class="tnum" style="width:80px;text-align:right">${money(r[2])}</b></div>`).join('')}</div>`;
+}
+
+/* ---------- email intake ---------- */
+const SAMPLE_EMAIL={from:'David Okafor <d.okafor@northmere.example>',subject:'New role: Senior Claims Handler (Motor)',body:`Hi Marcus,
+
+Hope you're well. Following our chat, we'd like you to help with a new role.
+
+Senior Claims Handler, Motor. Chelmsford, hybrid with 3 days in the office.
+Salary £42,000 - £48,000 plus car allowance.
+
+They'll run a caseload of complex motor claims including litigated files, and mentor two junior handlers. CII Certificate essential.
+
+Could you send over two or three CVs by the end of next week?
+
+Thanks,
+David Okafor
+Chief Operating Officer, Northmere Insurance Brokers`};
+function openIntake(file){
+  openModal('Import a client email',`<div class="drop" id="em-drop"><svg class="ic"><use href="#i-mailopen"/></svg><p><b>Drop a client email here</b> or <label for="em-file" class="gold" style="text-decoration:underline;cursor:pointer">choose a file</label></p><p class="xs muted">Outlook .msg, .eml or plain text. TS Recruit finds the company, contact and role, and you confirm before anything is created.</p><input type="file" id="em-file" hidden accept=".eml,.msg,.txt"></div>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn btn-sm btn-ai" data-sample-email>${ic('spark')}Use a sample client email</button></div><div id="intake-out"></div>`,`<button class="btn btn-ghost" data-close>Close</button>`,true);
+  const dz=$('#em-drop');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');hideOverlay();const f=e.dataTransfer.files[0];if(f)readEmailFile(f);});
+  $('#em-file').addEventListener('change',e=>{const f=e.target.files[0];if(f)readEmailFile(f);});
+  if(file)readEmailFile(file);
+}
+function readEmailFile(f){const r=new FileReader();r.onload=()=>{const txt=String(r.result||'').replace(/\0/g,'');const sub=(txt.match(/^Subject:\s*(.+)$/im)||[])[1];const from=(txt.match(/^From:\s*(.+)$/im)||[])[1];
+  const printable=txt.replace(/[^\x09\x0a\x0d\x20-\x7e£]/g,' ');processEmail({from:from||'Unknown sender',subject:sub||f.name.replace(/\.[a-z]+$/i,''),body:printable.slice(0,6000)},f.name);};r.onerror=()=>toast('That file could not be read. Try an .eml or .txt export.',true);r.readAsText(f);}
+async function processEmail(em,fname){
+  const out=$('#intake-out');if(!out)return;
+  out.innerHTML=`<div class="ai-box" style="margin-top:14px"><span class="typing"><span></span><span></span><span></span></span> <span class="small muted">Reading ${esc(fname||'email')}…</span></div>`;await sleep(1100);
+  const all=em.subject+'\n'+em.body;
+  const nums=(all.match(/£\s?\d{2,3}(?:[,.]\d{3}|k)/gi)||[]).map(s=>{const n=s.replace(/[£\s,]/g,'');return /k$/i.test(n)?parseFloat(n)*1000:parseInt(n.replace('.',''),10);});
+  const coM=state.companies.find(c=>all.toLowerCase().includes(c.name.toLowerCase().split(' ')[0]));
+  const locM=all.match(/\b(London(?: EC\d)?|Chelmsford|Cambridge|Guildford|Manchester|Birmingham|Leeds|Bristol|Remote)\b/);
+  const role=(em.subject.match(/(?:new role|role|vacancy|position|job)\s*[:\-–]\s*(.+)/i)||[])[1]||em.subject;
+  const contact=(em.from.match(/^"?([^<"]+?)"?\s*</)||[])[1]||em.from;
+  const sk=SKILL_WORDS.concat(['CII Certificate','Motor claims','Litigation']).filter((s,i,a)=>a.indexOf(s)===i&&all.toLowerCase().includes(s.toLowerCase()));
+  const found=(v)=>v?'field-found':'';
+  out.innerHTML=`<div style="margin-top:16px"><div class="ai-tag" style="margin-bottom:10px">${ic('spark')}Found in the email · check and confirm</div><div class="form-grid">
+    <div class="form-group"><label class="form-label" for="ix-title">Role</label><input class="form-input ${found(role)}" id="ix-title" value="${esc(role.trim().slice(0,70))}"></div>
+    <div class="form-group"><label class="form-label" for="ix-co">Company</label><select class="form-input ${found(coM)}" id="ix-co">${state.companies.map(c=>`<option value="${c.id}" ${coM&&coM.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label" for="ix-min">Salary from (£)</label><input class="form-input ${found(nums[0])}" id="ix-min" type="number" value="${nums[0]||''}"></div>
+    <div class="form-group"><label class="form-label" for="ix-max">Salary to (£)</label><input class="form-input ${found(nums[1])}" id="ix-max" type="number" value="${nums[1]||''}"></div>
+    <div class="form-group"><label class="form-label" for="ix-loc">Location</label><input class="form-input ${found(locM)}" id="ix-loc" value="${locM?esc(locM[0]+(/hybrid/i.test(all)?' · hybrid':'')):''}"></div>
+    <div class="form-group"><label class="form-label" for="ix-contact">Contact</label><input class="form-input ${found(contact)}" id="ix-contact" value="${esc(contact.trim())}"></div>
+    <div class="form-group full"><label class="form-label" for="ix-skills">Key skills</label><input class="form-input ${found(sk.length)}" id="ix-skills" value="${esc(sk.join(', '))}"></div></div>
+    <p class="xs muted" style="margin-top:10px">${coM?`${esc(coM.name)} and ${esc(coM.contact)} are already in your CRM, so no duplicates will be created. `:''}The email is logged against the company.</p>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn btn-gold" data-create-intake>${ic('check')}Create job</button></div></div>`;
+  if(tourOn)setTimeout(placeTour,30);
+}
+function createFromIntake(){
+  const t=$('#ix-title').value.trim()||'New role';const min=+$('#ix-min').value||40000,max=+$('#ix-max').value||Math.round(min*1.15);const loc=$('#ix-loc').value.trim()||'London';
+  const j={id:state.nextJob++,title:t,co:+$('#ix-co').value,area:loc.split(/[ ·,]/)[0],loc,min,max,fee:18,owner:'MB',opened:0,skills:$('#ix-skills').value.split(',').map(s=>s.trim()).filter(Boolean),hot:true,published:false};
+  if(!j.skills.length)j.skills=['Negotiation'];state.jobs.unshift(j);closeModal();nav('jobs');toast(`${esc(t)} created from the email.`);setTimeout(()=>openJob(j.id),350);
+}
+
+/* ---------- navigation ---------- */
+const PAGES={dashboard:['Dashboard',renderDashboard],candidates:['Candidates',renderCandidates],jobs:['Jobs',renderJobs],board:['Applications Board',renderBoard],searches:['Retained Searches',renderSearches],companies:['Companies',renderCompanies],bookings:['Interviews',renderBookings],copilot:['Copilot',renderCopilot],pack:['Submission Pack',renderPack],cadences:['Cadences',renderCadences],reports:['Reports',renderReports]};
+let cur='dashboard';
+function nav(p){if(!PAGES[p])p='dashboard';cur=p;$$('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));$$('.nav-item').forEach(x=>{const on=x.dataset.nav===p;x.classList.toggle('active',on);if(on)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current');});$('#topbar-title').textContent=PAGES[p][0];PAGES[p][1]();updateBadges();$('#content').scrollTop=0;closeDrawer();}
+function render(){PAGES[cur][1]();updateBadges();if(tourOn)setTimeout(placeTour,30);}
+function updateBadges(){const n=state.bookings.filter(b=>b.date>=TODAY_ISO&&b.date<=iso(addDays(TODAY,7))).length,b=$('#badge-bk');b.textContent=n;b.hidden=!n;}
+function closeDrawer(){$('#app').classList.remove('drawer-open');}
+
+/* ---------- modal & toast ---------- */
+function openModal(title,body,foot,wide){$('#modal-title').innerHTML=title;$('#modal-body').innerHTML=body;$('#modal-body').scrollTop=0;$('#modal-foot').innerHTML=foot||'';$('#modal').classList.toggle('wide',!!wide);$('#modal-overlay').hidden=false;document.body.classList.add('modal-open');}
+function closeModal(){$('#modal-overlay').hidden=true;document.body.classList.remove('modal-open');if(tourOn)setTimeout(placeTour,30);}
+let tT;function toast(msg,bad){const t=$('#toast');t.innerHTML=ic(bad?'alert':'check')+'<span>'+msg+'</span>';t.className='toast show '+(bad?'te':'ts');clearTimeout(tT);tT=setTimeout(()=>{t.className='toast';},3800);}
+const NOT_SENT=' In this demo nothing is actually sent.';
+
+/* ---------- tour ---------- */
+const TOUR=[
+  {center:true,title:'Welcome to TS Recruit',body:'You are Olivia, director of Harbour Lane Recruitment, a sample agency placing insurance, data and financial services people. Every button works, so try things as you go. Nothing is saved and nothing is sent. The tour takes about 10 minutes.'},
+  {page:'dashboard',sel:'#stats',title:'Your desk on one screen',body:'Open jobs, candidates in process, interviews this week and fees this quarter. These update as you move candidates and make placements.'},
+  {page:'dashboard',sel:'#next-actions',title:'AI tells you what to do next',body:'TS Recruit reads your pipeline, diary and contact history and lists the calls and chasers that matter most today. Each one has a button that does the job, such as drafting the chaser email.'},
+  {page:'candidates',sel:'#cand-card',title:'Every candidate in one place',body:'Search by name, skill, employer or location, and filter by stage. Try typing Lloyd\'s. Click anyone to open their profile, get an AI summary of their CV and see which of your jobs they fit best.'},
+  {page:'candidates',sel:'#import-btn',title:'Drop in a pile of CVs',body:'Drag up to 50 CVs in at once. Each is read and turned into a candidate record with skills and salary. Click Import CVs and try the sample CVs, or drop your own files.'},
+  {page:'jobs',sel:'#job-list',title:'Jobs with fee potential',body:'Each job shows salary, fee and where its candidates are in the process. Open a job to see the best matches already in your database, with the skills they have and the ones they are missing.'},
+  {page:'board',sel:'#board',title:'Drag candidates through the process',body:'Drag a card to the next column. Drop someone on Interview to book it and get a confirmation email ready to send. Drop on Offer to record the salary and see your fee. On a phone, use the Move to menu on each card.'},
+  {page:'searches',sel:'#search-criteria',title:'Retained search, done properly',body:'Agree weighted criteria with the client, then score everyone you have mapped against them. Change a weight and the ranking changes with it.'},
+  {page:'searches',sel:'#search-board',title:'Map the market, then present',body:'Track targets from first approach to presentation, with GDPR consent on every person. Click Score everyone with AI, then Shortlist report to produce the client document. The retained fee instalments update as you go.'},
+  {page:'dashboard',sel:'#drop-email-btn',title:'Turn a client email into a job',body:'Drag an Outlook or .eml email anywhere onto TS Recruit. The role, salary, location and contact are pulled out, matched to your existing records, and you confirm before the job is created. Click Drop Email and try the sample.'},
+  {page:'copilot',sel:'#copilot',title:'Ask Copilot',body:'Ask questions in plain English: who to call today, the best candidates for a role, or a first draft of an approach email. Answers come from your own data.'},
+  {page:'pack',sel:'#pack-form',title:'Client-ready submissions in seconds',body:'Choose a candidate and a job to generate a profile with the evidence against each requirement. Hide the name and contact details for a blind submission.'},
+  {page:'cadences',sel:'#cad-list',title:'Outreach that runs itself',body:'Build sequences of emails, LinkedIn steps and call tasks. Replies are picked up automatically and stop the sequence, so nobody gets chased after they have answered.'},
+  {page:'reports',sel:'#rep-summary',title:'Know your numbers',body:'Billings by month, time to fill, conversion from submission to interview, where placements come from, and the team leaderboard.'},
+  {center:true,final:true,title:'That\'s TS Recruit',body:'Candidates, jobs, retained search, AI matching, email intake, outreach and reporting in one CRM built for recruiters. Your own account starts with a 7-day free trial.'},
+];
+let tourOn=false,tourIdx=0;
+function startTour(i){tourOn=true;$('#tour-card').hidden=false;showStep(i||0);}
+function endTour(){tourOn=false;['#tour-card','#tour-spot','#tour-backdrop'].forEach(s=>{$(s).hidden=true;});}
+function showStep(i){tourIdx=i;const st=TOUR[i];if($('#modal-overlay').hidden===false)closeModal();if(st.page&&st.page!==cur)nav(st.page);renderTourCard();const el=st.sel&&$(st.sel);if(el&&!el.closest('.topbar'))el.scrollIntoView({block:innerWidth<=860?'start':'center'});requestAnimationFrame(()=>requestAnimationFrame(placeTour));}
+function renderTourCard(){const st=TOUR[tourIdx],i=tourIdx,n=TOUR.length-2;let h=`<button class="tour-x" data-tour="end" aria-label="Close tour">${ic('x')}</button>`;
+  if(st.center)h+=`<div class="tour-mark">${ic(st.final?'rocket':'play')}</div>`;else h+=`<div class="tour-step">Step ${i} of ${n}</div>`;
+  h+=`<h2 class="tour-title">${st.title}</h2><p class="tour-body">${st.body}</p>`;
+  if(i===0)h+=`<div class="tour-actions"><button class="btn btn-ghost" data-tour="end">Explore on my own</button><button class="btn btn-gold" data-tour="next">Start the tour</button></div>`;
+  else if(st.final)h+=`<div class="tour-final"><a class="btn btn-gold" href="${TRIAL}" target="_blank" rel="noopener">${ic('rocket')}Start your free trial</a><button class="btn btn-ghost" data-tour="end">Keep exploring</button><button class="btn btn-ghost" data-tour="restart">Restart tour</button></div>`;
+  else h+=`<div class="tour-prog"><span style="width:${i/n*100}%"></span></div><div class="tour-actions"><button class="btn btn-sm btn-ghost" data-tour="back">Back</button><button class="btn btn-sm btn-gold" data-tour="next">${i===n?'Finish':'Next'}</button></div>`;
+  $('#tour-card').innerHTML=h;}
+function placeTour(){if(!tourOn)return;const st=TOUR[tourIdx],card=$('#tour-card'),spot=$('#tour-spot'),bd=$('#tour-backdrop');
+  let el=st.sel?$(st.sel):null;if(el&&el.offsetParent===null&&st.sel==='#drop-email-btn')el=null;const visible=el&&el.offsetParent!==null;
+  card.style.left='';card.style.top='';
+  if(st.center||!visible){spot.hidden=true;bd.hidden=!st.center;card.classList.remove('dock');card.classList.toggle('center',!!st.center);if(!st.center)card.classList.add('dock');return;}
+  bd.hidden=true;card.classList.remove('center');
+  const r=el.getBoundingClientRect(),p=6;const top=Math.max(4,r.top-p),left=Math.max(4,r.left-p),bottom=Math.min(innerHeight-4,r.bottom+p),right=Math.min(innerWidth-4,r.right+p);
+  spot.hidden=false;Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+  if(innerWidth<=860){card.classList.add('dock');return;}
+  card.classList.remove('dock');
+  const cw=card.offsetWidth,ch=card.offsetHeight;let y=bottom+12,inside=false;if(y+ch>innerHeight-12)y=top-ch-12;if(y<12){y=Math.max(12,innerHeight-ch-16);inside=true;}
+  const x=inside?innerWidth-cw-24:Math.max(12,Math.min(left,innerWidth-cw-12));card.style.left=x+'px';card.style.top=y+'px';}
+function tourAction(a){if(a==='start')startTour(tourOn?tourIdx:0);else if(a==='end')endTour();else if(a==='next')showStep(Math.min(TOUR.length-1,tourIdx+1));else if(a==='back')showStep(Math.max(1,tourIdx-1));else if(a==='restart')showStep(1);}
+
+/* ---------- events ---------- */
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('button,a,[data-cand],[data-job]');if(!t)return;const d=t.dataset;
+  if(t.closest('#board .acard')&&!d.move)return;
+  if(d.nav){if(!$('#modal-overlay').hidden)closeModal();nav(d.nav);return;}
+  if(d.go){closeModal();nav(d.go);return;}
+  if('menu' in d){$('#app').classList.toggle('drawer-open');return;}
+  if(d.tour){tourAction(d.tour);return;}
+  if('reset' in d){state=buildState();$('#page-candidates').dataset.built='';$('#page-copilot').dataset.built='';closeModal();render();toast('Demo reset to the starting data.');return;}
+  if('close' in d){closeModal();if(d.toast)toast(d.toast);return;}
+  if(d.cand&&!t.matches('tr')){closeModal();openCand(+d.cand);return;}
+  if(d.cand){openCand(+d.cand);return;}
+  if(d.job){closeModal();openJob(+d.job);return;}
+  if('addCand' in d){openAddCand();return;}
+  if('saveCand' in d){saveCand();return;}
+  if('import' in d){openImport();return;}
+  if('sampleCvs' in d){SAMPLE_CVS.forEach(s=>importRows.push({file:s.file,data:Object.assign({},s),p:0,st:'Uploading'}));runImport();t.disabled=true;return;}
+  if(d.cfilter){state.candFilter=d.cfilter;renderCandidates();return;}
+  if(d.cvSum){const c=cand(+d.cvSum);t.disabled=true;typeInto($('#cv-sum'),cvSummary(c),28);return;}
+  if(d.addNote){const v=$('#note-in').value.trim();if(!v)return;const id=+d.addNote;(state.notes[id]=state.notes[id]||[]).unshift({t:v,by:'OH',d:0});cand(id).seen=0;openCand(id);toast('Note added.');return;}
+  if(d.addApp){const [c,j]=d.addApp.split('|').map(Number);if(!state.apps.some(a=>a.c===c&&a.j===j))state.apps.push({id:state.nextApp++,c,j,stage:'Screening',days:0});closeModal();render();toast(`${esc(name(cand(c)))} added to ${esc(job(j).title)} at Screening.`);return;}
+  if(d.outreach){openOutreach(+d.outreach);return;}
+  if(d.sendMail){closeModal();toast(`Email to ${esc(d.sendMail)} sent.${NOT_SENT}`);return;}
+  if(d.pack){const [c,j]=d.pack.split('|').map(Number);state.packSel.c=c;state.packSel.j=j;state.packOut=null;closeModal();nav('pack');genPack();return;}
+  if('newJob' in d){openNewJob();return;}
+  if('sampleJd' in d){$('#jd-text').value=SAMPLE_JD;parseJD();return;}
+  if('parseJd' in d){parseJD();return;}
+  if('saveJob' in d){saveJob();return;}
+  if(d.publish){const j=job(+d.publish);j.published=!j.published;t.classList.toggle('on',j.published);t.setAttribute('aria-pressed',j.published);if(cur==='jobs')renderJobs();toast(j.published?`${esc(j.title)} is live on your careers page.`:`${esc(j.title)} removed from your careers page.`);return;}
+  if(d.saveIv){saveInterview(+d.saveIv);return;}
+  if(d.saveOffer){const a=state.apps.find(x=>x.id===+d.saveOffer);const sal=+$('#of-sal').value||0;a.offer={salary:sal,start:$('#of-start').value||iso(addDays(TODAY,35))};a.stage='Offer';a.days=0;closeModal();render();toast(`Offer recorded for ${esc(name(cand(a.c)))}. ${money(feeFor(job(a.j),sal))} fee when they start.`);return;}
+  if(d.prep){const b=state.bookings.find(x=>x.id===+d.prep),c=cand(b.c),j=job(b.j),k=co(j.co);
+    openModal(`Interview prep for ${esc(c.first)}`,`<div class="ai-tag" style="margin-bottom:10px">${ic('spark')}Drafted from the job brief and ${esc(k.name)}'s record</div><div class="form-group"><label class="form-label" for="em-body">Message</label><textarea class="form-input" id="em-body" rows="13">${esc(`Hi ${c.first},\n\nAhead of your ${b.round.toLowerCase()} with ${k.name} (${dayLabel(b.date)} at ${b.time}), a few pointers:\n\n• You'll meet ${b.who}, ${k.ctitle}. Expect questions on ${j.skills.slice(0,3).join(', ').toLowerCase()}.\n• Have two examples ready of results you delivered, with numbers.\n• They care about why you want to move. Keep it about the step up in scope.\n• Salary: the band is ${kf(j.min)} to ${kf(j.max)}. Leave that conversation to me.\n\nI'll call you the day before. Good luck.\n\nOlivia`)}</textarea></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-send-mail="${esc(c.first)}">${ic('send')}Send email</button>`,true);return;}
+  if(d.chase){const a=state.apps.find(x=>x.id===+d.chase),c=cand(a.c),j=job(a.j),k=co(j.co);
+    openModal(`Chase ${esc(k.contact)}`,`<div class="form-group"><label class="form-label" for="em-body">Message</label><textarea class="form-input" id="em-body" rows="9">${esc(a.stage==='Offer'?`Hi ${k.contact.split(' ')[0]},\n\nA quick one on ${c.first}. They're delighted with the offer for the ${j.title} role and ready to resign as soon as the written offer lands. Could you let me know when it will go out?\n\nThanks,\nOlivia`:`Hi ${k.contact.split(' ')[0]},\n\nFollowing up on ${c.first}'s profile for the ${j.title} role, sent ${a.days} days ago. ${c.first} has other interviews in progress, so it would help to know if you'd like to meet them.\n\nHappy to talk it through.\n\nOlivia`)}</textarea></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-send-mail="${esc(k.contact.split(' ')[0])}">${ic('send')}Send email</button>`,true);return;}
+  if(d.task){return;}
+  if('addTask' in d){openModal('Add a task',`<div class="form-group"><label class="form-label" for="tk-t">Task</label><input class="form-input" id="tk-t" placeholder="e.g. Call Ravi about the Kinsale role"></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-task>Add task</button>`);return;}
+  if('saveTask' in d){const v=$('#tk-t').value.trim();if(!v)return;state.tasks.unshift({id:state.nextTask++,t:v,done:false});closeModal();render();toast('Task added.');return;}
+  if('scoreAll' in d){scoreAll();return;}
+  if('report' in d){openReport();return;}
+  if('exportDoc' in d){toast('In the live product this downloads a Word document.');return;}
+  if(d.consent){const p=state.search.people.find(x=>x.id===+d.consent);p.consent=!p.consent;renderSearches();toast(`${esc(p.name)}: consent ${p.consent?'recorded':'removed'}.`);return;}
+  if('present' in d){const S=state.search;const n=S.people.filter(p=>p.stage==='Shortlist');n.forEach(p=>{p.stage='Presented';});renderSearches();toast(`${n.length} candidates presented to ${esc(co(S.co).contact)}. The shortlist fee is ready to invoice.${NOT_SENT}`);return;}
+  if(d.invoice){state.search.paid[+d.invoice]=true;renderSearches();toast('Shortlist instalment marked as invoiced.');return;}
+  if('addTarget' in d){openModal('Add a target',`<div class="form-grid"><div class="form-group"><label class="form-label" for="tg-n">Name</label><input class="form-input" id="tg-n"></div><div class="form-group"><label class="form-label" for="tg-t">Job title</label><input class="form-input" id="tg-t"></div><div class="form-group full"><label class="form-label" for="tg-f">Firm</label><input class="form-input" id="tg-f"></div></div><div class="form-err" id="tg-err" hidden></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-target>Add to search</button>`);return;}
+  if('saveTarget' in d){const n=$('#tg-n').value.trim();if(!n){const e=$('#tg-err');e.textContent='Add a name.';e.hidden=false;return;}const S=state.search;S.people.push({id:S.people.length+1,name:n,title:$('#tg-t').value.trim()||'Not set',firm:$('#tg-f').value.trim()||'Not set',stage:'Target',consent:false,sc:[3,3,3,3,3],score:null});closeModal();render();toast(`${esc(n)} added as a target.`);return;}
+  if('addCo' in d){openModal('Add a company',`<div class="form-grid"><div class="form-group"><label class="form-label" for="ac-n">Company name</label><input class="form-input" id="ac-n" placeholder="e.g. Harwell Specialty"></div><div class="form-group"><label class="form-label" for="ac-s">Sector</label><input class="form-input" id="ac-s" placeholder="e.g. Specialty insurer"></div><div class="form-group"><label class="form-label" for="ac-c">Main contact</label><input class="form-input" id="ac-c"></div><div class="form-group"><label class="form-label" for="ac-l">Location</label><input class="form-input" id="ac-l" value="London"></div></div><div class="form-err" id="ac-err" hidden></div>`,`<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" data-save-co>Add company</button>`);return;}
+  if('saveCo' in d){const n=$('#ac-n').value.trim();if(!n){const e=$('#ac-err');e.textContent='Add the company name.';e.hidden=false;return;}state.companies.push({id:state.companies.length+1,name:n,sector:$('#ac-s').value.trim()||'Not set',loc:$('#ac-l').value.trim()||'London',contact:$('#ac-c').value.trim()||'Not set',ctitle:'Contact',email:'Not set',phone:'',terms:'20% perm',billed:0,since:TODAY.getFullYear()});closeModal();render();toast(`${esc(n)} added.`);return;}
+  if(d.research){openResearch(+d.research);return;}
+  if(d.remind){const b=state.bookings.find(x=>x.id===+d.remind);toast(`Reminder sent to ${esc(cand(b.c).first)} and ${esc(b.who)}.${NOT_SENT}`);return;}
+  if(d.ask){ask(d.ask);return;}
+  if(d.pkOpt){state.packSel[d.pkOpt]=!state.packSel[d.pkOpt];state.packSel.c=+$('#pk-c').value;state.packSel.j=+$('#pk-j').value;renderPack();return;}
+  if('genPack' in d){genPack();return;}
+  if(d.sendPack){toast(`Pack sent to ${esc(d.sendPack)}.${NOT_SENT}`);return;}
+  if(d.cadToggle){const c=state.cadences.find(x=>x.id===+d.cadToggle);c.on=!c.on;renderCadences();toast(`${esc(c.name)} ${c.on?'activated':'paused'}.`);return;}
+  if(d.enrol){openEnrol(+d.enrol);return;}
+  if(d.saveEnrol){const c=state.cadences.find(x=>x.id===+d.saveEnrol);const n=$$('#modal-body input[data-en]:checked').length;if(!n){toast('Tick at least one person to enrol.',true);return;}c.enrolled+=n;closeModal();render();toast(`${n} ${n===1?'person':'people'} enrolled. The first email goes out in the next send window.${NOT_SENT}`);return;}
+  if('newCad' in d){toast('In the live product you build cadences step by step here.');return;}
+  if('intake' in d){openIntake();return;}
+  if('sampleEmail' in d){processEmail(SAMPLE_EMAIL,'sample email from Northmere');return;}
+  if('createIntake' in d){createFromIntake();return;}
+});
+document.addEventListener('change',ev=>{const t=ev.target,d=t.dataset;
+  if(d.task){const k=state.tasks.find(x=>x.id===+d.task);k.done=t.checked;renderDashboard();return;}
+  if(d.move){const v=t.value;if(STAGES.includes(v))moveApp(+d.move,v);return;}
+  if(d.smove){const p=state.search.people.find(x=>x.id===+d.smove);if(S_STAGES.includes(t.value)){p.stage=t.value;renderSearches();toast(`${esc(p.name)} moved to ${t.value}.`);}return;}
+  if(t.id==='board-job'){state.boardJob=t.value;renderBoard();return;}
+  if(d.weight){const i=+d.weight;state.search.criteria[i].w=Math.max(0,Math.min(50,+t.value||0));state.search.people.forEach(p=>{if(p.score!=null)p.score=pScore(p);});renderSearches();toast('Weights updated. Scores recalculated.');return;}
+});
+document.addEventListener('input',ev=>{const t=ev.target;
+  if(t.id==='cand-q'){state.candQ=t.value;renderCandidates();return;}
+  if(t.id==='of-sal'){const f=$('#of-fee');if(f)f.textContent=money((+t.value||0)*(+t.dataset.feePct)/100);}
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){if(!$('#modal-overlay').hidden)closeModal();else if(tourOn)endTour();else closeDrawer();return;}
+  if(ev.key==='Enter'&&ev.target.id==='note-in'){const b=$('[data-add-note]');if(b)b.click();return;}
+  if((ev.key==='Enter'||ev.key===' ')&&ev.target.classList.contains('job-card')){ev.preventDefault();openJob(+ev.target.dataset.job);}
+});
+$('#modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')closeModal();});
+addEventListener('resize',()=>{if(tourOn)placeTour();});
+$('#content').addEventListener('scroll',()=>{if(tourOn)placeTour();},{passive:true});
+
+/* global email drop */
+let dragDepth=0;
+const hasFiles=e=>Array.from((e.dataTransfer&&e.dataTransfer.types)||[]).includes('Files');
+function hideOverlay(){dragDepth=0;$('#drop-overlay').hidden=true;}
+addEventListener('dragenter',e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth++;if($('#modal-overlay').hidden)$('#drop-overlay').hidden=false;});
+addEventListener('dragover',e=>{if(!hasFiles(e))return;e.preventDefault();});
+addEventListener('dragleave',e=>{if(!hasFiles(e))return;dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop-overlay').hidden=true;});
+addEventListener('drop',e=>{if(!hasFiles(e))return;e.preventDefault();hideOverlay();if(!$('#modal-overlay').hidden)return;const f=Array.from(e.dataTransfer.files);if(!f.length)return;
+  const em=f.find(x=>/\.(eml|msg|txt)$/i.test(x.name));if(em){openIntake(em);return;}openImport();handleCvFiles(f);});
+
+nav('dashboard');
+let seen=false;try{seen=sessionStorage.getItem('tsr-tour')==='1';sessionStorage.setItem('tsr-tour','1');}catch(e){}
+if(!seen&&!/[?&]notour/.test(location.search))setTimeout(()=>startTour(0),500);
+})();
+</script>
+
+</body>
+</html>
